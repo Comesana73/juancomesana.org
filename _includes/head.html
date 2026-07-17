@@ -1,0 +1,28 @@
+{%- assign page_title = page.title | default: site.title -%}
+{%- assign full_title = page_title -%}
+{%- unless page_title == site.title -%}
+  {%- assign full_title = page_title | append: " — " | append: site.title -%}
+{%- endunless -%}
+{%- assign meta_description = page.description | default: site.description -%}
+{%- assign canonical_url = page.url | absolute_url -%}
+{%- assign og_image = page.image | default: "/assets/images/juan-comesana.webp" | absolute_url -%}
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ full_title }}</title>
+<meta name="description" content="{{ meta_description | strip_html | normalize_whitespace | escape }}">
+<link rel="canonical" href="{{ canonical_url }}">
+
+<meta property="og:site_name" content="{{ site.title }}">
+<meta property="og:title" content="{{ full_title }}">
+<meta property="og:description" content="{{ meta_description | strip_html | normalize_whitespace | escape }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:image" content="{{ og_image }}">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ full_title }}">
+<meta name="twitter:description" content="{{ meta_description | strip_html | normalize_whitespace | escape }}">
+<meta name="twitter:image" content="{{ og_image }}">
+
+<link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
