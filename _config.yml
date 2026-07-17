@@ -1,7 +1,7 @@
 title: "Juan Comesaña"
 description: "Academic website for Juan Comesaña, Professor of Philosophy at Rutgers University."
 url: "https://comesana73.github.io"
-baseurl: "juancomesana.org"
+baseurl: "/juancomesana.org"
 lang: "en-US"
 timezone: "America/New_York"
 
