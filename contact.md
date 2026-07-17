@@ -9,7 +9,6 @@ permalink: /contact/
 ## Contact
 
 
-  <span id="email-text">juan [dot] comesana [at] rutgers [dot] edu</span>
   <a class="contact-email" href="#" data-user="juan.comesana" data-domain="rutgers.edu">Send email</a>
 
 
