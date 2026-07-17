@@ -270,19 +270,68 @@ details p {
   padding: 1rem;
 }
 
-.rec-hero {
-  margin-bottom: 2rem;
+.rec-page {
+  background: #dedfdb;
+  box-shadow: 0 0 0 100vmax #dedfdb;
+  clip-path: inset(0 -100vmax);
+  max-width: none;
+  min-height: 58vh;
+  padding: 4.5rem 0 6.5rem;
+}
+
+.rec-title-group {
+  align-items: center;
+  display: flex;
+  gap: 2.25rem;
+  justify-content: center;
+  margin: 0 auto 4.5rem;
+}
+
+.rec-icon {
+  color: #ff6b61;
+  flex: 0 0 140px;
+  height: auto;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.rec-icon path {
+  fill: none;
 }
 
 .rec-page h1 {
+  font-size: clamp(3rem, 6vw, 5.4rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  margin: 0;
   text-align: center;
 }
 
-.rec-hero img {
-  border: 1px solid var(--border);
-  max-height: 340px;
-  object-fit: cover;
-  width: 100%;
+.rec-page .button-list {
+  display: grid;
+  gap: clamp(1.5rem, 6vw, 6rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.rec-page .button-list a {
+  align-items: center;
+  border: 2px solid #26384f;
+  color: #2d3b55;
+  display: flex;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+  justify-content: center;
+  min-height: 5rem;
+  padding: 1.2rem 1rem;
+  text-align: center;
+}
+
+.rec-page .button-list a:hover {
+  background: #26384f;
+  color: #fff;
 }
 
 @media (max-width: 800px) {
@@ -307,6 +356,25 @@ details p {
   .hero,
   .book {
     grid-template-columns: 1fr;
+  }
+
+  .rec-page .button-list {
+    grid-template-columns: 1fr;
+  }
+
+  .rec-title-group {
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .rec-icon {
+    flex-basis: auto;
+    width: 96px;
+  }
+
+  .rec-page {
+    padding: 3rem 0 4rem;
   }
 
   .book img {

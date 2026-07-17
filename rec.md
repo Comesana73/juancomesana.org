@@ -5,13 +5,15 @@ permalink: /rec/
 image: /assets/images/rec-gathering.webp
 ---
 
-<div class="content content--center rec-page" markdown="1">
+<div class="content content--center rec-page">
 
-<div class="rec-hero">
-  <img src="{{ '/assets/images/rec-gathering.webp' | relative_url }}" alt="Rutgers Epistemology Conference gathering">
+<div class="rec-title-group">
+  <svg class="rec-icon" viewBox="0 0 160 80" role="img" aria-labelledby="rec-icon-title">
+    <title id="rec-icon-title">Line drawing of a barn</title>
+    <path d="M20 66h120M42 66V36l38-22 38 22v30M35 39h90M80 14v52M62 66V44h36v22M68 66l30-22M98 66L68 44M70 32h8v8h-8zM82 32h8v8h-8zM75 18v-8M69 11h12" />
+  </svg>
+  <h1>Rutgers Epistemology Conference</h1>
 </div>
-
-# Rutgers Epistemology Conference
 
 <div class="button-list">
   <a href="{{ '/rec/rec-history/' | relative_url }}">History</a>
