@@ -8,12 +8,10 @@ permalink: /contact/
 
 ## Contact
 
-If you would like to reach me, use the address below or the email link.
 
-<p class="notice">
   <span id="email-text">juan [dot] comesana [at] rutgers [dot] edu</span>
   <a class="contact-email" href="#" data-user="juan.comesana" data-domain="rutgers.edu">Send email</a>
-</p>
+
 
 <script>
   (function () {
