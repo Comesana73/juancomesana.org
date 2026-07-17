@@ -1,4 +1,8 @@
+---
+layout: null
+sitemap: false
+---
 User-agent: *
 Allow: /
 
-Sitemap: https://juancomesana.org/sitemap.xml
+Sitemap: {{ '/sitemap.xml' | absolute_url }}

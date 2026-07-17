@@ -6,7 +6,7 @@ permalink: /rec/rec-history/
 
 <div class="content content--center" markdown="1">
 
-# History of the [REC](/rec/)
+# History of the [REC]({{ '/rec/' | relative_url }})
 
 The Rutgers Epistemology Conference began in 1999, operating in the pre read model, where papers are posted online in advance and the sessions consists of small introductory remarks followed by a long discussion. Since its inception, there have also always been “commentators at large”, in charge of starting the discussion. In 2001 the Young Epistemologist Prize was instituted, with the winner presenting at the conference. Starting in 2003 the conference became biennial, with a gap between 2017 and 2022 due mostly to COVID.
 

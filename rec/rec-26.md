@@ -12,13 +12,13 @@ The 2026 edition of the Rutgers Epistemology Conference will take place May 1 an
 
 ## Friday, May 1
 
-**1:30-3:00** [Pamela Hieronymi](https://philosophy.ucla.edu/person/pamela-hieronymi/), “[Morally Bad Beliefs](/assets/papers/hieronymi-morally-bad-beliefs.pdf)” ([handout](/assets/papers/hieronymi-morally-bad-beliefs-handout.pdf))
+**1:30-3:00** [Pamela Hieronymi](https://philosophy.ucla.edu/person/pamela-hieronymi/), “[Morally Bad Beliefs]({{ '/assets/papers/hieronymi-morally-bad-beliefs.pdf' | relative_url }})” ([handout]({{ '/assets/papers/hieronymi-morally-bad-beliefs-handout.pdf' | relative_url }}))
 
-**3:30-5:00** [John Bengson](https://liberalarts.utexas.edu/philosophy/faculty/jtb538), “[Loving Understanding](/assets/papers/bengson-loving-understanding.pdf)” ([handout](/assets/papers/bengson-loving-understanding-handout.pdf))
+**3:30-5:00** [John Bengson](https://liberalarts.utexas.edu/philosophy/faculty/jtb538), “[Loving Understanding]({{ '/assets/papers/bengson-loving-understanding.pdf' | relative_url }})” ([handout]({{ '/assets/papers/bengson-loving-understanding-handout.pdf' | relative_url }}))
 
 **6:00-7:30** Dinner
 
-**7:30-9:00** [Gideon Rosen](https://grosen.scholar.princeton.edu), “[Anti-Ockhamism in Metaphysics](/assets/papers/rosen-anti-ockhamism-in-metaphysics.pdf)”
+**7:30-9:00** [Gideon Rosen](https://grosen.scholar.princeton.edu), “[Anti-Ockhamism in Metaphysics]({{ '/assets/papers/rosen-anti-ockhamism-in-metaphysics.pdf' | relative_url }})”
 
 **9:00-11:00** Reception
 
@@ -26,13 +26,13 @@ The 2026 edition of the Rutgers Epistemology Conference will take place May 1 an
 
 **7:30-9:30** Breakfast
 
-**10:00-11:30** [Declan Smithies](https://philosophy.osu.edu/people/smithies.2), “[Valenced Experience and the Epistemology of Value](/assets/papers/smithies-valenced-experience.pdf)” ([handout](/assets/papers/smithies-valenced-experience-handout.pdf))
+**10:00-11:30** [Declan Smithies](https://philosophy.osu.edu/people/smithies.2), “[Valenced Experience and the Epistemology of Value]({{ '/assets/papers/smithies-valenced-experience.pdf' | relative_url }})” ([handout]({{ '/assets/papers/smithies-valenced-experience-handout.pdf' | relative_url }}))
 
 **12:00-1:00** Lunch
 
-**1:30-3:00** [Conner Schultz](https://www.connerschultz.com) (YEP), “[Epistemic Insurance Policies](/assets/papers/schultz-epistemic-insurance-policies.pdf)”
+**1:30-3:00** [Conner Schultz](https://www.connerschultz.com) (YEP), “[Epistemic Insurance Policies]({{ '/assets/papers/schultz-epistemic-insurance-policies.pdf' | relative_url }})”
 
-**3:30-5:00** [Sarah Paul](https://sites.google.com/site/sarahkpaul/), “[Attempts as Inquiry](/assets/papers/paul-attempts-as-inquiry.pdf)”
+**3:30-5:00** [Sarah Paul](https://sites.google.com/site/sarahkpaul/), “[Attempts as Inquiry]({{ '/assets/papers/paul-attempts-as-inquiry.pdf' | relative_url }})”
 
 ## Registration
 

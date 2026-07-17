@@ -45,7 +45,7 @@ GitHub Pages will rebuild the site after the change is committed.
 7. Make the PDF link point to the file you uploaded, for example:
 
    ```markdown
-   <a href="/assets/papers/new-paper-title.pdf">pdf</a>
+   <a href="{{ '/assets/papers/new-paper-title.pdf' | relative_url }}">pdf</a>
    ```
 
 8. Commit both the PDF and the `papers.md` change.
@@ -60,7 +60,7 @@ If the old public website already linked to the PDF under `/s/filename.pdf`, als
 4. Update the image path, for example:
 
    ```html
-   <img src="/assets/images/book-cover.jpg" alt="Cover of Book Title">
+   <img src="{{ '/assets/images/book-cover.jpg' | relative_url }}" alt="Cover of Book Title">
    ```
 
 5. Write meaningful alt text. The alt text should describe the image for someone who cannot see it.
@@ -80,7 +80,21 @@ For a full local preview on your computer:
    bundle exec jekyll serve
    ```
 
-3. Open the local address printed by Jekyll, usually `http://127.0.0.1:4000`.
+3. Open the local address printed by Jekyll, usually `http://127.0.0.1:4000/juancomesana.org/`.
+
+The main `_config.yml` is currently set up for the temporary GitHub Pages project URL:
+
+```text
+https://comesana73.github.io/juancomesana.org/
+```
+
+When the site is ready to move to the custom domain, preview it with:
+
+```bash
+bundle exec jekyll serve --config _config.yml,_config_custom_domain.yml
+```
+
+That custom-domain preview usually opens at `http://127.0.0.1:4000`.
 
 If you only edit through GitHub’s website, you can also preview by using a separate branch and opening the GitHub Pages build after GitHub finishes publishing it.
 
@@ -94,7 +108,7 @@ The `CNAME` file is already set to:
 juancomesana.org
 ```
 
-That file is needed when the site is ready to use the custom domain.
+That file is needed when the site is ready to use the custom domain. The file `_config_custom_domain.yml` contains the matching root-domain URL settings for that later step.
 
 ## Settings to enable later
 
