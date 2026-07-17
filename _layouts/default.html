@@ -16,7 +16,7 @@
     </main>
     <script>
       document.querySelectorAll(".site-main a[href]").forEach((link) => {
-        if (link.href) {
+        if (link.href && !link.closest(".rec-page .button-list")) {
           link.target = "_blank";
           link.rel = "noopener noreferrer";
         }
