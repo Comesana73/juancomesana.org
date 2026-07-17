@@ -8,19 +8,15 @@ permalink: /contact/
 
 ## Contact
 
-
-  <a class="contact-email" href="#" data-user="juan.comesana" data-domain="rutgers.edu">Send email</a>
-
+<a class="contact-email" href="#" data-user="juan.comesana" data-domain="rutgers.edu">Email Juan</a>
 
 <script>
   (function () {
     const link = document.querySelector(".contact-email");
-    const text = document.getElementById("email-text");
-    if (!link || !text) return;
+    if (!link) return;
     const email = `${link.dataset.user}@${link.dataset.domain}`;
     link.href = `mailto:${email}`;
     link.textContent = "Email Juan";
-    text.textContent = email.replace("@", " [at] ").replace(".", " [dot] ");
   })();
 </script>
 
