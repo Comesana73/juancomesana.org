@@ -5,7 +5,7 @@ permalink: /rec/
 image: /assets/images/rec-gathering.webp
 ---
 
-<div class="content content--center" markdown="1">
+<div class="content content--center rec-page" markdown="1">
 
 <div class="rec-hero">
   <img src="{{ '/assets/images/rec-gathering.webp' | relative_url }}" alt="Rutgers Epistemology Conference gathering">

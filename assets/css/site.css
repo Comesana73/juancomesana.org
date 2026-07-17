@@ -274,6 +274,10 @@ details p {
   margin-bottom: 2rem;
 }
 
+.rec-page h1 {
+  text-align: center;
+}
+
 .rec-hero img {
   border: 1px solid var(--border);
   max-height: 340px;
