@@ -14,5 +14,13 @@
     <main id="main" class="site-main">
       {{ content }}
     </main>
+    <script>
+      document.querySelectorAll("a[href]").forEach((link) => {
+        if (link.href) {
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+        }
+      });
+    </script>
   </body>
 </html>
