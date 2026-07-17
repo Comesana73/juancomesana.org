@@ -6,8 +6,25 @@ permalink: /contact/
 
 <div class="content content--center" markdown="1">
 
-## Contact me.
+## Contact
 
-<p class="notice">The current public website displays a Squarespace contact form but does not expose a public email address in the rendered page. This static GitHub Pages version does not include a third-party form. Please review and add the preferred public contact email before replacing the live site.</p>
+If you would like to reach me, use the address below or the email link.
+
+<p class="notice">
+  <span id="email-text">juan [dot] comesana [at] rutgers [dot] edu</span>
+  <a class="contact-email" href="#" data-user="juan.comesana" data-domain="rutgers.edu">Send email</a>
+</p>
+
+<script>
+  (function () {
+    const link = document.querySelector(".contact-email");
+    const text = document.getElementById("email-text");
+    if (!link || !text) return;
+    const email = `${link.dataset.user}@${link.dataset.domain}`;
+    link.href = `mailto:${email}`;
+    link.textContent = "Email Juan";
+    text.textContent = email.replace("@", " [at] ").replace(".", " [dot] ");
+  })();
+</script>
 
 </div>
