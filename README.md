@@ -80,21 +80,13 @@ For a full local preview on your computer:
    bundle exec jekyll serve
    ```
 
-3. Open the local address printed by Jekyll, usually `http://127.0.0.1:4000/juancomesana.org/`.
+3. Open the local address printed by Jekyll, usually `http://127.0.0.1:4000/`.
 
-The main `_config.yml` is currently set up for the temporary GitHub Pages project URL:
+The main `_config.yml` is currently set up for the final custom domain:
 
 ```text
-https://comesana73.github.io/juancomesana.org/
+https://juancomesana.org/
 ```
-
-When the site is ready to move to the custom domain, preview it with:
-
-```bash
-bundle exec jekyll serve --config _config.yml,_config_custom_domain.yml
-```
-
-That custom-domain preview usually opens at `http://127.0.0.1:4000`.
 
 If you only edit through GitHub’s website, you can also preview by using a separate branch and opening the GitHub Pages build after GitHub finishes publishing it.
 
@@ -108,7 +100,7 @@ The `CNAME` file is already set to:
 juancomesana.org
 ```
 
-That file is needed when the site is ready to use the custom domain. The file `_config_custom_domain.yml` contains the matching root-domain URL settings for that later step.
+That file is needed when the site is ready to use the custom domain. The main `_config.yml` file contains the matching root-domain URL settings.
 
 ## Settings to enable later
 
