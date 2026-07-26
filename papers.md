@@ -51,7 +51,7 @@ Here are some of my papers. For a more or less complete list, see my [cv]({{ '/a
 </article>
 
 <article class="publication">
-  <p class="publication__citation">“Can We Believe for Practial Reasons?,” <em>Philosophical Issues</em> 25 (1), 2015, pp. 189-207. (<a href="{{ '/assets/papers/can-we-believe-for-practical-reasons.pdf' | relative_url }}">pdf</a>)</p>
+  <p class="publication__citation">“Can We Believe for Practical Reasons?,” <em>Philosophical Issues</em> 25 (1), 2015, pp. 189-207. (<a href="{{ '/assets/papers/can-we-believe-for-practical-reasons.pdf' | relative_url }}">pdf</a>)</p>
   <details>
     <summary>Abstract</summary>
     <p>It’s complicated.</p>
@@ -78,7 +78,7 @@ Here are some of my papers. For a more or less complete list, see my [cv]({{ '/a
   <p class="publication__citation">“Williamson on Gettier Cases and Epistemic Logic” (with Stewart Cohen), <em>Inquiry</em> 56 (1), 2014, pp. 15-29. (<a href="{{ '/assets/papers/williamson-gettier-cases-epistemic-logic.pdf' | relative_url }}">pdf</a>)</p>
   <details>
     <summary>Abstract</summary>
-    <p>imothy Williamson has fruitfully exploited formal resources to shed considerable light on the nature of knowledge. In the paper under examination, Williamson turns his attention to Gettier cases, showing how they can be motivated formally. At the same time, he disparages the kind of justification he thinks gives rise to these cases. He favors instead his own notion of justification for which Gettier cases cannot arise. We take issue both with his disparagement of the kind of justification that figures in Gettier cases and the specifics of the formal motivation.</p>
+    <p>Timothy Williamson has fruitfully exploited formal resources to shed considerable light on the nature of knowledge. In the paper under examination, Williamson turns his attention to Gettier cases, showing how they can be motivated formally. At the same time, he disparages the kind of justification he thinks gives rise to these cases. He favors instead his own notion of justification for which Gettier cases cannot arise. We take issue both with his disparagement of the kind of justification that figures in Gettier cases and the specifics of the formal motivation.</p>
   </details>
 </article>
 

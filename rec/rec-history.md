@@ -52,7 +52,7 @@ Robert Almeder, Bill Brewer, Al Casullo, Noah Lemos, Erik Olsson, Scott Sturgeon
 
 ## 2003
 
-Sperakers
+Speakers
 
 Michael Bergman (YEP), Catherine Elgin, Christopher Peacocke, Jonathan Vogel.
 

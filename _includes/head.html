@@ -12,6 +12,8 @@
 <title>{{ full_title }}</title>
 <meta name="description" content="{{ meta_description | strip_html | normalize_whitespace | escape }}">
 <link rel="canonical" href="{{ canonical_url }}">
+<link rel="icon" href="{{ '/favicon.ico' | relative_url }}" sizes="any">
+<link rel="apple-touch-icon" href="{{ '/assets/images/apple-touch-icon.png' | relative_url }}">
 
 <meta property="og:site_name" content="{{ site.title }}">
 <meta property="og:title" content="{{ full_title }}">

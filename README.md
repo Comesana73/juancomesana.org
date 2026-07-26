@@ -15,7 +15,7 @@ The site is intentionally simple: most page content is Markdown, the shared page
 - `assets/documents/` contains CV PDFs and similar documents.
 - `s/` contains compatibility copies of PDFs so older public links from the Squarespace site keep working.
 - `index.md` is the home page.
-- `about.md`, `books.md`, `papers.md`, `teaching.md`, and `contact.md` are the main pages.
+- `index.md`, `books.md`, `papers.md`, `teaching.md`, and `contact.md` are the main pages. The biographical About content now lives on the homepage.
 - `rec/` contains the Rutgers Epistemology Conference pages.
 - `404.html` is the custom page shown when someone visits a missing URL.
 - `robots.txt` points search engines to the sitemap.
@@ -24,7 +24,7 @@ The site is intentionally simple: most page content is Markdown, the shared page
 ## Editing an existing page in GitHub
 
 1. Open this repository on GitHub.
-2. Click the page file you want to edit, such as `about.md` or `papers.md`.
+2. Click the page file you want to edit, such as `index.md` or `papers.md`.
 3. Click the pencil icon, which means “Edit this file.”
 4. Edit the text.
 5. Use the “Preview” tab to check the formatting.

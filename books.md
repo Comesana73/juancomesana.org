@@ -23,7 +23,7 @@ Adam Marushak, [review in *Notre Dame Philosophical Reviews*](https://ndpr.nd.ed
 
 Bob Beddor, [critical notice in *Analysis*](https://academic.oup.com/analysis/article-abstract/83/3/616/7441520).
 
-[Symposium in *Philosophical Studies*](https://link.springer.com/journal/11098/volumes-and-issues/180-8) (with contributions from John Hawthorne, Mark Schroeder and Roger White.
+[Symposium in *Philosophical Studies*](https://link.springer.com/journal/11098/volumes-and-issues/180-8) (with contributions from John Hawthorne, Mark Schroeder and Roger White).
 
 [*Philosopher meets critics* session](https://www.youtube.com/watch?v=Bez2APccvV0) organized by the CONCEPT group of the University of Cologne and the Federal University of Bahia.
 
