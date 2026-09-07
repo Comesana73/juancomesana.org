@@ -398,3 +398,34 @@ details p {
     max-width: 220px;
   }
 }
+
+.photo-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 1.5rem 0 2rem;
+}
+
+.photo-grid a {
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--border);
+  display: block;
+  overflow: hidden;
+}
+
+.photo-grid img {
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+  width: 100%;
+}
+
+.photo-grid a:hover img {
+  transform: scale(1.04);
+}
+
+@media (max-width: 800px) {
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

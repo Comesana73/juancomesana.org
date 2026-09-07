@@ -10,6 +10,62 @@ permalink: /rec/rec-26/
 
 The 2026 edition of the Rutgers Epistemology Conference will take place May 1 and 2 at [*The Heldrich*](https://www.theheldrich.com). The REC is a pre-read conference. The papers will be posted here. The winner of the 2026 Young Epistemologist Prize is Conner Schultz, from Florida International University. The commentators will be [Selim Berker](https://philosophy.fas.harvard.edu/people/selim-berker), [Rachel Fraser](https://www.rachelelizabethfraser.com), [Sarah McGrath](https://philosophy.princeton.edu/people/sarah-mcgrath), and [Kurt Sylvan](https://www.kurtlsylvan.com). The schedule is the following:
 
+## Photos
+
+<div class="photo-grid">
+  <a href="{{ '/assets/images/rec-2026/IMG_0451.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0451.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0456.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0456.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0467.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0467.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0476.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0476.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0477.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0477.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0479.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0479.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0492.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0492.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0498.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0498.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0502.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0502.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0510.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0510.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0516.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0516.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0524.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0524.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0529.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0529.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0531.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0531.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0544.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0544.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0550.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0550.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+  <a href="{{ '/assets/images/rec-2026/IMG_0553.webp' | relative_url }}">
+    <img src="{{ '/assets/images/rec-2026/IMG_0553.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+  </a>
+</div>
+
 ## Friday, May 1
 
 **1:30-3:00** [Pamela Hieronymi](https://philosophy.ucla.edu/person/pamela-hieronymi/), “[Morally Bad Beliefs]({{ '/assets/papers/hieronymi-morally-bad-beliefs.pdf' | relative_url }})” ([handout]({{ '/assets/papers/hieronymi-morally-bad-beliefs-handout.pdf' | relative_url }}))
