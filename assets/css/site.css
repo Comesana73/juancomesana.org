@@ -401,14 +401,14 @@ details p {
 
 .photo-grid {
   display: grid;
-  gap: 1rem;
+  gap: 0.5rem;
   grid-template-columns: repeat(3, 1fr);
   margin: 1.5rem 0 2rem;
 }
 
 .photo-grid a {
   aspect-ratio: 4 / 3;
-  border: 1px solid var(--border);
+  cursor: zoom-in;
   display: block;
   overflow: hidden;
 }
@@ -427,5 +427,85 @@ details p {
 @media (max-width: 800px) {
   .photo-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.lightbox {
+  align-items: center;
+  background: rgba(20, 17, 15, 0.92);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 100;
+}
+
+.lightbox[hidden] {
+  display: none;
+}
+
+.lightbox__image {
+  max-height: 86vh;
+  max-width: min(90vw, 1100px);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+.lightbox__close,
+.lightbox__prev,
+.lightbox__next {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1;
+  opacity: 0.85;
+  padding: 0.5rem;
+}
+
+.lightbox__close:hover,
+.lightbox__prev:hover,
+.lightbox__next:hover {
+  opacity: 1;
+}
+
+.lightbox__close {
+  font-size: 2rem;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+.lightbox__prev,
+.lightbox__next {
+  font-size: 3rem;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lightbox__prev {
+  left: 0.5rem;
+}
+
+.lightbox__next {
+  right: 0.5rem;
+}
+
+.lightbox__counter {
+  bottom: 1rem;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  left: 50%;
+  opacity: 0.75;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 800px) {
+  .lightbox__prev,
+  .lightbox__next {
+    font-size: 2rem;
   }
 }
