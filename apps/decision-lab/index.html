@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Decision Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --ink: #14202e;
+    --muted: #5a6778;
+    --faint: #9aa5b4;
+    --line: #dbe1e9;
+    --line-strong: #14202e;
+    --accent: #2c5cc9;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3ebfb;
+    --accent-softer: #f0f4fd;
+    --good: #1d7f53;
+    --good-soft: #e1f3e9;
+    --bad: #b93a32;
+    --bad-soft: #fbe3e0;
+    --focus: #2c5cc9;
+    --radius: 10px;
+    --tsize: 18px;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --logic: "IBM Plex Sans", "Cambria Math", "STIX Two Math", "Segoe UI Symbol", "Apple Symbols", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+      --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+      --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+      --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+    --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+    --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+    --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+  }
+
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 14px 16px 0; max-width: 1600px; margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark { width: 28px; height: 28px; flex: none; }
+  .brand-mark svg { display: block; width: 100%; height: 100%; }
+  .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+  .brand p { font-size: 0.8rem; color: var(--muted); }
+  .top-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .top-controls .lbl { font-size: 0.78rem; color: var(--muted); }
+
+  .seg {
+    display: inline-flex; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 2px; gap: 2px;
+  }
+  .seg button {
+    border: 0; background: transparent; padding: 5px 10px; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap;
+  }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+  .seg.full { display: flex; }
+  .seg.full button { flex: 1; }
+
+  /* ---------- layout ---------- */
+  .app {
+    display: grid; grid-template-columns: 1fr; gap: 16px;
+    padding: 14px 16px 24px; max-width: 1600px; margin: 0 auto;
+  }
+  .panel, .stage { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  @media (min-width: 980px) {
+    .app { grid-template-columns: 320px minmax(0, 1fr); gap: 20px; padding: 16px 20px 28px; }
+    .topbar { padding: 16px 20px 0; }
+    .panel { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 2px; }
+  }
+  @media (max-width: 979px) {
+    .app { display: flex; flex-direction: column; }
+    .panel { display: contents; }
+    .setup-card { order: 1; } .mode-card { order: 2; } .stage { order: 3; } .help { order: 4; }
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0;
+  }
+  details.card { display: block; }
+  .card h2 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .opt { display: flex; flex-direction: column; gap: 6px; }
+  .opt > .lbl { font-size: 0.78rem; color: var(--muted); }
+  .note { font-size: 0.82rem; color: var(--muted); }
+
+  details.help summary { cursor: pointer; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  details.help[open] summary { margin-bottom: 10px; }
+  .help p { font-size: 0.85rem; color: var(--muted); }
+  .help p + p { margin-top: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--ink);
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 7px;
+    padding: 7px 12px; font-size: 0.88rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--muted); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.small { padding: 4px 10px; font-size: 0.82rem; }
+  .linkbtn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 0.85rem; font-weight: 500; }
+
+  /* ---------- matrix editor ---------- */
+  .ed-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .ed-wrap { overflow-x: auto; }
+  table.ed { border-collapse: separate; border-spacing: 4px; }
+  .ed th, .ed td { padding: 0; vertical-align: middle; }
+  .ed input {
+    width: 5.2em; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--surface-2); font-family: var(--mono); font-size: 0.95rem; text-align: center;
+  }
+  .ed input.name { font-family: var(--logic); font-weight: 600; background: var(--surface); }
+  .ed input.prob { font-size: 0.8rem; width: 5.2em; padding: 3px 6px; color: var(--accent); }
+  .ed input.err { border-color: var(--bad); background: var(--bad-soft); }
+  .ed .cellbox { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+  .ed .rm { border: 0; background: transparent; color: var(--faint); cursor: pointer; font-size: 1rem; width: 24px; height: 24px; border-radius: 5px; }
+  .ed .rm:hover { background: var(--surface-2); color: var(--ink); }
+  .ed .corner { font-size: 0.72rem; color: var(--muted); text-align: left; padding-right: 4px; }
+  .ed .plabel { font-size: 0.72rem; color: var(--muted); text-align: right; padding-right: 4px; white-space: nowrap; }
+  .ed-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ed-actions .hint { font-size: 0.8rem; color: var(--muted); }
+  .ed-actions .hint::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
+  .errmsg { font-size: 0.85rem; color: var(--bad); }
+  .errmsg b { font-weight: 600; }
+
+  /* ---------- summary strip ---------- */
+  .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  .sum { padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .sum + .sum { border-left: 1px solid var(--line); }
+  .sum .k { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+  .sum .v { font-family: var(--logic); font-weight: 600; font-size: 1.02rem; }
+  .sum .v.off { font-family: var(--sans); font-weight: 400; font-size: 0.85rem; color: var(--faint); }
+  .sum.solved { background: color-mix(in srgb, var(--good) 8%, transparent); }
+  @media (max-width: 720px) {
+    .summary { grid-template-columns: 1fr 1fr; }
+    .sum:nth-child(3) { border-left: 0; }
+    .sum:nth-child(n+3) { border-top: 1px solid var(--line); }
+  }
+
+  /* ---------- work area ---------- */
+  .work { padding: 0; gap: 0; }
+  .tabs { display: flex; gap: 2px; padding: 8px 10px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tabs button {
+    border: 0; background: none; padding: 9px 12px 10px; font-size: 0.9rem; font-weight: 500; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+  }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .tabs button.unavail { color: var(--faint); }
+  .work-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .work-head .what { font-size: 0.9rem; color: var(--muted); }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stepper { display: inline-flex; align-items: center; gap: 4px; }
+  .stepper .count { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); min-width: 4.5em; text-align: center; }
+  .hintbar { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.92rem; background: var(--accent-softer); }
+  .hintbar.bad { background: var(--bad-soft); color: var(--bad); }
+  .hintbar.good { background: var(--good-soft); color: var(--good); }
+  .hintbar .f { font-family: var(--logic); font-weight: 600; }
+  .work-body { padding: 16px; display: flex; flex-direction: column; gap: 18px; font-size: var(--tsize); }
+  .work-body.stale { opacity: 0.35; }
+  .unavail-note { font-size: 0.95rem; color: var(--muted); max-width: 60ch; }
+  .unavail-note b { color: var(--ink); }
+  .block { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .block > h3 { font-size: 0.7em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-family: var(--sans); }
+  .scroll { overflow-x: auto; }
+
+  table.mx { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+  .mx th, .mx td { padding: 0.32em 0.7em; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--line); }
+  .mx thead th { font-family: var(--logic); font-weight: 500; border-bottom: 2px solid var(--line-strong); vertical-align: bottom; }
+  .mx thead th .pr { display: block; font-family: var(--mono); font-size: 0.72em; color: var(--accent); font-weight: 500; }
+  .mx tbody tr:last-child > * { border-bottom: 2px solid var(--line-strong); }
+  .mx th.rowh { font-family: var(--logic); font-weight: 600; text-align: left; border-right: 2px solid var(--line-strong); padding-right: 0.9em; }
+  .mx td { font-family: var(--mono); position: relative; }
+  .mx td .pc { display: block; font-size: 0.66em; color: var(--accent); text-align: right; margin-top: -0.1em; }
+  .mx td .uv { display: block; text-align: left; }
+  .mx td.cellp { min-width: 4.6em; }
+  .mx sup.st { color: var(--accent); font-weight: 700; font-family: var(--sans); margin-left: 1px; }
+  .mx th.rowh sup.st { color: var(--good); }
+  .mx td.star { background: var(--accent-soft); }
+  .mx tr.pick > * { background: var(--good-soft); }
+  .mx tr.pick td.star { background: color-mix(in srgb, var(--accent-soft) 60%, var(--good-soft)); }
+  .mx tr.crossed > * { color: var(--faint); }
+  .mx tr.crossed td, .mx tr.crossed th.rowh { text-decoration: line-through; text-decoration-color: var(--bad); text-decoration-thickness: 2px; }
+  .mx .extra { border-left: 2px solid var(--line); font-family: var(--mono); }
+  .mx th.extra { font-family: var(--sans); font-size: 0.72em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .mx tr.maxrow th, .mx tr.maxrow td { font-size: 0.8em; color: var(--muted); border-bottom: 2px solid var(--line-strong); }
+  .mx .hid { color: transparent !important; }
+  .mx .cur { background: var(--accent-soft) !important; }
+  .mx .curcol { background: var(--accent-softer); }
+
+  /* practice affordances */
+  .mx td.clickable { cursor: pointer; }
+  .mx td.clickable:hover { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .mx th.rowh button.rowbtn {
+    border: 1px dashed var(--line); background: transparent; border-radius: 6px; padding: 0.05em 0.45em; cursor: pointer;
+    font: inherit; color: inherit; text-decoration: inherit;
+  }
+  .mx th.rowh button.rowbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .mx input.ans {
+    width: 4.6em; padding: 0.15em 0.35em; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface-2); font-family: var(--mono); font-size: 0.9em; text-align: center;
+  }
+  .wrong { box-shadow: inset 0 0 0 2px var(--bad) !important; background-color: var(--bad-soft) !important; }
+  input.ans.wrong, select.wrong { color: var(--bad); }
+  .right-mark { box-shadow: inset 0 0 0 1.5px var(--good) !important; }
+
+  .pairs { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; align-items: center; font-size: 0.85em; }
+  .pairs .pn { font-family: var(--logic); font-weight: 600; white-space: nowrap; }
+  .pairs .pv { font-family: var(--sans); }
+  .pairs .pv .why { color: var(--muted); font-size: 0.9em; }
+  .pairs select { font-size: 0.95em; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); max-width: 100%; }
+  .pairs .hid { visibility: hidden; }
+
+  .lex { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; }
+  .lex .row { display: flex; align-items: center; gap: 10px; font-family: var(--mono); }
+  .lex .row b { font-family: var(--logic); min-width: 2.5em; }
+  .lex label { display: inline-flex; gap: 6px; align-items: center; font-family: var(--sans); font-size: 0.9em; cursor: pointer; }
+  .lex .keep { color: var(--good); font-family: var(--sans); font-weight: 600; font-size: 0.9em; }
+
+  ol.worked { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; font-size: 0.82em; max-width: 75ch; }
+  ol.worked li::marker { color: var(--muted); font-family: var(--mono); }
+  ol.worked .f { font-family: var(--logic); font-weight: 600; }
+  .arith { font-family: var(--mono); font-size: 0.85em; display: flex; flex-direction: column; gap: 4px; }
+  .arith .hid { visibility: hidden; }
+  .caution { font-size: 0.82em; color: var(--muted); border-left: 3px solid var(--line-strong); padding-left: 10px; max-width: 70ch; }
+
+  @media (max-width: 640px) {
+    .work-body { padding: 12px; }
+    .work-head, .hintbar { padding-left: 12px; padding-right: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 28 28"><rect x="0.5" y="0.5" width="27" height="27" rx="6" fill="var(--surface)" stroke="var(--line)"/><rect x="5" y="6" width="18" height="4" rx="1" fill="var(--accent-soft)"/><rect x="5" y="12" width="18" height="4" rx="1" fill="var(--accent)"/><rect x="5" y="18" width="18" height="4" rx="1" fill="var(--accent-soft)"/></svg>
+    </div>
+    <div>
+      <h1>Decision Lab</h1>
+      <p>Choosing under ignorance and under risk</p>
+    </div>
+  </div>
+  <div class="top-controls">
+    <span class="lbl" id="sizeLbl">Text size</span>
+    <div class="seg" role="group" aria-labelledby="sizeLbl" id="sizeSeg">
+      <button type="button" data-v="15">S</button><button type="button" data-v="18">M</button><button type="button" data-v="23">L</button><button type="button" data-v="30">XL</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme" id="themeSeg">
+      <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="panel" aria-label="Setup">
+    <section class="card setup-card" aria-labelledby="setupHead">
+      <h2 id="setupHead">Setup</h2>
+      <div class="opt">
+        <span class="lbl" id="probLbl">Probabilities</span>
+        <div class="seg full" role="group" aria-labelledby="probLbl" id="probSeg">
+          <button type="button" data-v="none">None</button><button type="button" data-v="states">On states</button><button type="button" data-v="cells">Depend on choice</button>
+        </div>
+        <p class="note" id="probNote"></p>
+      </div>
+      <div class="opt">
+        <span class="lbl" id="kindLbl">Utilities</span>
+        <div class="seg full" role="group" aria-labelledby="kindLbl" id="kindSeg">
+          <button type="button" data-v="ordinal">Ordinal</button><button type="button" data-v="cardinal">Cardinal</button>
+        </div>
+        <p class="note" id="kindNote"></p>
+      </div>
+    </section>
+
+    <section class="card mode-card" aria-labelledby="modeHead">
+      <h2 id="modeHead">Mode</h2>
+      <div class="seg full" role="group" aria-label="Mode" id="modeSeg">
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button>
+      </div>
+      <p class="note" id="modeNote"></p>
+    </section>
+
+    <details class="card help">
+      <summary>Entering numbers</summary>
+      <p>Utilities can be whole numbers, decimals or fractions: 3, −1, 1.5, 7/10. Probabilities can be decimals or fractions: 0.7 or 7/10. Answers you type in Practice can be fractions, or decimals rounded to two places.</p>
+      <p>Click an option or state name in the matrix to rename it (P, M, R, ¬R…). Type ~ for ¬. Press Enter or click Build to use the new matrix.</p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card" aria-labelledby="edHead">
+      <div class="ed-head">
+        <h2 id="edHead">Decision matrix</h2>
+        <div class="ed-actions">
+          <button type="button" class="linkbtn" id="addOpt">+ Option</button>
+          <button type="button" class="linkbtn" id="addState">+ State</button>
+        </div>
+      </div>
+      <div class="ed-wrap"><table class="ed" id="editor"></table></div>
+      <div class="ed-actions">
+        <button type="button" class="btn primary" id="buildBtn">Build</button>
+        <span class="hint" id="dirtyHint" hidden>Changed. Press Enter or click Build to use it.</span>
+      </div>
+      <div class="errmsg" id="edErr" hidden></div>
+    </section>
+
+    <section class="summary" id="summary" aria-live="polite"></section>
+
+    <section class="card work">
+      <div class="tabs" role="tablist" id="tabs">
+        <button type="button" role="tab" data-v="dominance">Dominance</button>
+        <button type="button" role="tab" data-v="maximin">Maximin</button>
+        <button type="button" role="tab" data-v="regret">Minimax regret</button>
+        <button type="button" role="tab" data-v="eu" id="euTab">Expected utility</button>
+      </div>
+      <div class="work-head">
+        <span class="what" id="what"></span>
+        <div class="actions">
+          <div class="stepper" id="stepper" hidden>
+            <button class="btn small" type="button" id="stFirst" aria-label="Back to start">⏮</button>
+            <button class="btn small" type="button" id="stPrev" aria-label="Previous step">◀</button>
+            <span class="count" id="stCount">0 / 0</span>
+            <button class="btn small primary" type="button" id="stNext" aria-label="Next step">▶</button>
+            <button class="btn small" type="button" id="stLast" aria-label="Show all steps">⏭</button>
+          </div>
+          <div class="actions" id="practiceBtns" hidden>
+            <button class="btn small primary" type="button" id="checkBtn">Check</button>
+            <button class="btn small" type="button" id="clearBtn">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="hintbar" id="hintbar" aria-live="polite"></div>
+      <div class="work-body" id="workBody"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ================= Exact fractions =================
+  const gcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) [a, b] = [b, a % b]; return a; };
+  class Q {
+    constructor(n, d = 1n) {
+      if (d < 0n) { n = -n; d = -d; }
+      const g = gcd(n, d) || 1n;
+      this.n = n / g; this.d = d / g;
+    }
+    add(o) { return new Q(this.n * o.d + o.n * this.d, this.d * o.d); }
+    sub(o) { return new Q(this.n * o.d - o.n * this.d, this.d * o.d); }
+    mul(o) { return new Q(this.n * o.n, this.d * o.d); }
+    cmp(o) { const x = this.n * o.d - o.n * this.d; return x > 0n ? 1 : x < 0n ? -1 : 0; }
+    eq(o) { return this.cmp(o) === 0; }
+    num() { return Number(this.n) / Number(this.d); }
+  }
+  const ZERO = new Q(0n), ONE = new Q(1n);
+  // Parse "3", "-1", "1.5", "7/10". Returns {q, dec} or null.
+  function parseQ(raw) {
+    const s = String(raw).trim().replace(/[−–]/g, "-").replace(/^\+/, "");
+    let m;
+    if ((m = s.match(/^(-?)(\d+)$/))) return { q: new Q(BigInt(m[1] + m[2])), dec: false };
+    if ((m = s.match(/^(-?)(\d*)\.(\d+)$/))) {
+      const whole = m[2] || "0", frac = m[3];
+      return { q: new Q(BigInt(m[1] + whole + frac), 10n ** BigInt(frac.length)), dec: true };
+    }
+    if ((m = s.match(/^(-?\d+)\s*\/\s*(\d+)$/))) {
+      if (BigInt(m[2]) === 0n) return null;
+      return { q: new Q(BigInt(m[1]), BigInt(m[2])), dec: false };
+    }
+    return null;
+  }
+  const terminating = (d) => { while (d % 2n === 0n) d /= 2n; while (d % 5n === 0n) d /= 5n; return d === 1n; };
+  const minus = (s) => s.replace(/^-/, "−");
+  function decStr(q) {
+    // exact decimal for terminating fractions
+    let x = q.num().toFixed(8).replace(/0+$/, "").replace(/\.$/, "");
+    return minus(x);
+  }
+  // Compact display: integers as integers, terminating as decimals, others as fractions.
+  function fmt(q) {
+    if (q.d === 1n) return minus(q.n.toString());
+    if (terminating(q.d)) return decStr(q);
+    return minus(`${q.n}/${q.d}`);
+  }
+  const fracStr = (q) => q.d === 1n ? minus(q.n.toString()) : minus(`${q.n}/${q.d}`);
+  // "19/10 = 1.9" or "1/3 ≈ 0.333" or "2"
+  function exactAndDec(q) {
+    if (q.d === 1n) return fracStr(q);
+    if (terminating(q.d)) return `${fracStr(q)} = ${decStr(q)}`;
+    return `${fracStr(q)} ≈ ${minus(q.num().toFixed(3))}`;
+  }
+  // Accept a typed answer: exact fractions/integers, or decimals within rounding to 2 places.
+  function accepts(raw, q) {
+    const p = parseQ(raw);
+    if (!p) return false;
+    if (p.q.eq(q)) return true;
+    return p.dec && Math.abs(p.q.num() - q.num()) <= 0.005 + 1e-12;
+  }
+
+  // ================= State =================
+  const SUB = "₀₁₂₃₄₅₆₇₈₉";
+  const sub = (n) => String(n).split("").map((d) => SUB[+d]).join("");
+  const MAX_N = 6;
+  const draft = {
+    opts: ["P", "M"],
+    states: ["R", "¬R"],
+    u: [["1", "4"], ["3", "2"]],
+    pState: ["7/10", "3/10"],
+    pCell: [["7/10", "3/10"], ["7/10", "3/10"]],
+    probMode: "none"
+  };
+  const state = {
+    mode: "practice", tab: "dominance", kind: "cardinal",
+    problem: null, built: null, // built = JSON of the draft that produced problem
+    step: { dominance: 0, maximin: 0, regret: 0, eu: 0 },
+    solved: {}, work: null, hint: null
+  };
+  const freshWork = () => ({
+    dominance: { pairs: {}, crossed: new Set(), marks: null },
+    maximin: { stars: new Set(), picks: new Set(), lex: new Set(), stage: 1, marks: null },
+    regret: { cells: {}, maxr: {}, picks: new Set(), marks: null },
+    eu: { vals: {}, picks: new Set(), marks: null }
+  });
+
+  // ================= Build / validate =================
+  function snapshot() { return JSON.stringify(draft); }
+  function build() {
+    const errs = [];
+    const bad = new Set();
+    const R = draft.opts.length, C = draft.states.length;
+    const opts = draft.opts.map((n, r) => n.trim() || `A${sub(r + 1)}`);
+    const states = draft.states.map((n, c) => n.trim() || `S${sub(c + 1)}`);
+    const u = draft.u.map((row, r) => row.map((v, c) => {
+      const p = parseQ(v);
+      if (!p) { bad.add(`u${r},${c}`); errs.push(`<b>${esc(opts[r])}, ${esc(states[c])}:</b> “${esc(v.trim() || "blank")}” isn’t a number.`); return null; }
+      return { q: p.q, text: v.trim().replace(/^-/, "−") };
+    }));
+    const probOK = (v, key, where) => {
+      const p = parseQ(v);
+      if (!p || p.q.cmp(ZERO) < 0 || p.q.cmp(ONE) > 0) {
+        bad.add(key); errs.push(`<b>${where}:</b> “${esc(v.trim() || "blank")}” isn’t a probability between 0 and 1.`); return null;
+      }
+      return { q: p.q, text: v.trim() };
+    };
+    let pState = null, pCell = null;
+    if (draft.probMode === "states") {
+      pState = draft.pState.map((v, c) => probOK(v, `ps${c}`, `P(${states[c]})`));
+      if (pState.every(Boolean)) {
+        const s = pState.reduce((a, p) => a.add(p.q), ZERO);
+        if (!s.eq(ONE)) { errs.push(`<b>The state probabilities add up to ${fracStr(s)}</b>, not 1. The states form a partition, so they must add up to 1.`); draft.pState.forEach((_, c) => bad.add(`ps${c}`)); }
+      }
+    } else if (draft.probMode === "cells") {
+      pCell = draft.pCell.map((row, r) => row.map((v, c) => probOK(v, `pc${r},${c}`, `P(${states[c]} | ${opts[r]})`)));
+      pCell.forEach((row, r) => {
+        if (!row.every(Boolean)) return;
+        const s = row.reduce((a, p) => a.add(p.q), ZERO);
+        if (!s.eq(ONE)) { errs.push(`<b>Row ${esc(opts[r])}: the probabilities add up to ${fracStr(s)}</b>, not 1. Given each choice, exactly one state obtains.`); row.forEach((_, c) => bad.add(`pc${r},${c}`)); }
+      });
+    }
+    renderEditor(bad);
+    const box = $("edErr");
+    if (errs.length) {
+      box.innerHTML = errs.slice(0, 4).join("<br>") + (errs.length > 4 ? `<br>…and ${errs.length - 4} more.` : "");
+      box.hidden = false;
+      state.buildError = true;
+      updateDirty();
+      return;
+    }
+    box.hidden = true; state.buildError = false;
+    state.problem = { opts, states, u: u.map((row) => row.map((x) => x.q)), uText: u.map((row) => row.map((x) => x.text)), probMode: draft.probMode, pState, pCell };
+    state.built = snapshot();
+    state.results = analyze(state.problem);
+    state.work = freshWork();
+    state.solved = {};
+    state.step = { dominance: 0, maximin: 0, regret: 0, eu: 0 };
+    state.hint = null;
+    render();
+  }
+
+  // ================= Analysis =================
+  function analyze(pb) {
+    const R = pb.opts.length, C = pb.states.length, u = pb.u;
+    // --- dominance
+    const pairs = [];
+    for (let i = 0; i < R; i++) for (let j = i + 1; j < R; j++) {
+      const cmp = u[i].map((x, c) => x.cmp(u[j][c]));
+      const gt = cmp.filter((x) => x > 0).length, lt = cmp.filter((x) => x < 0).length;
+      let rel;
+      if (gt === C) rel = "i-strong";
+      else if (lt === C) rel = "j-strong";
+      else if (lt === 0 && gt > 0) rel = "i-weak";
+      else if (gt === 0 && lt > 0) rel = "j-weak";
+      else if (gt === 0 && lt === 0) rel = "equiv";
+      else rel = "intrans";
+      pairs.push({ i, j, rel, cmp });
+    }
+    const dominated = new Set();
+    pairs.forEach((p) => {
+      if (p.rel === "i-strong" || p.rel === "i-weak") dominated.add(p.j);
+      if (p.rel === "j-strong" || p.rel === "j-weak") dominated.add(p.i);
+    });
+    const remaining = [...Array(R).keys()].filter((r) => !dominated.has(r));
+
+    // --- maximin / leximin
+    const mins = u.map((row) => row.reduce((m, x) => (x.cmp(m) < 0 ? x : m)));
+    const minCells = u.map((row, r) => new Set(row.map((x, c) => (x.eq(mins[r]) ? c : -1)).filter((c) => c >= 0)));
+    const best = mins.reduce((m, x) => (x.cmp(m) > 0 ? x : m));
+    const tied = mins.map((m, r) => (m.eq(best) ? r : -1)).filter((r) => r >= 0);
+    const sorted = u.map((row) => [...row].sort((a, b) => a.cmp(b)));
+    let lexWin = [...tied];
+    if (tied.length > 1) {
+      for (let k = 0; k < C && lexWin.length > 1; k++) {
+        const top = lexWin.map((r) => sorted[r][k]).reduce((m, x) => (x.cmp(m) > 0 ? x : m));
+        lexWin = lexWin.filter((r) => sorted[r][k].eq(top));
+      }
+    }
+    // --- minimax regret
+    const colMax = pb.states.map((_, c) => u.map((row) => row[c]).reduce((m, x) => (x.cmp(m) > 0 ? x : m)));
+    const regret = u.map((row) => row.map((x, c) => colMax[c].sub(x)));
+    const maxReg = regret.map((row) => row.reduce((m, x) => (x.cmp(m) > 0 ? x : m)));
+    const minMax = maxReg.reduce((m, x) => (x.cmp(m) < 0 ? x : m));
+    const regWin = maxReg.map((m, r) => (m.eq(minMax) ? r : -1)).filter((r) => r >= 0);
+    // --- expected utility
+    let eu = null, euWin = null;
+    if (pb.probMode !== "none") {
+      eu = u.map((row, r) => row.reduce((a, x, c) => a.add(x.mul(pb.probMode === "states" ? pb.pState[c].q : pb.pCell[r][c].q)), ZERO));
+      const top = eu.reduce((m, x) => (x.cmp(m) > 0 ? x : m));
+      euWin = eu.map((x, r) => (x.eq(top) ? r : -1)).filter((r) => r >= 0);
+    }
+    return { R, C, pairs, dominated, remaining, mins, minCells, best, tied, sorted, lexWin, colMax, regret, maxReg, minMax, regWin, eu, euWin };
+  }
+
+  // ================= Wording =================
+  const O = (r) => state.problem.opts[r];
+  const S = (c) => state.problem.states[c];
+  const list = (rs) => {
+    const names = rs.map(O);
+    return names.length <= 1 ? (names[0] || "") : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+  };
+  function relText(p) {
+    const a = O(p.i), b = O(p.j);
+    return {
+      "i-strong": `${a} strongly dominates ${b}`, "i-weak": `${a} weakly dominates ${b}`,
+      "j-strong": `${b} strongly dominates ${a}`, "j-weak": `${b} weakly dominates ${a}`,
+      equiv: `${a} and ${b} are equivalent`, intrans: `${a} and ${b} are intransitive`
+    }[p.rel];
+  }
+  function pairWhy(p) {
+    const u = state.problem.u;
+    return p.cmp.map((x, c) => `${S(c)}: ${fmt(u[p.i][c])} ${x > 0 ? ">" : x < 0 ? "<" : "="} ${fmt(u[p.j][c])}`).join(", ");
+  }
+  const vecStr = (v) => "(" + v.map(fmt).join(", ") + ")";
+  function euLine(r) {
+    const pb = state.problem, res = state.results;
+    const terms = pb.u[r].map((x, c) => {
+      const p = pb.probMode === "states" ? pb.pState[c] : pb.pCell[r][c];
+      const us = x.cmp(ZERO) < 0 ? `(${fmt(x)})` : fmt(x);
+      return `${us} × ${p.text}`;
+    });
+    return `${euName()}(${O(r)}) = ${terms.join(" + ")} = ${exactAndDec(res.eu[r])}`;
+  }
+  const euName = () => (state.problem && state.problem.probMode === "cells" ? "CEU" : "EU");
+
+  // Steps for Step through / Show answers: an array of captions (HTML).
+  function stepsFor(tab) {
+    const res = state.results, pb = state.problem;
+    const f = (s) => `<span class="f">${esc(s)}</span>`;
+    if (tab === "dominance") {
+      const out = res.pairs.map((p) => `${f(O(p.i))} vs ${f(O(p.j))}: ${esc(pairWhy(p))}. So ${esc(relText(p))}.`);
+      const dom = [...res.dominated].sort((a, b) => a - b);
+      out.push(dom.length
+        ? `Cross off ${esc(list(dom))}: ${dom.length > 1 ? "each is" : "it is"} dominated by another option. Dominance leaves ${esc(list(res.remaining))}.`
+        : `No option is dominated, so dominance rules nothing out.`);
+      return out;
+    }
+    if (tab === "maximin") {
+      const out = pb.opts.map((_, r) => {
+        const cs = [...res.minCells[r]].map(S);
+        return `${f(O(r))}’s worst outcome is ${esc(fmt(res.mins[r]))} (in ${esc(cs.join(" and "))}).`;
+      });
+      out.push(`The largest of the minima is ${esc(fmt(res.best))}. ${esc(list(res.tied))} ${res.tied.length > 1 ? "are tied as maximin-rational" : "is the maximin choice"}.`);
+      if (res.tied.length > 1) {
+        out.push(`Leximin breaks the tie by comparing the utilities sorted from worst to best: ${res.tied.map((r) => `${esc(O(r))} ${esc(vecStr(res.sorted[r]))}`).join(", ")}. ${res.lexWin.length > 1 ? `${esc(list(res.lexWin))} agree at every position, so leximin can’t choose between them.` : `Leximin picks ${esc(O(res.lexWin[0]))}.`}`);
+      }
+      return out;
+    }
+    if (tab === "regret") {
+      const out = pb.states.map((_, c) => {
+        const who = pb.u.map((row, r) => (row[c].eq(res.colMax[c]) ? r : -1)).filter((r) => r >= 0);
+        return `In ${f(S(c))}, the best any option does is ${esc(fmt(res.colMax[c]))} (${esc(list(who))}). Each regret in that column is ${esc(fmt(res.colMax[c]))} minus the utility.`;
+      });
+      pb.opts.forEach((_, r) => out.push(`${f(O(r))}’s largest regret is ${esc(fmt(res.maxReg[r]))}.`));
+      out.push(`The smallest of those maxima is ${esc(fmt(res.minMax))}, so minimax regret recommends ${esc(list(res.regWin))}.`);
+      return out;
+    }
+    if (tab === "eu") {
+      const out = pb.opts.map((_, r) => esc(euLine(r)));
+      out.push(`${esc(list(res.euWin))} ${res.euWin.length > 1 ? "tie for" : "has"} the highest ${euName() === "CEU" ? "conditional expected utility" : "expected utility"}, ${esc(fmt(res.eu[res.euWin[0]]))}.`);
+      return out;
+    }
+    return [];
+  }
+
+  function availability(tab) {
+    const pb = state.problem;
+    if ((tab === "regret" || tab === "eu") && state.kind === "ordinal")
+      return `<b>${tab === "regret" ? "Minimax regret" : "Expected utility"} needs cardinal utilities.</b> It ${tab === "regret" ? "subtracts utilities" : "multiplies utilities by probabilities and adds them up"}, and with ordinal utilities only the order means anything, so the result could change under an order-preserving relabeling. Switch Utilities to Cardinal to use it.`;
+    if (tab === "eu" && pb && pb.probMode === "none")
+      return `<b>Expected utility needs probabilities.</b> This is set up as a decision under ignorance. Choose “On states” (or “Depend on choice”) under Probabilities, fill them in, and build again.`;
+    return null;
+  }
+
+  // ================= Verdicts =================
+  function verdictText(tab) {
+    const res = state.results;
+    if (tab === "dominance") return res.dominated.size ? `Leaves ${list(res.remaining)}` : "Rules out nothing";
+    if (tab === "maximin") return res.tied.length > 1 ? `${list(res.lexWin)} (leximin)` : list(res.tied);
+    if (tab === "regret") return list(res.regWin);
+    if (tab === "eu") return list(res.euWin);
+    return "";
+  }
+
+  // ================= Rendering =================
+  const TABS = ["dominance", "maximin", "regret", "eu"];
+  const TAB_LABEL = { dominance: "Dominance", maximin: "Maximin", regret: "Minimax regret", eu: "Expected utility" };
+
+  function render() {
+    syncControls();
+    renderSummary();
+    renderWork();
+    updateDirty();
+  }
+
+  function renderSummary() {
+    const el = $("summary");
+    if (!state.problem) { el.innerHTML = ""; return; }
+    el.innerHTML = TABS.map((t) => {
+      const label = t === "eu" ? (euName() === "CEU" ? "Cond. exp. utility" : "Expected utility") : TAB_LABEL[t];
+      const un = availability(t);
+      let v, cls = "v", solved = "";
+      if (un) { v = t === "eu" && state.kind !== "ordinal" ? "Needs probabilities" : "Needs cardinal utilities"; cls += " off"; }
+      else if (state.mode === "practice" && !state.solved[t]) { v = "Solve it to reveal"; cls += " off"; }
+      else { v = verdictText(t); if (state.mode === "practice") solved = " solved"; }
+      return `<div class="sum${solved}"><span class="k">${esc(label)}</span><span class="${cls}">${esc(v)}</span></div>`;
+    }).join("");
+  }
+
+  function header(extraHeads = [], { probs = true } = {}) {
+    const pb = state.problem;
+    const ths = pb.states.map((s, c) => {
+      const pr = probs && pb.probMode === "states" ? `<span class="pr">${esc(pb.pState[c].text)}</span>` : "";
+      return `<th scope="col" data-c="${c}">${esc(s)}${pr}</th>`;
+    }).join("");
+    return `<thead><tr><th></th>${ths}${extraHeads.map((h) => `<th class="extra">${h}</th>`).join("")}</tr></thead>`;
+  }
+  function utilCell(r, c, { cls = "", star = false, showProb = true } = {}) {
+    const pb = state.problem;
+    const pc = showProb && pb.probMode === "cells" ? `<span class="pc">${esc(pb.pCell[r][c].text)}</span>` : "";
+    const inner = pb.probMode === "cells" && showProb ? `<span class="uv">${esc(pb.uText[r][c])}${star ? '<sup class="st">*</sup>' : ""}</span>${pc}` : `${esc(pb.uText[r][c])}${star ? '<sup class="st">*</sup>' : ""}`;
+    return `<td class="${cls}${pb.probMode === "cells" && showProb ? " cellp" : ""}${star ? " star" : ""}" data-r="${r}" data-c="${c}">${inner}</td>`;
+  }
+  function rowHead(r, { pick = false, button = false } = {}) {
+    const name = esc(O(r)) + (pick ? '<sup class="st">**</sup>' : "");
+    return button
+      ? `<th class="rowh" scope="row"><button type="button" class="rowbtn" data-row="${r}" aria-pressed="${pick}">${name}</button></th>`
+      : `<th class="rowh" scope="row">${name}</th>`;
+  }
+
+  function renderWork() {
+    const tabsEl = $("tabs");
+    tabsEl.querySelectorAll("button").forEach((b) => {
+      b.setAttribute("aria-selected", String(b.dataset.v === state.tab));
+      b.classList.toggle("unavail", !!(state.problem && availability(b.dataset.v)));
+    });
+    $("euTab").textContent = state.problem && state.problem.probMode === "cells" ? "Conditional EU" : "Expected utility";
+    const body = $("workBody");
+    const pb = state.problem;
+    $("stepper").hidden = true; $("practiceBtns").hidden = true;
+    if (!pb) { body.innerHTML = `<p class="unavail-note">Fill in the matrix and press Build.</p>`; setHint("", ""); $("what").textContent = ""; return; }
+    const un = availability(state.tab);
+    if (un) { body.innerHTML = `<p class="unavail-note">${un}</p>`; setHint("", ""); $("what").textContent = ""; return; }
+
+    const steps = stepsFor(state.tab);
+    const N = steps.length;
+    const k = state.mode === "answers" ? N : state.mode === "step" ? state.step[state.tab] : 0;
+    if (state.mode === "step") {
+      $("stepper").hidden = false;
+      $("stCount").textContent = `${k} / ${N}`;
+      $("stFirst").disabled = $("stPrev").disabled = k === 0;
+      $("stNext").disabled = $("stLast").disabled = k >= N;
+    }
+    if (state.mode === "practice") $("practiceBtns").hidden = false;
+
+    const fn = { dominance: workDominance, maximin: workMaximin, regret: workRegret, eu: workEU }[state.tab];
+    body.innerHTML = fn(k, N);
+    if (state.mode === "answers") {
+      body.insertAdjacentHTML("beforeend", `<div class="block"><h3>Worked analysis</h3><ol class="worked">${steps.map((s) => `<li>${s}</li>`).join("")}</ol></div>`);
+    }
+    if (state.problem.probMode === "cells" && state.tab === "dominance") {
+      body.insertAdjacentHTML("beforeend", `<p class="caution">Careful: here the probabilities of the states depend on the choice (as with the lazy student in ch. 8), so an option can be dominated and still be the better choice. Compare with the Conditional EU tab.</p>`);
+    }
+
+    // hint / caption
+    if (state.mode === "step") {
+      setHint(k === 0 ? introStep(state.tab) : `<b>Step ${k}.</b> ${steps[k - 1]}`, "");
+    } else if (state.mode === "answers") {
+      setHint(`<b>${esc(TAB_LABEL[state.tab] === "Expected utility" ? (euName() === "CEU" ? "Conditional expected utility" : "Expected utility") : TAB_LABEL[state.tab])}:</b> ${esc(verdictText(state.tab))}.`, "");
+    } else {
+      if (state.hint && state.hint.tab === state.tab) setHint(state.hint.html, state.hint.cls);
+      else setHint(practiceIntro(state.tab), "");
+    }
+    $("what").textContent = whatText(state.tab);
+  }
+
+  function whatText(tab) {
+    return {
+      dominance: "Which options are dominated?",
+      maximin: "Maximize the minimum utility",
+      regret: "Minimize the maximum regret",
+      eu: euName() === "CEU" ? "Maximize conditional expected utility" : "Maximize expected utility"
+    }[tab];
+  }
+  function introStep(tab) {
+    return {
+      dominance: "Compare the options two at a time, state by state. Press ▶ (or →) to begin.",
+      maximin: "Find each option’s worst outcome, then choose the option whose worst is best. Press ▶ (or →).",
+      regret: "Build the regret table one state (column) at a time. Press ▶ (or →).",
+      eu: `Weigh each utility by the probability of its state${euName() === "CEU" ? " given the choice" : ""}, and add them up. Press ▶ (or →).`
+    }[tab];
+  }
+  function practiceIntro(tab) {
+    const w = state.work.maximin;
+    return {
+      dominance: "Classify each pair of options. Then click the names of the dominated options to cross them off, and press Check.",
+      maximin: w.stage === 2
+        ? "There’s a tie for maximin. Apply leximin: tick the option(s) leximin keeps, and press Check."
+        : "Click each option’s worst outcome to star it (star every cell that ties for worst). Then click the name(s) of the maximin choice to mark them ** and press Check.",
+      regret: "Fill in the regret table and each option’s largest regret. Then click the name(s) of the minimax-regret choice and press Check.",
+      eu: `Type each option’s ${euName() === "CEU" ? "conditional " : ""}expected utility (a fraction, or a decimal to two places). Then click the name(s) of the best option and press Check.`
+    }[tab];
+  }
+  function setHint(html, cls) { const h = $("hintbar"); h.innerHTML = html; h.className = "hintbar" + (cls ? " " + cls : ""); h.hidden = !html; }
+
+  // ---------- Dominance ----------
+  const REL_OPTS = (p) => [
+    ["", "— choose —"],
+    ["i-strong", `${O(p.i)} strongly dominates ${O(p.j)}`],
+    ["i-weak", `${O(p.i)} weakly dominates ${O(p.j)}`],
+    ["j-strong", `${O(p.j)} strongly dominates ${O(p.i)}`],
+    ["j-weak", `${O(p.j)} weakly dominates ${O(p.i)}`],
+    ["equiv", "Equivalent"],
+    ["intrans", "Intransitive"]
+  ];
+  function workDominance(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.dominance, practice = state.mode === "practice";
+    const P = res.pairs.length;
+    const showCross = !practice && k > P;
+    const cur = !practice && k >= 1 && k <= P ? res.pairs[k - 1] : null;
+    let rows = "";
+    pb.opts.forEach((_, r) => {
+      const crossed = practice ? w.crossed.has(r) : showCross && res.dominated.has(r);
+      const wrong = practice && w.marks && w.marks.rows.has(r);
+      const curRow = cur && (cur.i === r || cur.j === r);
+      rows += `<tr class="${crossed ? "crossed" : ""}">${rowHead(r, { button: practice })
+        .replace('class="rowh"', `class="rowh${wrong ? " wrong" : ""}${curRow ? " cur" : ""}"`)}${pb.states.map((_, c) => utilCell(r, c, { cls: curRow ? "curcol" : "" })).join("")}</tr>`;
+    });
+    const table = `<div class="scroll"><table class="mx">${header()}<tbody>${rows}</tbody></table></div>`;
+    const pairsHtml = res.pairs.map((p, idx) => {
+      let v;
+      if (practice) {
+        const val = w.pairs[`${p.i},${p.j}`] || "";
+        const wrong = w.marks && w.marks.pairs.has(idx);
+        v = `<select data-pair="${p.i},${p.j}" class="${wrong ? "wrong" : ""}" aria-label="${esc(O(p.i))} versus ${esc(O(p.j))}">${REL_OPTS(p).map(([k2, t]) => `<option value="${k2}"${k2 === val ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+      } else {
+        const shown = idx < k;
+        v = `<span class="${shown ? "" : "hid"}">${esc(relText(p))} <span class="why">(${esc(pairWhy(p))})</span></span>`;
+      }
+      return `<span class="pn">${esc(O(p.i))}, ${esc(O(p.j))}</span><span class="pv">${v}</span>`;
+    }).join("");
+    return `<div class="block"><h3>Matrix</h3>${table}</div><div class="block"><h3>Pairs</h3><div class="pairs">${pairsHtml}</div></div>`;
+  }
+
+  // ---------- Maximin ----------
+  function workMaximin(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.maximin, practice = state.mode === "practice";
+    const R = res.R;
+    const tie = res.tied.length > 1;
+    let rows = "";
+    pb.opts.forEach((_, r) => {
+      const starRow = practice ? null : r < k;
+      const pick = practice ? w.picks.has(r) : k > R && res.tied.includes(r);
+      const curRow = !practice && k === r + 1;
+      const wrongRow = practice && w.marks && w.marks.rows.has(r);
+      const wrongPick = practice && w.marks && w.marks.picks.has(r);
+      const cells = pb.states.map((_, c) => {
+        const star = practice ? w.stars.has(`${r},${c}`) : starRow && res.minCells[r].has(c);
+        return utilCell(r, c, { cls: (practice ? "clickable" : "") + (curRow ? " curcol" : "") + (wrongRow ? " wrong" : ""), star });
+      }).join("");
+      const minCell = practice ? "" : `<td class="extra${r < k ? "" : " hid"}">${esc(fmt(res.mins[r]))}</td>`;
+      rows += `<tr class="${pick ? "pick" : ""}">${rowHead(r, { pick, button: practice }).replace('class="rowh"', `class="rowh${wrongPick ? " wrong" : ""}${curRow ? " cur" : ""}"`)}${cells}${minCell}</tr>`;
+    });
+    const table = `<div class="scroll"><table class="mx">${header(practice ? [] : ["min"])}<tbody>${rows}</tbody></table></div>`;
+    let lex = "";
+    const showLex = tie && (practice ? w.stage === 2 : k > R + 1);
+    if (showLex) {
+      const lines = res.tied.map((r) => {
+        const keep = practice
+          ? `<label><input type="checkbox" data-lex="${r}"${w.lex.has(r) ? " checked" : ""}${w.marks && w.marks.lex && w.marks.lex.has(r) ? ' class="wrong"' : ""}> keep</label>`
+          : (res.lexWin.includes(r) ? `<span class="keep">kept</span>` : "");
+        return `<div class="row"><b>${esc(O(r))}</b><span>${esc(vecStr(res.sorted[r]))}</span>${keep}</div>`;
+      }).join("");
+      lex = `<div class="block"><h3>Leximin: utilities sorted from worst to best</h3><div class="lex">${lines}</div></div>`;
+    }
+    return `<div class="block"><h3>Matrix</h3>${table}</div>${lex}`;
+  }
+
+  // ---------- Minimax regret ----------
+  function workRegret(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.regret, practice = state.mode === "practice";
+    const R = res.R, C = res.C;
+    const colsShown = practice ? C : Math.min(k, C);
+    const rowsShown = practice ? R : Math.max(0, Math.min(k - C, R));
+    const pickShown = !practice && k > C + R;
+    const curCol = !practice && k >= 1 && k <= C ? k - 1 : -1;
+    const curRow = !practice && k > C && k <= C + R ? k - C - 1 : -1;
+    // utility table (plain, with the column max highlighted when that column is revealed)
+    let urows = "";
+    pb.opts.forEach((_, r) => {
+      urows += `<tr>${rowHead(r)}${pb.states.map((_, c) => {
+        const isMax = !practice && c < colsShown && pb.u[r][c].eq(res.colMax[c]);
+        return utilCell(r, c, { cls: (isMax ? "star" : "") + (c === curCol ? " curcol" : ""), showProb: false });
+      }).join("")}</tr>`;
+    });
+    const utable = `<div class="scroll"><table class="mx">${header([], { probs: false })}<tbody>${urows}</tbody></table></div>`;
+    // regret table
+    const maxRow = `<tr class="maxrow"><th class="rowh">MAX</th>${pb.states.map((_, c) => `<td class="${practice || c < colsShown ? "" : "hid"}${c === curCol ? " cur" : ""}">${esc(fmt(res.colMax[c]))}</td>`).join("")}<td class="extra"></td></tr>`;
+    let rrows = "";
+    pb.opts.forEach((_, r) => {
+      const pick = practice ? w.picks.has(r) : pickShown && res.regWin.includes(r);
+      const wrongPick = practice && w.marks && w.marks.picks.has(r);
+      const cells = pb.states.map((_, c) => {
+        if (practice) {
+          const key = `${r},${c}`;
+          const wrong = w.marks && w.marks.cells.has(key);
+          return `<td><input class="ans${wrong ? " wrong" : ""}" data-rc="${key}" value="${esc(w.cells[key] || "")}" inputmode="decimal" aria-label="Regret of ${esc(O(r))} in ${esc(S(c))}"></td>`;
+        }
+        const star = r < rowsShown && res.regret[r][c].eq(res.maxReg[r]);
+        return `<td class="${c < colsShown ? "" : "hid"}${c === curCol ? " curcol" : ""}${star ? " star" : ""}">${esc(fmt(res.regret[r][c]))}${star ? '<sup class="st">*</sup>' : ""}</td>`;
+      }).join("");
+      let mx;
+      if (practice) {
+        const wrong = w.marks && w.marks.maxr.has(r);
+        mx = `<td class="extra"><input class="ans${wrong ? " wrong" : ""}" data-maxr="${r}" value="${esc(w.maxr[r] || "")}" inputmode="decimal" aria-label="Largest regret of ${esc(O(r))}"></td>`;
+      } else mx = `<td class="extra${r < rowsShown ? "" : " hid"}${r === curRow ? " cur" : ""}">${esc(fmt(res.maxReg[r]))}</td>`;
+      rrows += `<tr class="${pick ? "pick" : ""}">${rowHead(r, { pick, button: practice }).replace('class="rowh"', `class="rowh${wrongPick ? " wrong" : ""}"`)}${cells}${mx}</tr>`;
+    });
+    const rtable = `<div class="scroll"><table class="mx">${header(["max regret"], { probs: false })}<tbody>${maxRow}${rrows}</tbody></table></div>`;
+    return `<div class="block"><h3>Utilities</h3>${utable}</div><div class="block"><h3>Regrets (MAX of the column minus the utility)</h3>${rtable}</div>`;
+  }
+
+  // ---------- Expected utility ----------
+  function workEU(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.eu, practice = state.mode === "practice";
+    const R = res.R;
+    const pickShown = !practice && k > R;
+    let rows = "";
+    pb.opts.forEach((_, r) => {
+      const pick = practice ? w.picks.has(r) : pickShown && res.euWin.includes(r);
+      const wrongPick = practice && w.marks && w.marks.picks.has(r);
+      const curRow = !practice && k === r + 1;
+      let ev;
+      if (practice) {
+        const wrong = w.marks && w.marks.vals.has(r);
+        ev = `<td class="extra"><input class="ans${wrong ? " wrong" : ""}" data-eu="${r}" value="${esc(w.vals[r] || "")}" inputmode="decimal" aria-label="${euName()} of ${esc(O(r))}"></td>`;
+      } else ev = `<td class="extra${r < k ? "" : " hid"}${curRow ? " cur" : ""}">${esc(fmt(res.eu[r]))}</td>`;
+      rows += `<tr class="${pick ? "pick" : ""}">${rowHead(r, { pick, button: practice }).replace('class="rowh"', `class="rowh${wrongPick ? " wrong" : ""}${curRow ? " cur" : ""}"`)}${pb.states.map((_, c) => utilCell(r, c, { cls: curRow ? "curcol" : "" })).join("")}${ev}</tr>`;
+    });
+    const table = `<div class="scroll"><table class="mx">${header([euName()])}<tbody>${rows}</tbody></table></div>`;
+    const arith = practice ? "" : `<div class="block"><h3>Arithmetic</h3><div class="arith scroll">${pb.opts.map((_, r) => `<span class="${r < k ? "" : "hid"}">${esc(euLine(r))}</span>`).join("")}</div></div>`;
+    return `<div class="block"><h3>Matrix</h3>${table}</div>${arith}`;
+  }
+
+  // ================= Practice: input + checking =================
+  const body = $("workBody");
+  body.addEventListener("click", (e) => {
+    if (state.mode !== "practice" || !state.problem) return;
+    const w = state.work;
+    const rb = e.target.closest("button.rowbtn");
+    if (rb) {
+      const r = +rb.dataset.row;
+      const set = state.tab === "dominance" ? w.dominance.crossed : w[state.tab].picks;
+      set.has(r) ? set.delete(r) : set.add(r);
+      clearMarks(); renderWork(); focusRow(r); return;
+    }
+    const td = e.target.closest("td.clickable");
+    if (td && state.tab === "maximin" && w.maximin.stage === 1) {
+      const key = `${td.dataset.r},${td.dataset.c}`;
+      w.maximin.stars.has(key) ? w.maximin.stars.delete(key) : w.maximin.stars.add(key);
+      clearMarks(); renderWork();
+    }
+  });
+  const focusRow = (r) => { const b = body.querySelector(`button.rowbtn[data-row="${r}"]`); if (b) b.focus(); };
+  body.addEventListener("change", (e) => {
+    if (state.mode !== "practice") return;
+    const t = e.target;
+    if (t.dataset.pair !== undefined) { state.work.dominance.pairs[t.dataset.pair] = t.value; t.classList.remove("wrong"); }
+    if (t.dataset.lex !== undefined) { const s = state.work.maximin.lex; t.checked ? s.add(+t.dataset.lex) : s.delete(+t.dataset.lex); t.classList.remove("wrong"); }
+  });
+  body.addEventListener("input", (e) => {
+    const t = e.target;
+    if (t.dataset.rc !== undefined) state.work.regret.cells[t.dataset.rc] = t.value;
+    else if (t.dataset.maxr !== undefined) state.work.regret.maxr[t.dataset.maxr] = t.value;
+    else if (t.dataset.eu !== undefined) state.work.eu.vals[t.dataset.eu] = t.value;
+    else return;
+    t.classList.remove("wrong");
+  });
+  body.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.classList.contains("ans")) { e.preventDefault(); check(); }
+  });
+  function clearMarks() { const w = state.work[state.tab]; w.marks = null; state.hint = null; }
+
+  const setEq = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
+  function check() {
+    const res = state.results, w = state.work, tab = state.tab;
+    let right = 0, total = 0, done = false, extra = "";
+    if (tab === "dominance") {
+      const d = w.dominance, marks = { pairs: new Set(), rows: new Set() };
+      res.pairs.forEach((p, idx) => { total++; if (d.pairs[`${p.i},${p.j}`] === p.rel) right++; else marks.pairs.add(idx); });
+      state.problem.opts.forEach((_, r) => { total++; if (d.crossed.has(r) === res.dominated.has(r)) right++; else marks.rows.add(r); });
+      d.marks = marks; done = right === total;
+    } else if (tab === "maximin") {
+      const m = w.maximin, marks = { rows: new Set(), picks: new Set(), lex: new Set() };
+      if (m.stage === 1) {
+        state.problem.opts.forEach((_, r) => {
+          total++;
+          const mine = new Set([...m.stars].filter((k) => k.startsWith(r + ",")).map((k) => +k.split(",")[1]));
+          if (setEq(mine, res.minCells[r])) right++; else marks.rows.add(r);
+        });
+        total++;
+        const pk = new Set(res.tied);
+        if (setEq(m.picks, pk)) right++; else state.problem.opts.forEach((_, r) => { if (m.picks.has(r) !== pk.has(r)) marks.picks.add(r); });
+        m.marks = marks;
+        if (right === total && res.tied.length > 1) { m.stage = 2; m.marks = null; state.hint = { tab, cls: "good", html: `Right: ${esc(list(res.tied))} tie at ${esc(fmt(res.best))}. Now apply leximin: compare the sorted utilities below, tick the option(s) leximin keeps, and press Check.` }; renderWork(); return; }
+        done = right === total;
+      } else {
+        const want = new Set(res.lexWin);
+        res.tied.forEach((r) => { total++; if (m.lex.has(r) === want.has(r)) right++; else marks.lex.add(r); });
+        m.marks = marks; done = right === total;
+      }
+    } else if (tab === "regret") {
+      const g = w.regret, marks = { cells: new Set(), maxr: new Set(), picks: new Set() };
+      res.regret.forEach((row, r) => row.forEach((q, c) => { total++; const key = `${r},${c}`; if (accepts(g.cells[key] || "", q)) right++; else marks.cells.add(key); }));
+      res.maxReg.forEach((q, r) => { total++; if (accepts(g.maxr[r] || "", q)) right++; else marks.maxr.add(r); });
+      total++;
+      const pk = new Set(res.regWin);
+      if (setEq(g.picks, pk)) right++; else state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); });
+      g.marks = marks; done = right === total;
+    } else if (tab === "eu") {
+      const g = w.eu, marks = { vals: new Set(), picks: new Set() };
+      res.eu.forEach((q, r) => { total++; if (accepts(g.vals[r] || "", q)) right++; else marks.vals.add(r); });
+      total++;
+      const pk = new Set(res.euWin);
+      if (setEq(g.picks, pk)) right++; else state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); });
+      g.marks = marks; done = right === total;
+    }
+    if (done) {
+      state.solved[tab] = true;
+      let verdict;
+      if (tab === "dominance") {
+        const dom = [...res.dominated].sort((a, b) => a - b);
+        verdict = dom.length ? `dominance rules out ${list(dom)} and leaves ${list(res.remaining)}` : "no option is dominated, so dominance rules nothing out";
+      } else if (tab === "maximin") {
+        verdict = res.tied.length > 1 ? `${list(res.tied)} tie for maximin, and leximin keeps ${list(res.lexWin)}` : `maximin recommends ${list(res.tied)}`;
+      } else if (tab === "regret") verdict = `minimax regret recommends ${list(res.regWin)}`;
+      else verdict = `${euName() === "CEU" ? "conditional expected utility" : "expected utility"} recommends ${list(res.euWin)}`;
+      state.hint = { tab, cls: "good", html: `All correct: ${esc(verdict)}.` };
+    } else {
+      state.hint = { tab, cls: "bad", html: `${right} of ${total} correct. Wrong or missing entries are marked in red.` };
+    }
+    render();
+  }
+  $("checkBtn").onclick = check;
+  $("clearBtn").onclick = () => {
+    if (!state.work) return;
+    const fresh = freshWork();
+    state.work[state.tab] = fresh[state.tab];
+    state.solved[state.tab] = false; state.hint = null;
+    render();
+  };
+
+  // ================= Step through =================
+  const go = (s) => {
+    if (!state.problem || availability(state.tab)) return;
+    const N = stepsFor(state.tab).length;
+    state.step[state.tab] = Math.max(0, Math.min(N, s));
+    renderWork();
+  };
+  $("stFirst").onclick = () => go(0);
+  $("stPrev").onclick = () => go(state.step[state.tab] - 1);
+  $("stNext").onclick = () => go(state.step[state.tab] + 1);
+  $("stLast").onclick = () => go(Infinity);
+  window.addEventListener("keydown", (e) => {
+    if (state.mode !== "step" || e.metaKey || e.ctrlKey || e.altKey) return;
+    const a = document.activeElement;
+    if (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)) return;
+    const s = state.step[state.tab];
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); go(s + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(s - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); go(Infinity); }
+  });
+
+  // ================= Editor =================
+  function renderEditor(bad = new Set()) {
+    const R = draft.opts.length, C = draft.states.length, pm = draft.probMode;
+    const cls = (k) => (bad.has(k) ? " err" : "");
+    let h = `<thead><tr><th class="corner"></th>`;
+    draft.states.forEach((s, c) => {
+      h += `<th><div class="cellbox"><input class="name" data-k="s" data-c="${c}" value="${esc(s)}" aria-label="Name of state ${c + 1}" placeholder="S${sub(c + 1)}">${C > 1 ? `<button type="button" class="rm" data-rmstate="${c}" aria-label="Remove state ${esc(s)}">×</button>` : ""}</div></th>`;
+    });
+    h += `<th></th></tr>`;
+    if (pm === "states") {
+      h += `<tr><th class="plabel">P(state)</th>${draft.pState.map((p, c) => `<th><input class="prob${cls(`ps${c}`)}" data-k="ps" data-c="${c}" value="${esc(p)}" aria-label="Probability of ${esc(draft.states[c])}" inputmode="decimal"></th>`).join("")}<th></th></tr>`;
+    }
+    h += `</thead><tbody>`;
+    draft.opts.forEach((o, r) => {
+      h += `<tr><th><input class="name" data-k="o" data-r="${r}" value="${esc(o)}" aria-label="Name of option ${r + 1}" placeholder="A${sub(r + 1)}"></th>`;
+      draft.states.forEach((_, c) => {
+        const uIn = `<input class="${cls(`u${r},${c}`).trim()}" data-k="u" data-r="${r}" data-c="${c}" value="${esc(draft.u[r][c])}" aria-label="Utility of ${esc(o)} in ${esc(draft.states[c])}" inputmode="decimal">`;
+        const pIn = pm === "cells" ? `<input class="prob${cls(`pc${r},${c}`)}" data-k="pc" data-r="${r}" data-c="${c}" value="${esc(draft.pCell[r][c])}" aria-label="Probability of ${esc(draft.states[c])} given ${esc(o)}" inputmode="decimal">` : "";
+        h += `<td><div class="cellbox">${uIn}${pIn}</div></td>`;
+      });
+      h += `<td>${R > 2 ? `<button type="button" class="rm" data-rmopt="${r}" aria-label="Remove option ${esc(o)}">×</button>` : ""}</td></tr>`;
+    });
+    h += `</tbody>`;
+    $("editor").innerHTML = h;
+    $("addOpt").disabled = R >= MAX_N; $("addState").disabled = C >= MAX_N;
+  }
+  const ed = $("editor");
+  ed.addEventListener("input", (e) => {
+    const t = e.target, k = t.dataset.k; if (!k) return;
+    if (k === "s" || k === "o") {
+      const v = t.value.replace(/~/g, "¬");
+      if (v !== t.value) { const p = t.selectionStart; t.value = v; t.setSelectionRange(p, p); }
+    }
+    const r = +t.dataset.r, c = +t.dataset.c;
+    if (k === "s") draft.states[c] = t.value;
+    else if (k === "o") draft.opts[r] = t.value;
+    else if (k === "u") draft.u[r][c] = t.value;
+    else if (k === "ps") draft.pState[c] = t.value;
+    else if (k === "pc") draft.pCell[r][c] = t.value;
+    t.classList.remove("err");
+    updateDirty();
+  });
+  ed.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); build(); } });
+  ed.addEventListener("click", (e) => {
+    const b = e.target.closest("button.rm"); if (!b) return;
+    if (b.dataset.rmopt !== undefined) {
+      const r = +b.dataset.rmopt;
+      draft.opts.splice(r, 1); draft.u.splice(r, 1); draft.pCell.splice(r, 1);
+    } else {
+      const c = +b.dataset.rmstate;
+      draft.states.splice(c, 1); draft.pState.splice(c, 1);
+      draft.u.forEach((row) => row.splice(c, 1)); draft.pCell.forEach((row) => row.splice(c, 1));
+    }
+    renderEditor(); updateDirty();
+  });
+  $("addOpt").onclick = () => {
+    if (draft.opts.length >= MAX_N) return;
+    const n = draft.opts.length + 1;
+    draft.opts.push(`A${sub(n)}`);
+    draft.u.push(draft.states.map(() => ""));
+    draft.pCell.push(draft.states.map(() => ""));
+    renderEditor(); updateDirty();
+    const inp = ed.querySelector(`input[data-k="u"][data-r="${n - 1}"][data-c="0"]`); if (inp) inp.focus();
+  };
+  $("addState").onclick = () => {
+    if (draft.states.length >= MAX_N) return;
+    const n = draft.states.length + 1;
+    draft.states.push(`S${sub(n)}`);
+    draft.pState.push("");
+    draft.u.forEach((row) => row.push(""));
+    draft.pCell.forEach((row) => row.push(""));
+    renderEditor(); updateDirty();
+    const inp = ed.querySelector(`input[data-k="u"][data-r="0"][data-c="${n - 1}"]`); if (inp) inp.focus();
+  };
+  $("buildBtn").onclick = build;
+
+  function updateDirty() {
+    const dirty = state.built !== snapshot();
+    $("dirtyHint").hidden = !dirty;
+    const stale = dirty || state.buildError;
+    $("workBody").classList.toggle("stale", !!stale);
+    $("summary").style.opacity = stale ? "0.35" : "";
+  }
+
+  // ================= Setup + mode controls =================
+  function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
+  function syncControls() {
+    segSync("probSeg", draft.probMode); segSync("kindSeg", state.kind); segSync("modeSeg", state.mode);
+    $("probNote").textContent = {
+      none: "Decision under ignorance: no probabilities for the states.",
+      states: "Decision under risk: each state has a probability, the same whatever you choose.",
+      cells: "The states’ probabilities depend on the choice: each cell gets P(state | choice), and each row adds up to 1."
+    }[draft.probMode];
+    $("kindNote").textContent = state.kind === "ordinal"
+      ? "Only the order of the numbers matters. Dominance and maximin work; minimax regret and expected utility don’t."
+      : "Differences between utilities are meaningful (an interval scale), so every rule applies.";
+    $("modeNote").textContent = {
+      practice: "Work through each rule yourself and press Check. Each rule’s verdict appears in the summary once you get it right.",
+      answers: "The full worked analysis for the selected rule.",
+      step: "Reveal the procedure one step at a time with ▶ or the arrow keys."
+    }[state.mode];
+  }
+  $("probSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    draft.probMode = b.dataset.v;
+    if (draft.probMode === "cells") draft.pCell = draft.pCell.map((row) => row.map((v, c) => (v.trim() ? v : draft.pState[c] || "")));
+    syncControls(); renderEditor(); updateDirty();
+  });
+  $("kindSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.kind = b.dataset.v; render(); });
+  $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.v; state.hint = null; render(); });
+  $("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.tab = b.dataset.v; renderWork(); });
+
+  // size + theme
+  function applySize(v) { document.documentElement.style.setProperty("--tsize", v + "px"); segSync("sizeSeg", v); store.set("dl-size", v); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  applySize(store.get("dl-size") || "18");
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", v);
+    segSync("themeSeg", v); store.set("ttb-theme2", v);
+  }
+  $("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  const savedTheme = store.get("ttb-theme2");
+  if (savedTheme && savedTheme !== "auto") applyTheme(savedTheme); else segSync("themeSeg", "auto");
+
+  renderEditor();
+  build();
+})();
+
+</script>
+</body>
+</html>
