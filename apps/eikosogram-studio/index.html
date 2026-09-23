@@ -123,8 +123,8 @@
     width: 28px; height: 28px; flex: none; border-radius: 6px; overflow: hidden;
     display: grid; grid-template-columns: 11fr 17fr;
   }
-  .brand-mark span:first-child { background: linear-gradient(var(--h-strong) 64%, var(--h-soft) 64%); }
-  .brand-mark span:last-child { background: linear-gradient(var(--n-strong) 30%, var(--n-soft) 30%); }
+  .brand-mark span:first-child { background: linear-gradient(to top, var(--h-strong) 64%, var(--h-soft) 64%); }
+  .brand-mark span:last-child { background: linear-gradient(to top, var(--n-strong) 30%, var(--n-soft) 30%); }
   .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
   .brand p { font-size: 0.8rem; color: var(--muted); }
 
@@ -301,7 +301,7 @@
           <input id="in-pBgA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
         </div>
         <input id="rg-pBgA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Likelihood given the left category">
-        <p class="hint">Height of the top cell, left column</p>
+        <p class="hint">Height of the bottom cell, left column</p>
       </div>
       <div class="control">
         <div class="control-head">
@@ -309,7 +309,7 @@
           <input id="in-pBgNotA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
         </div>
         <input id="rg-pBgNotA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Likelihood given the right category">
-        <p class="hint">Height of the top cell, right column</p>
+        <p class="hint">Height of the bottom cell, right column</p>
       </div>
     </section>
 
@@ -319,8 +319,8 @@
         <div class="field wide"><label for="f-title">Title</label><input id="f-title" type="text" autocomplete="off"></div>
         <div class="field"><label for="f-a">Left column</label><input id="f-a" type="text" autocomplete="off"></div>
         <div class="field"><label for="f-na">Right column</label><input id="f-na" type="text" autocomplete="off"></div>
-        <div class="field"><label for="f-b">Top row</label><input id="f-b" type="text" autocomplete="off"></div>
-        <div class="field"><label for="f-nb">Bottom row</label><input id="f-nb" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-b">Bottom row</label><input id="f-b" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-nb">Top row</label><input id="f-nb" type="text" autocomplete="off"></div>
       </div>
     </section>
 
@@ -474,7 +474,7 @@
       const x0 = padX, y0 = padTop + titleH + headH;
       const w = W - padX * 2, h = Math.max(80, H - y0 - postH - padBottom);
       const midX = x0 + w * m.pA;
-      const lY = y0 + h * s.pBgA, rY = y0 + h * s.pBgNotA;
+      const lY = y0 + h * (1 - s.pBgA), rY = y0 + h * (1 - s.pBgNotA); // top edges of the E (bottom) cells
       this.geom = { x0, y0, w, h };
 
       setA(this.bg, { width: W, height: H, fill: opts.transparent ? "none" : pal.bg });
@@ -489,10 +489,10 @@
 
       // cells
       const rects = [
-        [x0, y0, midX - x0, lY - y0, pal.hStrong, true],
-        [x0, lY, midX - x0, y0 + h - lY, pal.hSoft, false],
-        [midX, y0, x0 + w - midX, rY - y0, pal.nStrong, true],
-        [midX, rY, x0 + w - midX, y0 + h - rY, pal.nSoft, false]
+        [x0, lY, midX - x0, y0 + h - lY, pal.hStrong, true],   // H & E    (bottom left)
+        [x0, y0, midX - x0, lY - y0, pal.hSoft, false],         // H & ¬E   (top left)
+        [midX, rY, x0 + w - midX, y0 + h - rY, pal.nStrong, true], // ¬H & E (bottom right)
+        [midX, y0, x0 + w - midX, rY - y0, pal.nSoft, false]    // ¬H & ¬E  (top right)
       ];
       const vals = [m.tl, m.bl, m.tr, m.br];
       rects.forEach(([x, y, rw, rh, fill, top], i) => {
@@ -689,10 +689,10 @@
     if (drag.kind === "cl" || drag.kind === "cr") {
       const dx = (e.clientX - drag.sx) / g.w, dy = (e.clientY - drag.sy) / g.h;
       state.pA = c(drag.s0.pA + dx);
-      if (drag.kind === "cl") state.pBgA = c(drag.s0.pBgA + dy);
-      else state.pBgNotA = c(drag.s0.pBgNotA + dy);
+      if (drag.kind === "cl") state.pBgA = c(drag.s0.pBgA - dy);
+      else state.pBgNotA = c(drag.s0.pBgNotA - dy);
     } else {
-      const px = c((e.clientX - r.left - g.x0) / g.w), py = c((e.clientY - r.top - g.y0) / g.h);
+      const px = c((e.clientX - r.left - g.x0) / g.w), py = c(1 - (e.clientY - r.top - g.y0) / g.h);
       if (drag.kind === "v") state.pA = px;
       else if (drag.kind === "lh") state.pBgA = py;
       else if (drag.kind === "rh") state.pBgNotA = py;
