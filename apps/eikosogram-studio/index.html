@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Eikosogram Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --ink: #14202e;
+    --muted: #5a6778;
+    --line: #dbe1e9;
+    --accent: #2c5cc9;
+    --accent-ink: #ffffff;
+    --h-strong: #6e9bf2;
+    --h-soft: #d9e5fc;
+    --n-strong: #f0a848;
+    --n-soft: #fbe8cc;
+    --on-strong: #14202e;
+    --on-soft: #14202e;
+    --divider: #14202e;
+    --handle: #ffffff;
+    --focus: #2c5cc9;
+    --radius: 10px;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e131a;
+      --surface: #151c26;
+      --surface-2: #1c2531;
+      --ink: #e7ecf3;
+      --muted: #97a3b4;
+      --line: #2a3443;
+      --accent: #86a9f6;
+      --accent-ink: #0e131a;
+      --h-strong: #5d8ded;
+      --h-soft: #22324f;
+      --n-strong: #e39b3f;
+      --n-soft: #3d2d18;
+      --on-strong: #0e131a;
+      --on-soft: #e7ecf3;
+      --divider: #e7ecf3;
+      --handle: #151c26;
+      --focus: #86a9f6;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e131a;
+    --surface: #151c26;
+    --surface-2: #1c2531;
+    --ink: #e7ecf3;
+    --muted: #97a3b4;
+    --line: #2a3443;
+    --accent: #86a9f6;
+    --accent-ink: #0e131a;
+    --h-strong: #5d8ded;
+    --h-soft: #22324f;
+    --n-strong: #e39b3f;
+    --n-soft: #3d2d18;
+    --on-strong: #0e131a;
+    --on-soft: #e7ecf3;
+    --divider: #e7ecf3;
+    --handle: #151c26;
+    --focus: #86a9f6;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  button, input { font: inherit; color: inherit; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ---------- layout ---------- */
+  .app {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .stage { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .panel { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+
+  @media (min-width: 960px) {
+    .app {
+      height: 100%;
+      grid-template-columns: 320px minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas: "brand stage" "panel stage";
+      gap: 16px 20px;
+      padding: 20px;
+    }
+    .brand { grid-area: brand; }
+    .panel { grid-area: panel; overflow-y: auto; padding-right: 4px; }
+    .stage { grid-area: stage; min-height: 0; }
+  }
+
+  /* ---------- brand ---------- */
+  .brand { display: flex; align-items: center; gap: 10px; padding: 2px 2px 4px; }
+  .brand-mark {
+    width: 28px; height: 28px; flex: none; border-radius: 6px; overflow: hidden;
+    display: grid; grid-template-columns: 11fr 17fr;
+  }
+  .brand-mark span:first-child { background: linear-gradient(var(--h-strong) 64%, var(--h-soft) 64%); }
+  .brand-mark span:last-child { background: linear-gradient(var(--n-strong) 30%, var(--n-soft) 30%); }
+  .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+  .brand p { font-size: 0.8rem; color: var(--muted); }
+
+  /* ---------- panel sections ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h2 {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted);
+  }
+  .control { display: flex; flex-direction: column; gap: 8px; }
+  .control-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .control-head label { font-weight: 600; font-size: 0.95rem; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 0; }
+  .sw-h { background: var(--h-strong); }
+  .sw-n { background: var(--n-strong); }
+  .control input[type="number"] {
+    width: 5.6em; padding: 5px 8px; text-align: right;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2);
+    font-family: var(--mono); font-size: 0.9rem;
+  }
+  .control .hint { font-size: 0.78rem; color: var(--muted); margin-top: -4px; }
+
+  input[type="range"] {
+    width: 100%; margin: 0; height: 28px; background: transparent;
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    --fill: 50%;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, var(--accent) var(--fill), var(--line) var(--fill));
+  }
+  input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+  input[type="range"]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--accent); }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; margin-top: -7px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--accent);
+  }
+
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fields .wide { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 0.78rem; color: var(--muted); }
+  .field input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--surface-2);
+  }
+
+  .check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn {
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 7px;
+    padding: 8px 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .status { font-size: 0.82rem; color: var(--muted); min-height: 1.2em; }
+  .note { font-size: 0.8rem; color: var(--muted); }
+
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  input:focus-visible { outline-offset: 0; }
+
+  /* ---------- stage ---------- */
+  .readouts {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  }
+  .readout { padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .readout + .readout { border-left: 1px solid var(--line); }
+  .readout .k { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .readout .v { font-family: var(--mono); font-size: clamp(1.25rem, 2.2vw, 1.75rem); font-weight: 500; letter-spacing: -0.02em; }
+  .readout .t { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+  .readout.key { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .readout.key .v { color: var(--accent); }
+  .readout:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+  .readout:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+
+  .diagram-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .diagram-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px 0;
+  }
+  .diagram-bar h2 { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+  .sentence { font-size: 0.9rem; color: var(--muted); }
+  .sentence b { color: var(--ink); font-weight: 600; }
+
+  .toggle {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px 5px 6px;
+    font-size: 0.86rem; font-weight: 500; background: var(--surface-2);
+  }
+  .toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .toggle .knob {
+    width: 30px; height: 18px; border-radius: 999px; background: var(--line); position: relative; flex: none;
+    transition: background 0.15s;
+  }
+  .toggle .knob::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--surface); transition: transform 0.15s; box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  }
+  .toggle input:checked + .knob { background: var(--accent); }
+  .toggle input:checked + .knob::after { transform: translateX(12px); }
+  .toggle:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .diagram {
+    position: relative; width: 100%;
+    aspect-ratio: 4 / 3.3; max-width: 100%;
+    padding: 4px 8px 8px;
+  }
+  @media (min-width: 960px) {
+    .diagram-card { flex: 1; }
+    .diagram { aspect-ratio: auto; flex: 1; min-height: 340px; }
+  }
+  .diagram svg { position: absolute; inset: 4px 8px 8px; width: calc(100% - 16px); height: calc(100% - 12px); display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .diagram svg text { pointer-events: none; }
+  .diagram svg [data-drag] { outline: none; }
+  .foot { font-size: 0.82rem; color: var(--muted); padding: 0 16px 12px; }
+
+  @media (max-width: 720px) {
+    .readouts { grid-template-columns: 1fr 1fr; }
+    .readout:nth-child(3) { border-left: 0; }
+    .readout:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .readout:first-child { border-radius: var(--radius) 0 0 0; }
+    .readout:nth-child(2) { border-radius: 0 var(--radius) 0 0; }
+    .readout:nth-child(3) { border-radius: 0 0 0 var(--radius); }
+    .readout:last-child { border-radius: 0 0 var(--radius) 0; }
+    .diagram { aspect-ratio: 1 / 1.05; padding: 2px 2px 6px; }
+    .diagram svg { inset: 2px 2px 6px; width: calc(100% - 4px); height: calc(100% - 8px); }
+    .diagram-bar { padding: 12px 12px 0; }
+    .foot { padding: 0 12px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="app">
+  <header class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span></div>
+      <div>
+        <h1>Eikosogram Studio</h1>
+        <p>Joint probability, drawn to scale</p>
+      </div>
+  </header>
+  <aside class="panel" aria-label="Controls">
+    <section class="card" aria-labelledby="probHead">
+      <h2 id="probHead">Probabilities</h2>
+      <div class="control">
+        <div class="control-head">
+          <label for="in-pA"><span class="swatch sw-h"></span><span data-l="pA">P(H)</span></label>
+          <input id="in-pA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
+        </div>
+        <input id="rg-pA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Prior probability">
+        <p class="hint">Width of the left column</p>
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <label for="in-pBgA"><span class="swatch sw-h"></span><span data-l="pBgA">P(E|H)</span></label>
+          <input id="in-pBgA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
+        </div>
+        <input id="rg-pBgA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Likelihood given the left category">
+        <p class="hint">Height of the top cell, left column</p>
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <label for="in-pBgNotA"><span class="swatch sw-n"></span><span data-l="pBgNotA">P(E|not H)</span></label>
+          <input id="in-pBgNotA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
+        </div>
+        <input id="rg-pBgNotA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Likelihood given the right category">
+        <p class="hint">Height of the top cell, right column</p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="labelHead">
+      <h2 id="labelHead">Labels</h2>
+      <div class="fields">
+        <div class="field wide"><label for="f-title">Title</label><input id="f-title" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-a">Left column</label><input id="f-a" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-na">Right column</label><input id="f-na" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-b">Top row</label><input id="f-b" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-nb">Bottom row</label><input id="f-nb" type="text" autocomplete="off"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="exportHead">
+      <h2 id="exportHead">Export for slides</h2>
+      <label class="check"><input id="f-bg" type="checkbox"> Transparent background</label>
+      <div class="btns">
+        <button class="btn primary" id="svgBtn" type="button">Download SVG</button>
+        <button class="btn" id="pngBtn" type="button">Download PNG</button>
+        <button class="btn" id="copyImgBtn" type="button">Copy image</button>
+        <button class="btn" id="copySvgBtn" type="button">Copy SVG code</button>
+        <button class="btn" id="linkBtn" type="button">Copy link</button>
+        <button class="btn" id="resetBtn" type="button">Reset</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <p class="note" id="exportNote">SVG stays sharp at any size in Keynote and PowerPoint. The exported figure is always light, and includes the P(<span data-l="a">H</span>|<span data-l="b">E</span>) bar when it’s showing.</p>
+    </section>
+  </aside>
+
+  <main class="stage">
+    <div class="readouts" aria-live="polite">
+      <div class="readout"><span class="t">Prior</span><span class="v" id="r-pA">50.0%</span><span class="k" id="k-pA">P(H)</span></div>
+      <div class="readout"><span class="t">Evidence</span><span class="v" id="r-pB">50.0%</span><span class="k" id="k-pB">P(E)</span></div>
+      <div class="readout key"><span class="t">Posterior</span><span class="v" id="r-pAgB">50.0%</span><span class="k" id="k-pAgB">P(H|E)</span></div>
+      <div class="readout"><span class="t" id="t-pAgNB">If not E</span><span class="v" id="r-pAgNB">50.0%</span><span class="k" id="k-pAgNB">P(H|not E)</span></div>
+    </div>
+
+    <div class="diagram-card">
+      <div class="diagram-bar">
+        <div>
+          <h2 id="titleOut">Probability Eikosogram</h2>
+          <p class="sentence" id="sentence"></p>
+        </div>
+        <label class="toggle" title="Shortcut: P">
+          <input id="f-post" type="checkbox">
+          <span class="knob" aria-hidden="true"></span>
+          <span>Show <span id="postLabel">P(H|E)</span></span>
+        </label>
+      </div>
+      <div class="diagram" id="diagramBox">
+        <svg id="svg" role="group" aria-label="Interactive eikosogram"></svg>
+      </div>
+      <p class="foot">Drag a divider or handle to reshape the diagram. On a keyboard, Tab to a divider and use the arrow keys (hold Shift for bigger steps).</p>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const NS = "http://www.w3.org/2000/svg";
+  const MIN = 0.001, MAX = 0.999;
+  const FONT = "IBM Plex Sans, Helvetica Neue, Helvetica, Arial, sans-serif";
+  const MONO = "IBM Plex Mono, SF Mono, Menlo, Consolas, monospace";
+  const DEFAULTS = { title: "Probability Eikosogram", a: "H", notA: "not H", b: "E", notB: "not E", transparentBg: false, posterior: false, pA: 0.5, pBgA: 0.5, pBgNotA: 0.5 };
+  const LIGHT = { bg: "#ffffff", ink: "#14202e", muted: "#5a6778", hStrong: "#6e9bf2", hSoft: "#d9e5fc", nStrong: "#f0a848", nSoft: "#fbe8cc", onStrong: "#14202e", onSoft: "#14202e", divider: "#14202e", handle: "#ffffff", accent: "#2c5cc9", focus: "#2c5cc9" };
+
+  const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+  const state = { ...DEFAULTS };
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const pct = (v) => `${(v * 100).toFixed(1)}%`;
+  const prob = (v) => v.toFixed(3);
+  const cleanProb = (v, fb) => { const n = Number(v); return Number.isFinite(n) && String(v).trim() !== "" ? clamp(n, MIN, MAX) : fb; };
+
+  function metrics(s = state) {
+    const tl = s.pA * s.pBgA, bl = s.pA * (1 - s.pBgA);
+    const tr = (1 - s.pA) * s.pBgNotA, br = (1 - s.pA) * (1 - s.pBgNotA);
+    const pB = tl + tr, pNB = bl + br;
+    return { tl, bl, tr, br, pA: s.pA, pNA: 1 - s.pA, pB, pNB, pAgB: tl / pB, pAgNB: bl / pNB };
+  }
+
+  // ---------- Scene: builds persistent SVG nodes, updates attributes ----------
+  function mk(tag, attrs, parent) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function setA(n, attrs) { for (const k in attrs) n.setAttribute(k, attrs[k]); }
+  const textW = (str, size, mono) => String(str).length * size * (mono ? 0.6 : 0.56);
+
+  class Scene {
+    constructor(svg, interactive) {
+      this.svg = svg; this.interactive = interactive; this.geom = null;
+      const g = (cls) => mk("g", cls ? { class: cls } : {}, svg);
+      this.bg = mk("rect", { x: 0, y: 0 }, svg);
+      this.title = mk("text", { "text-anchor": "middle", "font-family": FONT, "font-weight": 600 }, svg);
+      const cells = g();
+      this.cells = ["tl", "bl", "tr", "br"].map((k) => mk("rect", { "data-drag": k.endsWith("l") ? "cl" : "cr" }, cells));
+      const labels = g();
+      this.cellLab = ["tl", "bl", "tr", "br"].map(() => ({
+        name: mk("text", { "text-anchor": "middle", "font-family": FONT, "font-weight": 500 }, labels),
+        val: mk("text", { "text-anchor": "middle", "font-family": MONO, "font-weight": 500 }, labels)
+      }));
+      this.heads = [0, 1].map(() => {
+        const t = mk("text", { "text-anchor": "middle", "font-family": FONT }, labels);
+        const n = mk("tspan", { "font-weight": 600 }, t);
+        const v = mk("tspan", { "font-family": MONO, "font-weight": 500 }, t);
+        return { t, n, v };
+      });
+      const lines = g();
+      this.frame = mk("rect", { fill: "none", "stroke-width": 2, rx: 2 }, lines);
+      this.lines = {
+        v: mk("line", { "stroke-width": 2, "stroke-linecap": "round" }, lines),
+        lh: mk("line", { "stroke-width": 2, "stroke-linecap": "round" }, lines),
+        rh: mk("line", { "stroke-width": 2, "stroke-linecap": "round" }, lines)
+      };
+      // posterior bar
+      this.post = g();
+      this.postCap = mk("text", { "font-family": FONT, "font-weight": 600, "text-anchor": "start" }, this.post);
+      this.postCapV = mk("tspan", { "font-family": MONO, "font-weight": 500 }, this.postCap);
+      this.postH = mk("rect", {}, this.post);
+      this.postN = mk("rect", {}, this.post);
+      this.postHt = mk("text", { "text-anchor": "middle", "font-family": MONO, "font-weight": 500 }, this.post);
+      this.postNt = mk("text", { "text-anchor": "middle", "font-family": MONO, "font-weight": 500 }, this.post);
+
+      if (interactive) {
+        const hits = g();
+        const hit = (kind, cursor, label) => mk("line", {
+          stroke: "transparent", "stroke-width": 26, "data-drag": kind, style: `cursor:${cursor}`,
+          tabindex: 0, role: "slider", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": 1
+        }, hits);
+        this.hits = { v: hit("v", "col-resize", "Column divider"), lh: hit("lh", "row-resize", "Left row divider"), rh: hit("rh", "row-resize", "Right row divider") };
+        this.handles = ["hl", "hr"].map((k) => {
+          const hg = mk("g", { "data-drag": k, style: "cursor:move" }, hits);
+          mk("circle", { r: 22, fill: "transparent" }, hg);
+          const ring = mk("circle", { r: 11, "stroke-width": 2 }, hg);
+          const dot = mk("circle", { r: 4 }, hg);
+          return { hg, ring, dot };
+        });
+      }
+    }
+
+    update(W, H, s, pal, opts) {
+      const m = metrics(s);
+      const svg = this.svg;
+      setA(svg, { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+
+      const base = clamp(Math.min(W, H * 1.45) / 38, 13, 30);
+      const nameSize = Math.max(11, Math.round(base * 0.64));
+      const headSize = Math.max(12, Math.round(base * 0.74));
+      const titleSize = Math.round(base * 1.15);
+      const padX = opts.export ? 48 : 14;
+      const padTop = opts.export ? 28 : 6;
+      const titleH = opts.showTitle && s.title.trim() ? titleSize * 2 : 0;
+      const headH = headSize * 2.1;
+      const postH = s.posterior ? Math.max(70, base * 3.6) : 0;
+      const padBottom = opts.export ? 36 : 14;
+
+      const x0 = padX, y0 = padTop + titleH + headH;
+      const w = W - padX * 2, h = Math.max(80, H - y0 - postH - padBottom);
+      const midX = x0 + w * m.pA;
+      const lY = y0 + h * s.pBgA, rY = y0 + h * s.pBgNotA;
+      this.geom = { x0, y0, w, h };
+
+      setA(this.bg, { width: W, height: H, fill: opts.transparent ? "none" : pal.bg });
+      this.bg.style.display = opts.export ? "" : "none";
+
+      // title
+      if (titleH) {
+        setA(this.title, { x: W / 2, y: padTop + titleSize, "font-size": titleSize, fill: pal.ink });
+        this.title.textContent = s.title;
+        this.title.style.display = "";
+      } else this.title.style.display = "none";
+
+      // cells
+      const rects = [
+        [x0, y0, midX - x0, lY - y0, pal.hStrong, true],
+        [x0, lY, midX - x0, y0 + h - lY, pal.hSoft, false],
+        [midX, y0, x0 + w - midX, rY - y0, pal.nStrong, true],
+        [midX, rY, x0 + w - midX, y0 + h - rY, pal.nSoft, false]
+      ];
+      const vals = [m.tl, m.bl, m.tr, m.br];
+      rects.forEach(([x, y, rw, rh, fill, top], i) => {
+        const dim = s.posterior && !top;
+        setA(this.cells[i], { x, y, width: Math.max(0, rw), height: Math.max(0, rh), fill, "fill-opacity": dim ? 0.35 : 1 });
+        if (this.interactive) this.cells[i].style.cursor = "move";
+        this.placeCellLabel(this.cellLab[i], x, y, rw, rh, top ? s.b : s.notB, pct(vals[i]), base, nameSize, top ? pal.onStrong : pal.onSoft, dim);
+      });
+
+      // column headers: centered when they fit, otherwise pinned to the outer edge
+      const cols = [[x0, midX - x0, s.a, m.pA, "start"], [midX, x0 + w - midX, s.notA, m.pNA, "end"]];
+      const vs = Math.round(headSize * 0.9), gap = Math.round(headSize * 0.45);
+      const place = (withPct) => cols.map(([x, cw, name, p, edge]) => {
+        const tw = textW(name, headSize) + (withPct ? gap + textW(pct(p), vs, true) : 0);
+        if (tw + 8 <= cw) return { anchor: "middle", x: x + cw / 2, l: x + cw / 2 - tw / 2, r: x + cw / 2 + tw / 2 };
+        return edge === "start" ? { anchor: "start", x: x0, l: x0, r: x0 + tw } : { anchor: "end", x: x0 + w, l: x0 + w - tw, r: x0 + w };
+      });
+      let pos = place(true), withPct = true;
+      if (pos[0].r + 12 > pos[1].l) { pos = place(false); withPct = false; }
+      const clash = pos[0].r + 12 > pos[1].l;
+      cols.forEach(([x, cw, name, p], i) => {
+        const hd = this.heads[i];
+        setA(hd.t, { x: pos[i].x, y: y0 - headSize * 0.7, "font-size": headSize, fill: pal.ink, "text-anchor": pos[i].anchor });
+        hd.n.textContent = name;
+        setA(hd.v, { fill: pal.muted, "font-size": vs, dx: gap });
+        hd.v.textContent = withPct ? pct(p) : "";
+        // on a clash, keep only the wider column's header
+        const wider = (midX - x0) >= (x0 + w - midX) ? 0 : 1;
+        hd.t.style.display = clash && i !== wider ? "none" : "";
+      });
+
+      // frame & dividers
+      setA(this.frame, { x: x0, y: y0, width: w, height: h, stroke: pal.divider });
+      const f = opts.focus;
+      const lineAttrs = (k) => ({ stroke: f === k ? pal.focus : pal.divider, "stroke-width": f === k ? 4 : 2 });
+      setA(this.lines.v, { x1: midX, y1: y0, x2: midX, y2: y0 + h, ...lineAttrs("v") });
+      setA(this.lines.lh, { x1: x0, y1: lY, x2: midX, y2: lY, ...lineAttrs("lh") });
+      setA(this.lines.rh, { x1: midX, y1: rY, x2: x0 + w, y2: rY, ...lineAttrs("rh") });
+
+      if (this.interactive) {
+        setA(this.hits.v, { x1: midX, y1: y0, x2: midX, y2: y0 + h, "aria-valuenow": prob(m.pA), "aria-valuetext": `P(${s.a}) = ${pct(m.pA)}`, "aria-label": `Column divider, P(${s.a})` });
+        setA(this.hits.lh, { x1: x0, y1: lY, x2: midX, y2: lY, "aria-valuenow": prob(s.pBgA), "aria-valuetext": `P(${s.b}|${s.a}) = ${pct(s.pBgA)}`, "aria-label": `Left row divider, P(${s.b}|${s.a})` });
+        setA(this.hits.rh, { x1: midX, y1: rY, x2: x0 + w, y2: rY, "aria-valuenow": prob(s.pBgNotA), "aria-valuetext": `P(${s.b}|${s.notA}) = ${pct(s.pBgNotA)}`, "aria-label": `Right row divider, P(${s.b}|${s.notA})` });
+        const hr = clamp(base * 0.5, 9, 13);
+        [[midX - Math.min(hr + 6, (midX - x0) / 2), lY], [midX + Math.min(hr + 6, (x0 + w - midX) / 2), rY]].forEach(([cx, cy], i) => {
+          const hd = this.handles[i];
+          hd.hg.setAttribute("transform", `translate(${cx} ${cy})`);
+          setA(hd.ring, { r: hr, fill: pal.handle, stroke: pal.divider });
+          setA(hd.dot, { r: hr * 0.36, fill: i === 0 ? pal.hStrong : pal.nStrong });
+        });
+      }
+
+      // posterior bar
+      if (s.posterior) {
+        this.post.style.display = "";
+        const by = y0 + h + postH * 0.52, bh = Math.max(20, postH * 0.36);
+        const wH = w * m.pAgB;
+        const capSize = nameSize;
+        setA(this.postCap, { x: x0, y: by - capSize * 0.55, "font-size": capSize, fill: pal.ink });
+        this.postCap.firstChild && this.postCap.firstChild.nodeType === 3 ? (this.postCap.firstChild.nodeValue = `Within ${s.b}: P(${s.a}|${s.b}) = `) : this.postCap.insertBefore(document.createTextNode(`Within ${s.b}: P(${s.a}|${s.b}) = `), this.postCapV);
+        this.postCapV.textContent = pct(m.pAgB);
+        setA(this.postCapV, { fill: pal.accent });
+        setA(this.postH, { x: x0, y: by, width: Math.max(0, wH), height: bh, fill: pal.hStrong });
+        setA(this.postN, { x: x0 + wH, y: by, width: Math.max(0, w - wH), height: bh, fill: pal.nStrong });
+        const vs = Math.round(nameSize * 1.05);
+        const put = (t, cx, cw, str, fill) => {
+          setA(t, { x: cx + cw / 2, y: by + bh / 2 + vs * 0.36, "font-size": vs, fill });
+          t.textContent = str;
+          t.style.display = textW(str, vs, true) + 8 <= cw ? "" : "none";
+        };
+        put(this.postHt, x0, wH, `${s.a} ${pct(m.pAgB)}`, pal.onStrong);
+        put(this.postNt, x0 + wH, w - wH, `${s.notA} ${pct(1 - m.pAgB)}`, pal.onStrong);
+      } else this.post.style.display = "none";
+    }
+
+    placeCellLabel(lab, x, y, cw, ch, name, value, base, nameSize, fill, dim) {
+      const cx = x + cw / 2, cy = y + ch / 2;
+      const op = dim ? 0.45 : 1;
+      for (const size of [base, Math.round(base * 0.74), 11]) {
+        const vw = textW(value, size, true);
+        if (vw + 10 > cw) continue;
+        const ns = Math.min(nameSize, Math.round(size * 0.7));
+        const block = ns + 4 + size;
+        if (ns >= 11 && ch >= block + 10 && textW(name, ns) + 10 <= cw) {
+          const top = cy - block / 2;
+          setA(lab.name, { x: cx, y: top + ns * 0.8, "font-size": ns, fill, opacity: op * 0.85 });
+          lab.name.textContent = name; lab.name.style.display = "";
+          setA(lab.val, { x: cx, y: top + ns + 4 + size * 0.8, "font-size": size, fill, opacity: op });
+          lab.val.textContent = value; lab.val.style.display = "";
+          return;
+        }
+        if (ch >= size + 6) {
+          lab.name.style.display = "none";
+          setA(lab.val, { x: cx, y: cy + size * 0.36, "font-size": size, fill, opacity: op });
+          lab.val.textContent = value; lab.val.style.display = "";
+          return;
+        }
+      }
+      lab.name.style.display = "none"; lab.val.style.display = "none";
+    }
+  }
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const svg = $("svg"), box = $("diagramBox");
+  const scene = new Scene(svg, true);
+  const fields = { title: $("f-title"), a: $("f-a"), notA: $("f-na"), b: $("f-b"), notB: $("f-nb") };
+  const probKeys = ["pA", "pBgA", "pBgNotA"];
+  const ctl = Object.fromEntries(probKeys.map((k) => [k, { rg: $("rg-" + k), inp: $("in-" + k) }]));
+  let focusKind = null, drag = null;
+
+  function palette() {
+    const cs = getComputedStyle(document.documentElement);
+    const v = (n) => cs.getPropertyValue(n).trim();
+    return { bg: v("--surface"), ink: v("--ink"), muted: v("--muted"), hStrong: v("--h-strong"), hSoft: v("--h-soft"), nStrong: v("--n-strong"), nSoft: v("--n-soft"), onStrong: v("--on-strong"), onSoft: v("--on-soft"), divider: v("--divider"), handle: v("--handle"), accent: v("--accent"), focus: v("--focus") };
+  }
+
+  const L = (s) => ({
+    pA: `P(${s.a})`, pBgA: `P(${s.b}|${s.a})`, pBgNotA: `P(${s.b}|${s.notA})`,
+    pB: `P(${s.b})`, pAgB: `P(${s.a}|${s.b})`, pAgNB: `P(${s.a}|${s.notB})`
+  });
+
+  function renderDiagram() {
+    const r = svg.getBoundingClientRect();
+    if (r.width < 10 || r.height < 10) return;
+    scene.update(Math.round(r.width), Math.round(r.height), state, palette(), { focus: focusKind });
+  }
+
+  function render() {
+    const m = metrics(), lab = L(state);
+    for (const k of probKeys) {
+      const { rg, inp } = ctl[k];
+      rg.value = prob(state[k]);
+      rg.style.setProperty("--fill", `${((state[k] - MIN) / (MAX - MIN)) * 100}%`);
+      if (document.activeElement !== inp) inp.value = prob(state[k]);
+    }
+    document.querySelectorAll("[data-l]").forEach((n) => {
+      const k = n.dataset.l;
+      n.textContent = lab[k] ?? state[k] ?? n.textContent;
+    });
+    $("r-pA").textContent = pct(m.pA); $("k-pA").textContent = lab.pA;
+    $("r-pB").textContent = pct(m.pB); $("k-pB").textContent = lab.pB;
+    $("r-pAgB").textContent = pct(m.pAgB); $("k-pAgB").textContent = lab.pAgB;
+    $("t-pAgNB").textContent = `If ${state.notB}`;
+    $("r-pAgNB").textContent = pct(m.pAgNB); $("k-pAgNB").textContent = lab.pAgNB;
+    $("postLabel").textContent = lab.pAgB;
+    $("titleOut").textContent = state.title || " ";
+
+    const d = m.pAgB - m.pA;
+    const verb = Math.abs(d) < 0.0005 ? "leaves" : d > 0 ? "raises" : "lowers";
+    $("sentence").innerHTML = "";
+    const S = $("sentence");
+    const b = (t) => { const e = document.createElement("b"); e.textContent = t; return e; };
+    S.append("Learning ", b(state.b), ` ${verb} ${lab.pA} `, verb === "leaves" ? "unchanged at " : "from ", b(pct(m.pA)));
+    if (verb !== "leaves") S.append(" to ", b(pct(m.pAgB)));
+    S.append(".");
+
+    renderDiagram();
+    writeHash();
+  }
+
+  // ---------- inputs ----------
+  for (const k of probKeys) {
+    const { rg, inp } = ctl[k];
+    rg.addEventListener("input", () => { state[k] = cleanProb(rg.value, state[k]); render(); });
+    inp.addEventListener("input", () => {
+      const n = Number(inp.value);
+      if (inp.value.trim() !== "" && Number.isFinite(n) && n >= MIN && n <= MAX) { state[k] = n; render(); }
+    });
+    inp.addEventListener("change", () => { state[k] = cleanProb(inp.value, state[k]); inp.value = prob(state[k]); render(); });
+  }
+  for (const [k, node] of Object.entries(fields)) {
+    node.addEventListener("input", () => { state[k] = k === "title" ? node.value : (node.value.trim() || DEFAULTS[k]); render(); });
+  }
+  $("f-bg").addEventListener("change", (e) => { state.transparentBg = e.target.checked; writeHash(); });
+  $("f-post").addEventListener("change", (e) => { state.posterior = e.target.checked; render(); });
+  window.addEventListener("keydown", (e) => {
+    if ((e.key === "p" || e.key === "P") && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) {
+      state.posterior = !state.posterior; $("f-post").checked = state.posterior; render();
+    }
+  });
+
+  function syncFields() {
+    for (const [k, node] of Object.entries(fields)) node.value = state[k];
+    $("f-bg").checked = state.transparentBg;
+    $("f-post").checked = state.posterior;
+  }
+
+  // ---------- drag ----------
+  function move(e) {
+    if (!drag) return;
+    const r = svg.getBoundingClientRect(), g = scene.geom;
+    const c = (v) => clamp(v, MIN, MAX);
+    if (drag.kind === "cl" || drag.kind === "cr") {
+      const dx = (e.clientX - drag.sx) / g.w, dy = (e.clientY - drag.sy) / g.h;
+      state.pA = c(drag.s0.pA + dx);
+      if (drag.kind === "cl") state.pBgA = c(drag.s0.pBgA + dy);
+      else state.pBgNotA = c(drag.s0.pBgNotA + dy);
+    } else {
+      const px = c((e.clientX - r.left - g.x0) / g.w), py = c((e.clientY - r.top - g.y0) / g.h);
+      if (drag.kind === "v") state.pA = px;
+      else if (drag.kind === "lh") state.pBgA = py;
+      else if (drag.kind === "rh") state.pBgNotA = py;
+      else if (drag.kind === "hl") { state.pA = px; state.pBgA = py; }
+      else if (drag.kind === "hr") { state.pA = px; state.pBgNotA = py; }
+    }
+    render();
+  }
+  svg.addEventListener("pointerdown", (e) => {
+    const t = e.target.closest("[data-drag]");
+    if (!t) return;
+    const kind = t.getAttribute("data-drag");
+    drag = { kind, sx: e.clientX, sy: e.clientY, s0: { ...state } };
+    svg.setPointerCapture(e.pointerId);
+    if (t.focus && kind in scene.hits) t.focus({ preventScroll: true });
+    e.preventDefault();
+    if (kind !== "cl" && kind !== "cr") move(e);
+  });
+  svg.addEventListener("pointermove", move);
+  const end = () => { drag = null; };
+  svg.addEventListener("pointerup", end);
+  svg.addEventListener("pointercancel", end);
+  svg.addEventListener("lostpointercapture", end);
+
+  // keyboard on dividers
+  for (const [kind, node] of Object.entries(scene.hits)) {
+    node.addEventListener("focus", () => { focusKind = kind; renderDiagram(); });
+    node.addEventListener("blur", () => { focusKind = null; renderDiagram(); });
+    node.addEventListener("keydown", (e) => {
+      const key = kind === "v" ? "pA" : kind === "lh" ? "pBgA" : "pBgNotA";
+      const step = e.shiftKey ? 0.1 : 0.01;
+      let v = state[key];
+      if (["ArrowRight", "ArrowUp"].includes(e.key)) v += step;
+      else if (["ArrowLeft", "ArrowDown"].includes(e.key)) v -= step;
+      else if (e.key === "Home") v = MIN;
+      else if (e.key === "End") v = MAX;
+      else return;
+      e.preventDefault();
+      state[key] = clamp(Math.round(v * 1000) / 1000, MIN, MAX);
+      render();
+    });
+  }
+
+  new ResizeObserver(() => renderDiagram()).observe(box);
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", renderDiagram);
+  new MutationObserver(renderDiagram).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // ---------- export ----------
+  const EXP_W = 1200, EXP_H = 800;
+  function exportSvgString() {
+    const node = document.createElementNS(NS, "svg");
+    node.setAttribute("xmlns", NS);
+    const sc = new Scene(node, false);
+    sc.update(EXP_W, EXP_H, state, LIGHT, { export: true, showTitle: true, transparent: state.transparentBg });
+    node.querySelectorAll("[style]").forEach((n) => { if (n.style.display === "none") n.remove(); else n.removeAttribute("style"); });
+    return `<?xml version="1.0" encoding="UTF-8"?>\n` + new XMLSerializer().serializeToString(node);
+  }
+  function fileBase() {
+    return (state.title || "eikosogram").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "eikosogram";
+  }
+  function download(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function pngBlob() {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(new Blob([exportSvgString()], { type: "image/svg+xml;charset=utf-8" }));
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = EXP_W * 2; c.height = EXP_H * 2;
+        const ctx = c.getContext("2d");
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob((b) => (b ? resolve(b) : reject(new Error("PNG failed"))), "image/png");
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("render failed")); };
+      img.src = url;
+    });
+  }
+  const statusNode = $("status");
+  function say(msg) {
+    statusNode.textContent = msg;
+    clearTimeout(say.t); say.t = setTimeout(() => (statusNode.textContent = ""), 3000);
+  }
+  $("svgBtn").addEventListener("click", () => { download(fileBase() + ".svg", new Blob([exportSvgString()], { type: "image/svg+xml" })); say("SVG downloaded."); });
+  $("pngBtn").addEventListener("click", async () => {
+    try { download(fileBase() + ".png", await pngBlob()); say("PNG downloaded."); } catch { say("Couldn’t make the PNG in this browser. Try SVG."); }
+  });
+  $("copyImgBtn").addEventListener("click", async () => {
+    try {
+      if (!window.ClipboardItem) throw new Error();
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob() })]);
+      say("Image copied. Paste it into your slide.");
+    } catch { say("This browser won’t copy images. Use Download PNG instead."); }
+  });
+  $("copySvgBtn").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(exportSvgString()); say("SVG code copied."); }
+    catch { say("Couldn’t reach the clipboard here."); }
+  });
+  $("linkBtn").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(location.href); say("Link copied. It opens with this exact diagram."); }
+    catch { say("Couldn’t reach the clipboard here."); }
+  });
+  $("resetBtn").addEventListener("click", () => { Object.assign(state, DEFAULTS); syncFields(); render(); say("Reset to 50 / 50 / 50."); });
+
+  if (framed) {
+    // Downloads and URL state don't work inside the hosted viewer.
+    $("svgBtn").hidden = true; $("pngBtn").hidden = true; $("linkBtn").hidden = true;
+    $("copyImgBtn").classList.add("primary");
+  }
+
+  // ---------- URL state (local file only) ----------
+  function writeHash() {
+    if (framed) return;
+    const p = new URLSearchParams({
+      t: state.title, a: state.a, na: state.notA, b: state.b, nb: state.notB,
+      bg: state.transparentBg ? 1 : 0, post: state.posterior ? 1 : 0,
+      pA: prob(state.pA), pBgA: prob(state.pBgA), pBgNotA: prob(state.pBgNotA)
+    });
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (framed || !location.hash.includes("=")) return;
+    const p = new URLSearchParams(location.hash.slice(1));
+    state.title = p.get("t") ?? state.title;
+    state.a = p.get("a") || state.a; state.notA = p.get("na") || state.notA;
+    state.b = p.get("b") || state.b; state.notB = p.get("nb") || state.notB;
+    state.transparentBg = p.get("bg") === "1"; state.posterior = p.get("post") === "1";
+    for (const k of probKeys) state[k] = cleanProb(p.get(k), state[k]);
+  }
+
+  readHash();
+  syncFields();
+  render();
+  if (document.fonts?.ready) document.fonts.ready.then(renderDiagram);
+})();
+</script>
+
+</body>
+</html>

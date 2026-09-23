@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Truth Table Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --ink: #14202e;
+    --muted: #5a6778;
+    --faint: #9aa5b4;
+    --line: #dbe1e9;
+    --line-strong: #14202e;
+    --accent: #2c5cc9;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3ebfb;
+    --accent-softer: #f0f4fd;
+    --good: #1d7f53;
+    --good-soft: #e1f3e9;
+    --bad: #b93a32;
+    --bad-soft: #fbe3e0;
+    --focus: #2c5cc9;
+    --radius: 10px;
+    --tsize: 18px;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --logic: "IBM Plex Sans", "Cambria Math", "STIX Two Math", "Segoe UI Symbol", "Apple Symbols", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+      --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+      --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+      --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+    --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+    --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+    --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 14px 16px 0; max-width: 1600px; margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 28px; height: 28px; flex: none; border-radius: 6px; overflow: hidden;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+    background: var(--surface); border: 1px solid var(--line); padding: 3px;
+  }
+  .brand-mark span { border-radius: 2px; background: var(--accent-soft); }
+  .brand-mark span:nth-child(1), .brand-mark span:nth-child(4) { background: var(--accent); }
+  .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+  .brand p { font-size: 0.8rem; color: var(--muted); }
+  .top-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .top-controls .lbl { font-size: 0.78rem; color: var(--muted); }
+
+  /* ---------- segmented controls ---------- */
+  .seg {
+    display: inline-flex; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 2px; gap: 2px;
+  }
+  .seg button {
+    border: 0; background: transparent; padding: 5px 10px; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap;
+  }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+  .seg.full { display: flex; }
+  .seg.full button { flex: 1; }
+
+  /* ---------- layout ---------- */
+  .app {
+    display: grid; grid-template-columns: 1fr; gap: 16px;
+    padding: 14px 16px 24px; max-width: 1600px; margin: 0 auto;
+  }
+  .panel, .stage { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  details.card { display: block; }
+  details.card[open] > * + * { margin-top: 0; }
+  @media (max-width: 979px) {
+    .app { display: flex; flex-direction: column; }
+    .panel { display: contents; }
+    #buildCard { order: 1; } .stage { order: 2; } #displayCard { order: 3; } .help { order: 4; }
+  }
+  @media (min-width: 980px) {
+    .app { grid-template-columns: 350px minmax(0, 1fr); gap: 20px; padding: 16px 20px 28px; }
+    .topbar { padding: 16px 20px 0; }
+    .panel { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 2px; }
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .card h2 {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  }
+
+  /* ---------- formula inputs ---------- */
+  .frow { display: flex; flex-direction: column; gap: 4px; }
+  .frow label { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+  .fbox { display: flex; align-items: center; gap: 6px; }
+  .fbox .pre { font-family: var(--logic); color: var(--muted); width: 1.1em; text-align: center; flex: none; }
+  .fin {
+    flex: 1; min-width: 0; width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--surface-2); font-family: var(--logic); font-size: 1.05rem; letter-spacing: 0.01em;
+  }
+  .fin.err { border-color: var(--bad); }
+  .icon-btn {
+    border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 6px;
+    width: 30px; height: 30px; flex: none; font-size: 1.1rem; line-height: 1;
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+  .errmsg { font-size: 0.82rem; color: var(--bad); display: flex; flex-direction: column; gap: 2px; }
+  .errmsg code { font-family: var(--logic); color: var(--ink); white-space: pre-wrap; word-break: break-all; }
+  .errmsg mark { background: var(--bad-soft); color: var(--bad); border-bottom: 2px solid var(--bad); border-radius: 2px; padding: 0 1px; }
+
+  .keypad { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px; }
+  .keypad button {
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px; padding: 6px 0;
+    font-family: var(--logic); font-size: 1.05rem; cursor: pointer;
+  }
+  .keypad button:hover { border-color: var(--muted); }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; }
+  .examples .lbl { font-size: 0.78rem; color: var(--muted); width: 100%; }
+  .chip {
+    border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 3px 10px;
+    font-family: var(--logic); font-size: 0.85rem; cursor: pointer; color: var(--ink);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn {
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 7px;
+    padding: 7px 12px; font-size: 0.88rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--muted); }
+  a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.small { padding: 4px 10px; font-size: 0.82rem; }
+  .linkbtn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 0.85rem; font-weight: 500; align-self: flex-start; }
+
+  .check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+  .opt { display: flex; flex-direction: column; gap: 6px; }
+  .opt > span { font-size: 0.78rem; color: var(--muted); }
+
+  details.help summary { cursor: pointer; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  details.help[open] summary { margin-bottom: 10px; }
+  .help dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 0.85rem; }
+  .help dt { font-family: var(--logic); font-weight: 500; }
+  .help dd { margin: 0; color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+  .help p { font-size: 0.84rem; color: var(--muted); margin-top: 10px; }
+
+  /* ---------- stage ---------- */
+  .result { padding: 0; gap: 0; }
+  .result-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 14px 16px; border-bottom: 1px solid var(--line);
+  }
+  .verdict { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 11px;
+    font-size: 0.85rem; font-weight: 600; white-space: nowrap;
+  }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.neutral { background: var(--accent-soft); color: var(--accent); }
+  .badge.muted { background: var(--surface-2); color: var(--muted); }
+  .verdict-text { font-size: 0.92rem; color: var(--muted); }
+  .verdict-text b { color: var(--ink); font-weight: 600; }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stepper { display: inline-flex; align-items: center; gap: 4px; }
+  .stepper .count { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); min-width: 4.5em; text-align: center; }
+  .stepcap { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.9rem; background: var(--accent-softer); }
+  .stepcap .f { font-family: var(--logic); font-weight: 600; }
+  .practicecap { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .score { font-weight: 600; color: var(--ink); }
+  .score.ok { color: var(--good); }
+
+  .table-wrap { overflow-x: auto; padding: 8px 8px 12px; }
+  .table-wrap.stale, .verdict.stale { opacity: 0.35; transition: opacity 0.15s; }
+  .buildrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .buildrow .hint { font-size: 0.8rem; color: var(--muted); }
+  .buildrow .hint::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
+  .empty { padding: 40px 16px; text-align: center; color: var(--muted); }
+
+  table.tt {
+    border-collapse: separate; border-spacing: 0; margin: 0 auto;
+    font-size: var(--tsize); font-variant-numeric: tabular-nums;
+  }
+  .tt th, .tt td { padding: 0.28em 0.42em; text-align: center; white-space: nowrap; }
+  .tt thead th {
+    font-family: var(--logic); font-weight: 500; border-bottom: 2px solid var(--line-strong);
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  .tt thead tr.groups th {
+    font-family: var(--sans); font-size: 0.62em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); border-bottom: 0; padding-bottom: 0;
+  }
+  .tt th.letter, .tt .letter-h { font-style: italic; }
+  .tt th.num, .tt td.num { font-family: var(--mono); font-size: 0.62em; color: var(--faint); font-weight: 400; padding-right: 0.9em; }
+  .tt td { font-family: var(--mono); font-weight: 400; border-bottom: 1px solid var(--line); }
+  .tt td.letter { font-weight: 700; }
+  .tt .sep { border-left: 2px solid var(--line-strong); }
+  .tt .gsep { border-left: 1px solid var(--line); }
+  .tt .paren { padding-left: 0.04em; padding-right: 0.04em; color: var(--muted); }
+  .tt th.paren { color: var(--ink); }
+  .tt th.leaf { font-style: italic; }
+  .tt .tight { padding-left: 0.12em; padding-right: 0.12em; }
+  .tt .main { font-weight: 700; }
+  .tt td.main { background: var(--accent-softer); }
+  .tt th.main { color: var(--accent); }
+  .tt td.muted-v { color: var(--faint); }
+  .tt tr.grp td { border-top: 2px solid var(--line); }
+  .tt tbody tr:last-child td { border-bottom: 2px solid var(--line-strong); }
+  .tt th.sub { font-weight: 500; }
+
+  .tt tr.cx td { background: var(--bad-soft); }
+  .tt tr.cx td.num { color: var(--bad); font-weight: 700; }
+  .tt tr.pt td { background: var(--good-soft); }
+  .tt tr.pt td.num { color: var(--good); font-weight: 700; }
+
+  .tt .cur { background: var(--accent-soft) !important; }
+  .tt th.cur { color: var(--accent); font-weight: 700; }
+  .tt .kid { background: var(--accent-softer) !important; }
+  .tt td.hid { color: transparent; }
+
+  .tt td.edit { cursor: pointer; user-select: none; min-width: 1.4em; }
+  .tt td.edit:empty::after { content: "·"; color: var(--faint); }
+  .tt td.edit:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .tt td.edit.wrong { background: var(--bad-soft) !important; color: var(--bad); box-shadow: inset 0 0 0 1.5px var(--bad); }
+  .tt td.edit.right { color: var(--good); }
+
+  .foot { font-size: 0.8rem; color: var(--muted); padding: 0 16px 14px; }
+
+  @media (max-width: 640px) {
+    .result-head { padding: 12px; }
+    .table-wrap { padding: 6px 4px 10px; }
+    .keypad button { font-size: 1rem; }
+  }
+  @media print {
+    body { background: #fff; }
+    .topbar, .panel, .actions, .stepcap, .practicecap, .foot { display: none !important; }
+    .app { display: block; padding: 0; }
+    .card { border: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+  /* ================= syntax-tree view ================= */
+  .brand-mark-tree { width: 28px; height: 28px; flex: none; }
+  .brand-mark-tree svg { display: block; width: 100%; height: 100%; }
+  .status { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .status-text { font-size: 0.92rem; color: var(--muted); }
+  .status-text b { color: var(--ink); font-weight: 600; }
+  #treeApp .card > .status-text { font-size: 0.85rem; }
+  .hintbar { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.92rem; background: var(--accent-softer); min-height: 2.6em; }
+  .hintbar.bad { background: var(--bad-soft); color: var(--bad); }
+  .hintbar.good { background: var(--good-soft); color: var(--good); }
+  .hintbar .f { font-family: var(--logic); font-weight: 600; }
+  .tree-wrap { overflow-x: auto; padding: 22px 12px 26px; }
+  .tree-wrap.stale, .status.stale { opacity: 0.35; }
+  .tree { position: relative; margin: 0 auto; font-size: var(--tsize-tree, 20px); }
+  .tree svg.edges { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+  .tree svg.edges line { stroke: var(--muted); stroke-width: 1.5; }
+  .node {
+    position: absolute; white-space: nowrap; font-family: var(--logic);
+    padding: 0.18em 0.45em; border-radius: 8px; line-height: 1.3; border: 1.5px solid transparent;
+  }
+  .node.open { background: var(--accent-softer); border-color: var(--accent-soft); border-style: dashed; }
+  .node .tk { display: inline-block; }
+  .node .sp { display: inline-block; width: 0.28em; }
+  .node .leaf { font-style: italic; }
+  .node .paren { color: var(--muted); }
+  .node .main { color: var(--accent); font-weight: 700; }
+  .node button.tk {
+    border: 0; background: transparent; padding: 0 0.12em; margin: 0 -0.05em; font: inherit; color: inherit;
+    border-radius: 5px; cursor: pointer; line-height: inherit;
+  }
+  .node button.tk:hover { background: var(--accent-soft); color: var(--accent); }
+  .node button.tk.wrong { background: var(--bad-soft); color: var(--bad); animation: shake 0.3s; }
+  @keyframes shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  .node.fresh { animation: pop 0.25s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-6px); } }
+  @media (max-width: 979px) {
+    #st-buildCard { order: 1; } #treeApp .stage { order: 2; } #st-displayCard { order: 3; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+<div id="tableApp" hidden>
+
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div>
+      <h1>Truth Table Builder</h1>
+      <p>Propositional logic, row by row</p>
+    </div>
+  </div>
+  <div class="top-controls">
+    <span class="lbl" id="sizeLbl">Table size</span>
+    <div class="seg" role="group" aria-labelledby="sizeLbl" id="sizeSeg">
+      <button type="button" data-v="15">S</button><button type="button" data-v="18">M</button><button type="button" data-v="23">L</button><button type="button" data-v="30">XL</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme" id="themeSeg">
+      <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="panel" aria-label="Input and options">
+    <section class="card" id="buildCard" aria-labelledby="inHead">
+      <h2 id="inHead">Build</h2>
+      <div class="seg full" role="group" aria-label="What to build" id="kindSeg">
+        <button type="button" data-v="formula">Formula</button><button type="button" data-v="argument">Argument</button>
+      </div>
+
+      <div id="formulaIn" class="frow">
+        <label for="f-main">Formula</label>
+        <input class="fin" id="f-main" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. (A ∨ B) ∧ ¬C">
+        <div class="errmsg" id="err-main" hidden></div>
+      </div>
+
+      <div id="argIn" hidden>
+        <div id="premises" class="frow" style="gap:10px"></div>
+        <button type="button" class="linkbtn" id="addPrem" style="margin-top:8px">+ Add premise</button>
+        <div class="frow" style="margin-top:10px">
+          <label for="f-conc">Conclusion</label>
+          <div class="fbox"><span class="pre" aria-hidden="true">∴</span><input class="fin" id="f-conc" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. B"></div>
+          <div class="errmsg" id="err-conc" hidden></div>
+        </div>
+      </div>
+
+      <div class="keypad" id="keypad" aria-label="Insert symbol">
+        <button type="button" data-s="¬" aria-label="not">¬</button>
+        <button type="button" data-s="∧" aria-label="and">∧</button>
+        <button type="button" data-s="∨" aria-label="or">∨</button>
+        <button type="button" data-s="→" aria-label="if then">→</button>
+        <button type="button" data-s="↔" aria-label="if and only if">↔</button>
+        <button type="button" data-s="↑" aria-label="nand">↑</button>
+        <button type="button" data-s="↓" aria-label="nor">↓</button>
+        <button type="button" data-s="(" aria-label="left parenthesis">(</button>
+        <button type="button" data-s=")" aria-label="right parenthesis">)</button>
+      </div>
+
+      <div class="buildrow">
+        <button type="button" class="btn primary" id="buildBtn">Build table</button>
+        <span class="hint" id="dirtyHint" hidden>Not built yet. Press Enter or click Build.</span>
+      </div>
+
+      <div class="examples" id="examples"></div>
+    </section>
+
+    <section class="card" id="displayCard" aria-labelledby="dispHead">
+      <h2 id="dispHead">Display</h2>
+      <div class="opt">
+        <span id="layLbl">Layout</span>
+        <div class="seg full" role="group" aria-labelledby="layLbl" id="layoutSeg">
+          <button type="button" data-v="under">Under connectives</button><button type="button" data-v="cols">Subformula columns</button>
+        </div>
+      </div>
+      <div class="opt">
+        <span id="modeLbl">Mode</span>
+        <div class="seg full" role="group" aria-labelledby="modeLbl" id="modeSeg">
+          <button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button><button type="button" data-v="practice">Practice</button>
+        </div>
+      </div>
+      <label class="check" id="lettersOpt" hidden><input type="checkbox" id="f-letters"> Students fill in the letter columns too</label>
+    </section>
+
+    <details class="card help">
+      <summary>Typing symbols</summary>
+      <dl>
+        <dt>¬</dt><dd>~  !</dd>
+        <dt>∧</dt><dd>&amp;  ^</dd>
+        <dt>∨</dt><dd>|  v (between spaces)</dd>
+        <dt>→</dt><dd>-&gt;  =&gt;  ⊃</dd>
+        <dt>↔</dt><dd>&lt;-&gt;  &lt;=&gt;  ≡</dd>
+        <dt>↑ ↓</dt><dd>NAND, NOR (keypad)</dd>
+        <dt>⊤ ⊥</dt><dd>always true / always false</dd>
+      </dl>
+      <p>Type the whole formula, then press Enter (or click Build). The builder only checks whether it’s a wff at that point.</p>
+      <p>Sentence letters are capitals like A, B, C (A1, P2 also work). As in the textbook, ¬ applies to what immediately follows it and outer parentheses can be dropped. Mixing binary connectives without parentheses, as in A ∧ B ∨ C, is ambiguous, so the builder asks you to add them. Chains of a single ∧ or ∨ (A ∧ B ∧ C) are fine.</p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card result" aria-live="polite">
+      <div class="result-head">
+        <div class="verdict" id="verdict"></div>
+        <div class="actions">
+          <div class="stepper" id="stepper" hidden>
+            <button class="btn small" type="button" id="stFirst" aria-label="Back to start">⏮</button>
+            <button class="btn small" type="button" id="stPrev" aria-label="Previous step">◀</button>
+            <span class="count" id="stCount">0 / 0</span>
+            <button class="btn small primary" type="button" id="stNext" aria-label="Next step">▶</button>
+            <button class="btn small" type="button" id="stLast" aria-label="Show all">⏭</button>
+          </div>
+          <div id="practiceBtns" class="actions" hidden>
+            <button class="btn small primary" type="button" id="prCheck">Check</button>
+            <button class="btn small" type="button" id="prClear">Clear</button>
+          </div>
+          <a class="btn small" id="treeLink" href="#">Syntax tree →</a>
+          <button class="btn small" type="button" id="copyBtn">Copy table</button>
+          <button class="btn small" type="button" id="printBtn">Print</button>
+        </div>
+      </div>
+      <div class="stepcap" id="stepcap" hidden></div>
+      <div class="practicecap" id="practicecap" hidden></div>
+      <div class="table-wrap" id="tableWrap"></div>
+      <p class="foot" id="foot"></p>
+    </section>
+  </main>
+</div>
+
+</div>
+<div id="treeApp" hidden>
+
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark-tree" aria-hidden="true">
+      <svg viewBox="0 0 28 28"><rect x="0.5" y="0.5" width="27" height="27" rx="6" fill="var(--surface)" stroke="var(--line)"/><line x1="14" y1="8" x2="8" y2="19" stroke="var(--muted)" stroke-width="1.5"/><line x1="14" y1="8" x2="20" y2="19" stroke="var(--muted)" stroke-width="1.5"/><circle cx="14" cy="8" r="3.2" fill="var(--accent)"/><circle cx="8" cy="20" r="2.8" fill="var(--accent-soft)" stroke="var(--accent)"/><circle cx="20" cy="20" r="2.8" fill="var(--accent-soft)" stroke="var(--accent)"/></svg>
+    </div>
+    <div>
+      <h1>Syntax Tree Builder</h1>
+      <p>Split every formula at its main connective</p>
+    </div>
+  </div>
+  <div class="top-controls">
+    <span class="lbl" id="st-sizeLbl">Tree size</span>
+    <div class="seg" role="group" aria-labelledby="st-sizeLbl" id="st-sizeSeg">
+      <button type="button" data-v="16">S</button><button type="button" data-v="20">M</button><button type="button" data-v="25">L</button><button type="button" data-v="32">XL</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme" id="st-themeSeg">
+      <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="panel" aria-label="Input and options">
+    <section class="card" id="st-buildCard" aria-labelledby="st-inHead">
+      <h2 id="st-inHead">Formula</h2>
+      <div class="frow">
+        <label for="st-f-main">Type a formula, then press Enter</label>
+        <input class="fin" id="st-f-main" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. (A ∨ B) ∧ ¬C">
+        <div class="errmsg" id="st-err-main" hidden></div>
+      </div>
+      <div class="keypad" id="st-keypad" aria-label="Insert symbol">
+        <button type="button" data-s="¬" aria-label="not">¬</button>
+        <button type="button" data-s="∧" aria-label="and">∧</button>
+        <button type="button" data-s="∨" aria-label="or">∨</button>
+        <button type="button" data-s="→" aria-label="if then">→</button>
+        <button type="button" data-s="↔" aria-label="if and only if">↔</button>
+        <button type="button" data-s="↑" aria-label="nand">↑</button>
+        <button type="button" data-s="↓" aria-label="nor">↓</button>
+        <button type="button" data-s="(" aria-label="left parenthesis">(</button>
+        <button type="button" data-s=")" aria-label="right parenthesis">)</button>
+      </div>
+      <div class="buildrow">
+        <button type="button" class="btn primary" id="st-buildBtn">Build tree</button>
+        <span class="hint" id="st-dirtyHint" hidden>Not built yet. Press Enter or click Build.</span>
+      </div>
+    </section>
+
+    <section class="card" id="st-displayCard" aria-labelledby="st-dispHead">
+      <h2 id="st-dispHead">Mode</h2>
+      <div class="seg full" role="group" aria-label="Mode" id="st-modeSeg">
+        <button type="button" data-v="practice">Build it</button><button type="button" data-v="show">Show tree</button>
+      </div>
+      <p class="status-text" id="st-modeNote"></p>
+    </section>
+
+    <details class="card help">
+      <summary>Typing symbols</summary>
+      <dl>
+        <dt>¬</dt><dd>~  !</dd>
+        <dt>∧</dt><dd>&amp;  ^</dd>
+        <dt>∨</dt><dd>|  v (between spaces)</dd>
+        <dt>→</dt><dd>-&gt;  =&gt;  ⊃</dd>
+        <dt>↔</dt><dd>&lt;-&gt;  &lt;=&gt;  ≡</dd>
+        <dt>↑ ↓</dt><dd>NAND, NOR (keypad)</dd>
+      </dl>
+      <p>Type the whole formula, then press Enter (or click Build). The builder only checks whether it’s a wff at that point.</p>
+      <p>Sentence letters are capitals like A, B, C. As in the textbook, ¬ applies to what immediately follows it and outer parentheses can be dropped. Mixing binary connectives without parentheses (A ∧ B ∨ C) is ambiguous, so the builder asks you to add them. A chain of one ∧ or ∨ (A ∧ B ∧ C) is read from the left, as (A ∧ B) ∧ C.</p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card result">
+      <div class="result-head">
+        <div class="status" id="st-status" aria-live="polite"></div>
+        <div class="actions">
+          <button class="btn small" type="button" id="st-resetBtn">Start over</button>
+          <a class="btn small" id="st-ttLink" href="#">Truth table →</a>
+        </div>
+      </div>
+      <div class="hintbar" id="st-hintbar" aria-live="polite"></div>
+      <div class="tree-wrap" id="st-treeWrap"></div>
+      
+    </section>
+  </main>
+</div>
+
+</div>
+<script>
+
+window.initTable = () => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const framed = false;
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+
+  // ================= Logic =================
+  const BIN = {
+    and:  { sym: "∧", assoc: true,  f: (a, b) => a && b, name: "conjunction" },
+    or:   { sym: "∨", assoc: true,  f: (a, b) => a || b, name: "disjunction" },
+    imp:  { sym: "→", assoc: false, f: (a, b) => !a || b, name: "conditional" },
+    iff:  { sym: "↔", assoc: false, f: (a, b) => a === b, name: "biconditional" },
+    nand: { sym: "↑", assoc: false, f: (a, b) => !(a && b), name: "NAND" },
+    nor:  { sym: "↓", assoc: false, f: (a, b) => !(a || b), name: "NOR" }
+  };
+  const MAX_LETTERS = 8;
+
+  class ParseError extends Error {
+    constructor(message, pos, len) { super(message); this.pos = pos; this.len = Math.max(1, len || 1); }
+  }
+
+  // Replace ASCII shortcuts with logic symbols as the user types.
+  function normalize(s) {
+    return s
+      .replace(/<->|<=>|≡/g, "↔")
+      .replace(/->|=>|⊃/g, "→")
+      .replace(/[~!]/g, "¬")
+      .replace(/[&^]/g, "∧")
+      .replace(/\|/g, "∨")
+      .replace(/(^|[\s)])v(?=[\s(¬])/g, "$1∨");
+  }
+
+  function tokenize(src) {
+    const out = [];
+    let i = 0;
+    while (i < src.length) {
+      const ch = src[i];
+      if (/\s/.test(ch)) { i++; continue; }
+      const push = (t) => { out.push({ ...t, pos: i, len: t.len || 1 }); i += t.len || 1; };
+      if (ch === "(" || ch === "[") { push({ t: "lp" }); continue; }
+      if (ch === ")" || ch === "]") { push({ t: "rp" }); continue; }
+      if (ch === "¬") { push({ t: "not" }); continue; }
+      const binBy = { "∧": "and", "∨": "or", "→": "imp", "↔": "iff", "↑": "nand", "↓": "nor" };
+      if (binBy[ch]) { push({ t: "bin", op: binBy[ch] }); continue; }
+      if (ch === "⊤") { push({ t: "const", val: true }); continue; }
+      if (ch === "⊥") { push({ t: "const", val: false }); continue; }
+      if (/[A-Za-z]/.test(ch)) {
+        let j = i + 1;
+        while (j < src.length && /[A-Za-z0-9_₀-₉']/.test(src[j])) j++;
+        const name = src.slice(i, j);
+        if (name === "v") { push({ t: "bin", op: "or" }); continue; }
+        out.push({ t: "var", name, pos: i, len: j - i }); i = j; continue;
+      }
+      if (/[0-9]/.test(ch)) throw new ParseError(`Sentence letters start with a letter; “${ch}” can’t start one.`, i, 1);
+      throw new ParseError(`“${ch}” isn’t a symbol the builder knows.`, i, 1);
+    }
+    return out;
+  }
+
+  function parse(src) {
+    const toks = tokenize(src);
+    if (!toks.length) return null;
+    let k = 0;
+    let nextId = 0;
+    const peek = () => toks[k];
+    const endPos = src.replace(/\s+$/, "").length;
+    const describe = (t) => t.t === "var" ? t.name : t.t === "bin" ? BIN[t.op].sym : t.t === "not" ? "¬" : t.t === "lp" ? "(" : t.t === "rp" ? ")" : (t.val ? "⊤" : "⊥");
+
+    function atom() {
+      const t = peek();
+      if (!t) throw new ParseError("The formula stops too early: something is missing at the end.", endPos, 1);
+      if (t.t === "var") { k++; return { type: "var", name: t.name, id: nextId++, pos: t.pos }; }
+      if (t.t === "const") { k++; return { type: "const", val: t.val, id: nextId++, pos: t.pos }; }
+      if (t.t === "lp") {
+        k++;
+        const inner = expr();
+        const c = peek();
+        if (!c || c.t !== "rp") {
+          if (!c) throw new ParseError("A “(” is never closed.", t.pos, 1);
+          throw new ParseError(`Expected “)” here, found “${describe(c)}”.`, c.pos, c.len);
+        }
+        k++;
+        inner.parens = true;
+        return inner;
+      }
+      if (t.t === "not") { return unary(); }
+      if (t.t === "rp") throw new ParseError("There’s a “)” with nothing before it to close.", t.pos, 1);
+      throw new ParseError(`“${describe(t)}” needs a formula on its left.`, t.pos, t.len);
+    }
+    function unary() {
+      const t = peek();
+      if (t && t.t === "not") {
+        k++;
+        const arg = unary();
+        return { type: "not", arg, id: nextId++, pos: t.pos };
+      }
+      return atom();
+    }
+    function expr() {
+      let left = unary();
+      let first = null;
+      while (peek() && peek().t === "bin") {
+        const t = peek();
+        if (first && (t.op !== first.op || !BIN[t.op].assoc)) {
+          const a = BIN[first.op].sym, b = BIN[t.op].sym;
+          throw new ParseError(
+            t.op === first.op
+              ? `Two “${b}” in a row without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`
+              : `Mixing “${a}” and “${b}” without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`,
+            t.pos, t.len);
+        }
+        first = first || t;
+        k++;
+        const right = unary();
+        left = { type: "bin", op: t.op, left, right, id: nextId++, pos: t.pos };
+      }
+      return left;
+    }
+
+    const ast = expr();
+    if (k < toks.length) {
+      const t = toks[k];
+      if (t.t === "rp") throw new ParseError("This “)” doesn’t match any “(”.", t.pos, 1);
+      const prev = toks[k - 1];
+      throw new ParseError(`A connective is missing between “${describe(prev)}” and “${describe(t)}”.`, t.pos, t.len);
+    }
+    return ast;
+  }
+
+  function lettersOf(node, acc) {
+    if (node.type === "var") { if (!acc.includes(node.name)) acc.push(node.name); }
+    else if (node.type === "not") lettersOf(node.arg, acc);
+    else if (node.type === "bin") { lettersOf(node.left, acc); lettersOf(node.right, acc); }
+    return acc;
+  }
+  function height(node) {
+    if (node.type === "var" || node.type === "const") return (node.h = 0);
+    if (node.type === "not") return (node.h = 1 + height(node.arg));
+    return (node.h = 1 + Math.max(height(node.left), height(node.right)));
+  }
+  function evaluate(node, env, out) {
+    let v;
+    if (node.type === "var") v = env[node.name];
+    else if (node.type === "const") v = node.val;
+    else if (node.type === "not") v = !evaluate(node.arg, env, out);
+    else v = BIN[node.op].f(evaluate(node.left, env, out), evaluate(node.right, env, out));
+    out[node.id] = v;
+    return v;
+  }
+  const kids = (n) => n.type === "not" ? [n.arg] : n.type === "bin" ? [n.left, n.right] : [];
+  const isLeaf = (n) => n.type === "var" || n.type === "const";
+
+  // Printed form, as a list of tokens that remember their node.
+  // Textbook conventions: outer parentheses dropped, ¬ binds to what follows,
+  // and a chain of one associative connective is written without inner parentheses.
+  function printTokens(node, top = true) {
+    if (node.type === "var") return [{ text: node.name, node, kind: "leaf" }];
+    if (node.type === "const") return [{ text: node.val ? "⊤" : "⊥", node, kind: "leaf" }];
+    if (node.type === "not") return [{ text: "¬", node, kind: "conn" }, ...printTokens(node.arg, false)];
+    const leftChain = node.left.type === "bin" && node.left.op === node.op && BIN[node.op].assoc && !node.left.parens;
+    const inner = [
+      ...(leftChain ? printTokens(node.left, true) : printTokens(node.left, false)),
+      { text: BIN[node.op].sym, node, kind: "conn", bin: true },
+      ...printTokens(node.right, false)
+    ];
+    return top ? inner : [{ text: "(", kind: "paren" }, ...inner, { text: ")", kind: "paren" }];
+  }
+  const textOf = (toks) => toks.map((t) => (t.bin ? ` ${t.text} ` : t.text)).join("");
+  const canon = (node) => textOf(printTokens(node, true));
+
+  // ================= State =================
+  const EXAMPLES = {
+    formula: ["(A ∨ B) ∧ (¬A → (C ↔ D))", "A ∨ ¬A", "A ∧ ¬A", "¬(A ∧ B) ↔ (¬A ∨ ¬B)", "(A → B) ↔ (¬B → ¬A)", "A ↑ B"],
+    argument: [
+      { label: "C, C → A ∴ A", p: ["C", "C → A"], c: "A" },
+      { label: "A, C → A ∴ C", p: ["A", "C → A"], c: "C" },
+      { label: "A ∨ B, ¬A ∴ B", p: ["A ∨ B", "¬A"], c: "B" },
+      { label: "A → B, B → C ∴ A → C", p: ["A → B", "B → C"], c: "A → C" }
+    ]
+  };
+  const state = {
+    kind: "formula",
+    formula: EXAMPLES.formula[0],
+    premises: ["C", "C → A"],
+    conclusion: "A",
+    layout: "under",
+    mode: "practice",
+    practiceLetters: false,
+    step: 0
+  };
+  let model = null;          // last good model
+  let answers = new Map();   // practice answers: key -> true/false
+  let checked = false;
+  let signature = "";
+
+  // ================= Model =================
+  function buildModel() {
+    const items = state.kind === "formula"
+      ? [{ role: "Formula", src: state.formula, errId: "err-main", inputId: "f-main" }]
+      : [
+          ...state.premises.map((p, i) => ({ role: `Premise ${i + 1}`, src: p, errId: `err-p${i}`, inputId: `f-p${i}` })),
+          { role: "Conclusion", src: state.conclusion, errId: "err-conc", inputId: "f-conc" }
+        ];
+    const errors = [];
+    const formulas = [];
+    items.forEach((it) => {
+      try {
+        const ast = parse(it.src);
+        if (!ast) return;
+        height(ast);
+        formulas.push({ ...it, ast });
+      } catch (e) {
+        if (e instanceof ParseError) errors.push({ ...it, err: e });
+        else throw e;
+      }
+    });
+    if (errors.length) return { errors };
+    if (!formulas.length) return { empty: true };
+    if (state.kind === "argument" && !formulas.some((f) => f.role === "Conclusion")) return { empty: true, needConclusion: true };
+
+    const letters = [];
+    formulas.forEach((f) => lettersOf(f.ast, letters));
+    if (letters.length > MAX_LETTERS) return { tooMany: letters.length };
+
+    const n = letters.length, N = 1 << n;
+    const rows = [];
+    for (let i = 0; i < N; i++) {
+      const env = {};
+      letters.forEach((L, j) => { env[L] = ((i >> (n - 1 - j)) & 1) === 0; });
+      const vals = formulas.map((f) => { const o = {}; evaluate(f.ast, env, o); return o; });
+      rows.push({ env, vals });
+    }
+    const mains = rows.map((r) => r.vals.map((v, fi) => v[formulas[fi].ast.id]));
+    let verdict;
+    if (state.kind === "formula") {
+      const t = mains.filter((m) => m[0]).length;
+      verdict = { t, N, type: t === N ? "taut" : t === 0 ? "contra" : "contingent" };
+    } else {
+      const ci = formulas.findIndex((f) => f.role === "Conclusion");
+      const prem = (m) => m.every((v, fi) => fi === ci || v);
+      const cx = [], pt = [];
+      mains.forEach((m, r) => { if (prem(m)) (m[ci] ? pt : cx).push(r); });
+      verdict = { type: cx.length ? "invalid" : "valid", cx, pt, N, nPrem: formulas.length - 1 };
+    }
+    return { formulas, letters, rows, verdict };
+  }
+
+  // Columns for the current layout.
+  function buildColumns(m) {
+    const cols = [];
+    const letterCol = {};
+    m.letters.forEach((L, i) => {
+      const c = { key: `L:${L}`, type: "letter", header: L, letter: L, first: i === 0 };
+      letterCol[L] = c; cols.push(c);
+    });
+    const nodeCol = new Map(); // node -> column
+    m.formulas.forEach((f, fi) => {
+      const group = [];
+      if (state.layout === "under") {
+        const toks = printTokens(f.ast, true);
+        const atomic = isLeaf(f.ast);
+        toks.forEach((t, ti) => {
+          const c = { key: `f${fi}:t${ti}`, f: fi, header: t.text, kind: t.kind };
+          if (t.kind === "paren") c.type = "paren";
+          else if (t.kind === "leaf" && !atomic) c.type = "leaf";
+          else { c.type = "val"; c.node = t.node; c.main = t.node === f.ast; nodeCol.set(t.node, c); }
+          if (t.kind === "leaf" && !atomic) nodeCol.set(t.node, letterCol[t.node.name] || null);
+          c.tight = t.kind === "paren" || (t.kind === "conn" && !t.bin);
+          group.push(c);
+        });
+      } else {
+        const seen = new Map();
+        const walk = (node) => {
+          kids(node).forEach(walk);
+          if (isLeaf(node) && node !== f.ast) { nodeCol.set(node, node.type === "var" ? letterCol[node.name] : null); return; }
+          const key = canon(node);
+          if (seen.has(key)) { nodeCol.set(node, seen.get(key)); return; }
+          const c = { key: `f${fi}:s${key}`, f: fi, type: "val", header: key, node, main: node === f.ast, sub: true };
+          seen.set(key, c); nodeCol.set(node, c); group.push(c);
+        };
+        walk(f.ast);
+        // keep main formula last
+        group.sort((a, b) => (a.main ? 1 : 0) - (b.main ? 1 : 0));
+      }
+      if (group.length) { group[0].fstart = true; group[0].sep = fi === 0; }
+      group.forEach((c) => (c.span = group.length));
+      group.groupRole = f.role;
+      cols.push(...group);
+    });
+    // step order: formula by formula, innermost first, then left to right
+    const steps = cols.filter((c) => c.type === "val")
+      .sort((a, b) => a.f - b.f || a.node.h - b.node.h || a.node.pos - b.node.pos);
+    return { cols, steps, nodeCol, letterCol };
+  }
+
+  // ================= Rendering =================
+  const T = (v) => (v ? "T" : "F");
+  let view = null; // { cols, steps, nodeCol }
+
+  let hadErrors = false;
+  function render() { renderCore(); updateDirty(); }
+  function renderCore() {
+    const m = buildModel();
+    hadErrors = !!m.errors;
+    showErrors(m.errors || []);
+    const wrap = $("tableWrap");
+    if (m.errors) { wrap.classList.add("stale"); return; }
+    wrap.classList.remove("stale");
+
+    if (m.empty || m.tooMany) {
+      model = null; view = null;
+      wrap.innerHTML = "";
+      const d = document.createElement("div");
+      d.className = "empty";
+      d.textContent = m.tooMany
+        ? `That’s ${m.tooMany} sentence letters, which needs ${Math.pow(2, m.tooMany).toLocaleString()} rows. The builder stops at ${MAX_LETTERS} letters (256 rows).`
+        : m.needConclusion ? "Add a conclusion to test the argument." : "Type a formula, or pick an example.";
+      wrap.appendChild(d);
+      $("verdict").innerHTML = "";
+      $("stepcap").hidden = true; $("practicecap").hidden = true;
+      $("foot").textContent = "";
+      syncControls();
+      return;
+    }
+
+    model = m;
+    view = buildColumns(m);
+    const sig = state.kind + "|" + m.formulas.map((f) => canon(f.ast)).join("|") + "|" + state.layout;
+    if (sig !== signature) {
+      signature = sig;
+      answers = new Map(); checked = false; state.step = 0;
+    }
+    drawTable();
+    syncControls();
+    writeHash();
+  }
+
+  function drawTable() {
+    const m = model, { cols, steps, nodeCol } = view;
+    const wrap = $("tableWrap");
+    const practice = state.mode === "practice";
+    const stepping = state.mode === "step";
+    const revealed = new Set(stepping ? steps.slice(0, state.step).map((c) => c.key) : steps.map((c) => c.key));
+    const cur = stepping && state.step > 0 ? steps[state.step - 1] : null;
+    const kidKeys = new Set();
+    if (cur) {
+      if (cur.node.type === "var") kidKeys.add(view.letterCol[cur.node.name].key);
+      kids(cur.node).forEach((k) => { const c = nodeCol.get(k); if (c) kidKeys.add(c.key); });
+    }
+    const allShown = !stepping || state.step >= steps.length;
+    const v = m.verdict;
+    const markRows = state.kind === "argument" && allShown && !practice;
+
+    const table = document.createElement("table");
+    table.className = "tt";
+    const thead = document.createElement("thead");
+
+    if (state.kind === "argument") {
+      const gr = document.createElement("tr"); gr.className = "groups";
+      const th0 = document.createElement("th"); th0.colSpan = 1 + m.letters.length; gr.appendChild(th0);
+      let i = 1 + 0;
+      cols.forEach((c) => {
+        if (c.type === "letter" || !c.fstart) return;
+        const th = document.createElement("th");
+        th.colSpan = c.span; th.textContent = m.formulas[c.f].role;
+        th.className = c.sep ? "sep" : "gsep";
+        gr.appendChild(th);
+      });
+      thead.appendChild(gr);
+    }
+
+    const hr = document.createElement("tr");
+    const thn = document.createElement("th"); thn.className = "num"; thn.textContent = ""; thn.setAttribute("aria-label", "Row"); hr.appendChild(thn);
+    cols.forEach((c) => {
+      const th = document.createElement("th");
+      th.textContent = c.header;
+      th.className = cellClass(c, { cur, kidKeys });
+      if (c.type === "letter") th.classList.add("letter");
+      if (c.sub) th.classList.add("sub");
+      th.scope = "col";
+      hr.appendChild(th);
+    });
+    thead.appendChild(hr);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    const N = m.rows.length;
+    m.rows.forEach((row, r) => {
+      const tr = document.createElement("tr");
+      if (N >= 8 && r > 0 && r % 4 === 0) tr.classList.add("grp");
+      if (markRows) { if (v.cx.includes(r)) tr.classList.add("cx"); else if (v.pt.includes(r)) tr.classList.add("pt"); }
+      const tn = document.createElement("td"); tn.className = "num"; tn.textContent = r + 1; tr.appendChild(tn);
+      cols.forEach((c) => {
+        const td = document.createElement("td");
+        td.className = cellClass(c, { cur, kidKeys });
+        const editable = practice && (c.type === "val" || (c.type === "letter" && state.practiceLetters));
+        if (c.type === "letter") {
+          td.classList.add("letter");
+          if (!editable) td.textContent = T(row.env[c.letter]);
+        } else if (c.type === "val" && !editable) {
+          td.textContent = T(row.vals[c.f][c.node.id]);
+          if (!revealed.has(c.key)) td.classList.add("hid");
+        }
+        if (editable) {
+          td.classList.add("edit");
+          td.dataset.key = c.key; td.dataset.r = r;
+          td.tabIndex = -1;
+          const a = answers.get(`${c.key}:${r}`);
+          if (a !== undefined) td.textContent = T(a);
+          if (checked && a !== undefined) td.classList.add(a === expected(c, r) ? "right" : "wrong");
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.innerHTML = "";
+    wrap.appendChild(table);
+
+    if (practice) {
+      const first = wrap.querySelector("td.edit");
+      if (first) first.tabIndex = 0;
+    }
+    drawVerdict(allShown, cur);
+  }
+
+  function cellClass(c, { cur, kidKeys }) {
+    const cl = [];
+    if (c.type === "letter" && c.first) { /* first column */ }
+    if (c.fstart) cl.push(c.sep ? "sep" : "gsep");
+    if (c.type === "paren") cl.push("paren");
+    if (c.type === "leaf") cl.push("leaf");
+    if (c.tight) cl.push("tight");
+    if (c.main) cl.push("main");
+    if (cur && c.key === cur.key) cl.push("cur");
+    else if (kidKeys.has(c.key)) cl.push("kid");
+    return cl.join(" ");
+  }
+
+  function expected(c, r) {
+    const row = model.rows[r];
+    return c.type === "letter" ? row.env[c.letter] : row.vals[c.f][c.node.id];
+  }
+
+  function drawVerdict(allShown, cur) {
+    const el = $("verdict"); el.innerHTML = "";
+    const v = model.verdict;
+    const badge = (cls, txt) => { const b = document.createElement("span"); b.className = "badge " + cls; b.textContent = txt; return b; };
+    const text = (parts) => {
+      const s = document.createElement("span"); s.className = "verdict-text";
+      parts.forEach((p) => { if (typeof p === "string") s.append(p); else { const b = document.createElement("b"); b.textContent = p.b; s.append(b); } });
+      return s;
+    };
+    const rowList = (rs) => rs.map((r) => r + 1).join(", ").replace(/, (\d+)$/, " and $1");
+    let score = null;
+    if (state.mode === "practice" && checked) {
+      let right = 0, filled = 0, total = 0;
+      view.cols.forEach((c) => {
+        const ed = c.type === "val" || (c.type === "letter" && state.practiceLetters);
+        if (!ed) return;
+        model.rows.forEach((_, r) => {
+          total++;
+          const a = answers.get(`${c.key}:${r}`);
+          if (a === undefined) return;
+          filled++; if (a === expected(c, r)) right++;
+        });
+      });
+      score = { right, filled, total, done: right === total };
+    }
+    const hideAnswer = (state.mode === "practice" && !(score && score.done)) || !allShown;
+
+    if (hideAnswer) {
+      el.append(badge("muted", state.kind === "formula" ? "Tautology, contradiction or contingency?" : "Valid or invalid?"));
+      el.append(text([`${model.rows.length} rows, `, { b: `${model.letters.length} sentence letter${model.letters.length === 1 ? "" : "s"}` }]));
+    } else if (state.kind === "formula") {
+      const labels = { taut: ["good", "Tautology"], contra: ["bad", "Contradiction"], contingent: ["neutral", "Contingency"] };
+      el.append(badge(...labels[v.type]));
+      el.append(text(v.type === "taut" ? ["True in ", { b: "every" }, " row."] : v.type === "contra" ? ["False in ", { b: "every" }, " row."] : ["True in ", { b: `${v.t} of ${v.N}` }, " rows."]));
+    } else if (v.type === "valid") {
+      el.append(badge("good", "Valid"));
+      el.append(text(v.pt.length
+        ? ["No row makes every premise true and the conclusion false. All premises are true in ", { b: `row${v.pt.length > 1 ? "s" : ""} ${rowList(v.pt)}` }, ", and the conclusion is true there too."]
+        : ["No row makes all the premises true, so there can’t be a counterexample."]));
+    } else {
+      el.append(badge("bad", "Invalid"));
+      el.append(text([{ b: `Row${v.cx.length > 1 ? "s" : ""} ${rowList(v.cx)}` }, v.cx.length > 1 ? " are counterexamples" : " is a counterexample", ": every premise true, conclusion false."]));
+    }
+
+    // step caption
+    const cap = $("stepcap");
+    if (state.mode === "step") {
+      cap.hidden = false; cap.innerHTML = "";
+      if (!cur) {
+        cap.append("Start from the sentence letters. Press ▶ (or the → key) to compute the first connective.");
+      } else {
+        const n = cur.node;
+        const f = document.createElement("span"); f.className = "f"; f.textContent = canon(n);
+        const what = n.type === "not" ? "a negation" : n.type === "bin" ? `a ${BIN[n.op].name}` : "just a sentence letter";
+        cap.append(`Step ${state.step}: `, f, ` is ${what}`);
+        if (n.type === "const") cap.append(".");
+        else if (kids(n).length) {
+          const parts = kids(n).map((k) => canon(k));
+          cap.append(` of ${parts.map((p) => (p.length > 1 && /\s/.test(p) ? `(${p})` : p)).join(" and ")}.`);
+        } else cap.append(", copied from its column.");
+        if (cur.main) cap.append(` This is the main connective${state.kind === "argument" ? " of " + model.formulas[cur.f].role.toLowerCase() : ""}.`);
+      }
+    } else cap.hidden = true;
+
+    // practice caption
+    const pc = $("practicecap");
+    if (state.mode === "practice") {
+      pc.hidden = false; pc.innerHTML = "";
+      const help = document.createElement("span");
+      help.textContent = "Click a cell or type T / F. Arrow keys move; Backspace clears.";
+      pc.append(help);
+      if (score) {
+        const sp = document.createElement("span");
+        sp.className = "score" + (score.done ? " ok" : "");
+        sp.textContent = score.done ? `All ${score.total} cells correct.` : `${score.right} of ${score.filled} filled cells correct${score.filled < score.total ? `, ${score.total - score.filled} still blank` : ""}.`;
+        pc.append(sp);
+      }
+    } else pc.hidden = true;
+
+    $("foot").textContent = state.layout === "under"
+      ? "Each value sits under the connective it belongs to; the main connective is bold and shaded."
+      : "One column per subformula, innermost first; the whole formula is the bold, shaded column.";
+  }
+
+  function clearFieldError(inp) {
+    inp.classList.remove("err");
+    const box = inp.closest(".frow")?.querySelector(".errmsg");
+    if (box) { box.hidden = true; box.innerHTML = ""; }
+  }
+  function showErrors(errs) {
+    document.querySelectorAll(".errmsg").forEach((e) => { e.hidden = true; e.innerHTML = ""; });
+    document.querySelectorAll(".fin").forEach((i) => i.classList.remove("err"));
+    errs.forEach(({ errId, inputId, src, err }) => {
+      const box = $(errId); if (!box) return;
+      $(inputId)?.classList.add("err");
+      const msg = document.createElement("span");
+      const strong = document.createElement("b"); strong.textContent = "Not a wff: ";
+      msg.append(strong, err.message);
+      const code = document.createElement("code");
+      const a = Math.min(err.pos, src.length);
+      code.append(src.slice(0, a));
+      const mk = document.createElement("mark"); mk.textContent = src.slice(a, a + err.len) || " ";
+      code.append(mk, src.slice(a + err.len));
+      box.append(msg, code); box.hidden = false;
+    });
+  }
+
+  // ================= Draft vs. built =================
+  // What's in the input boxes (draft) only becomes the table (state) on Build / Enter.
+  const draft = { formula: "", premises: [], conclusion: "" };
+  const syncDraftFromState = () => { draft.formula = state.formula; draft.premises = [...state.premises]; draft.conclusion = state.conclusion; };
+  function isDirty() {
+    if (state.kind === "formula") return draft.formula !== state.formula;
+    return draft.conclusion !== state.conclusion || draft.premises.length !== state.premises.length || draft.premises.some((p, i) => p !== state.premises[i]);
+  }
+  function updateDirty() {
+    const dirty = isDirty();
+    $("dirtyHint").hidden = !dirty;
+    $("tableWrap").classList.toggle("stale", dirty || hadErrors);
+    $("verdict").classList.toggle("stale", dirty || hadErrors);
+  }
+  function build() {
+    state.formula = draft.formula;
+    state.premises = [...draft.premises];
+    state.conclusion = draft.conclusion;
+    render();
+  }
+
+  // ================= Controls =================
+  function segInit(id, key, after) {
+    const seg = $(id);
+    seg.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      state[key] = b.dataset.v;
+      if (after) after(b.dataset.v);
+      render();
+    });
+  }
+  function segSync(id, val) {
+    $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val))));
+  }
+  function syncControls() {
+    segSync("kindSeg", state.kind);
+    segSync("layoutSeg", state.layout);
+    segSync("modeSeg", state.mode);
+    $("formulaIn").hidden = state.kind !== "formula";
+    $("argIn").hidden = state.kind !== "argument";
+    $("lettersOpt").hidden = state.mode !== "practice";
+    $("f-letters").checked = state.practiceLetters;
+    $("stepper").hidden = state.mode !== "step" || !view;
+    $("practiceBtns").hidden = state.mode !== "practice" || !view;
+    if (view) {
+      $("stCount").textContent = `${state.step} / ${view.steps.length}`;
+      $("stPrev").disabled = $("stFirst").disabled = state.step === 0;
+      $("stNext").disabled = $("stLast").disabled = state.step >= view.steps.length;
+    }
+    $("copyBtn").disabled = !view;
+    $("treeLink").hidden = state.kind !== "formula" || !view;
+    $("treeLink").href = location.pathname + location.search + "#" + new URLSearchParams({ view: "tree", f: state.formula, m: "practice" });
+    renderExamples();
+  }
+
+  segInit("kindSeg", "kind", () => { state.step = 0; renderInputs(); });
+  $("buildBtn").onclick = build;
+  segInit("layoutSeg", "layout", () => { state.step = 0; });
+  segInit("modeSeg", "mode", (v) => { if (v === "step") state.step = 0; checked = false; });
+  $("f-letters").addEventListener("change", (e) => { state.practiceLetters = e.target.checked; checked = false; render(); });
+
+  // stepping
+  const go = (s) => { if (!view) return; state.step = Math.max(0, Math.min(view.steps.length, s)); drawTable(); syncControls(); };
+  $("stFirst").onclick = () => go(0);
+  $("stPrev").onclick = () => go(state.step - 1);
+  $("stNext").onclick = () => go(state.step + 1);
+  $("stLast").onclick = () => go(Infinity);
+  window.addEventListener("keydown", (e) => {
+    if (state.mode !== "step" || e.metaKey || e.ctrlKey || e.altKey) return;
+    const a = document.activeElement;
+    if (a && (a.tagName === "INPUT" || a.tagName === "SELECT" || a.tagName === "TEXTAREA")) return;
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); go(state.step + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(state.step - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); go(Infinity); }
+  });
+
+  // practice
+  function setCell(td, val) {
+    const k = `${td.dataset.key}:${td.dataset.r}`;
+    if (val === undefined) answers.delete(k); else answers.set(k, val);
+    td.textContent = val === undefined ? "" : T(val);
+    td.classList.remove("right", "wrong");
+  }
+  function moveFocus(td, dr, dc) {
+    const cells = [...$("tableWrap").querySelectorAll("td.edit")];
+    const keys = [...new Set(cells.map((c) => c.dataset.key))];
+    let r = +td.dataset.r + dr, ci = keys.indexOf(td.dataset.key) + dc;
+    const rows = model.rows.length;
+    if (r >= rows) { r = 0; ci++; }
+    if (r < 0) { r = rows - 1; ci--; }
+    if (ci < 0 || ci >= keys.length) return;
+    const next = cells.find((c) => c.dataset.key === keys[ci] && +c.dataset.r === r);
+    if (next) { td.tabIndex = -1; next.tabIndex = 0; next.focus(); }
+  }
+  $("tableWrap").addEventListener("click", (e) => {
+    const td = e.target.closest("td.edit"); if (!td) return;
+    const k = `${td.dataset.key}:${td.dataset.r}`;
+    const cur = answers.get(k);
+    setCell(td, cur === undefined ? true : cur === true ? false : undefined);
+    $("tableWrap").querySelectorAll("td.edit[tabindex='0']").forEach((c) => (c.tabIndex = -1));
+    td.tabIndex = 0; td.focus();
+  });
+  $("tableWrap").addEventListener("keydown", (e) => {
+    const td = e.target.closest("td.edit"); if (!td) return;
+    const key = e.key;
+    if (key === "t" || key === "T" || key === "1") { e.preventDefault(); setCell(td, true); moveFocus(td, 1, 0); }
+    else if (key === "f" || key === "F" || key === "0") { e.preventDefault(); setCell(td, false); moveFocus(td, 1, 0); }
+    else if (key === " ") { e.preventDefault(); const c = answers.get(`${td.dataset.key}:${td.dataset.r}`); setCell(td, c === undefined ? true : c === true ? false : undefined); }
+    else if (key === "Backspace" || key === "Delete") { e.preventDefault(); setCell(td, undefined); if (key === "Backspace") moveFocus(td, -1, 0); }
+    else if (key === "ArrowDown" || key === "Enter") { e.preventDefault(); moveFocus(td, 1, 0); }
+    else if (key === "ArrowUp") { e.preventDefault(); moveFocus(td, -1, 0); }
+    else if (key === "ArrowRight") { e.preventDefault(); moveFocus(td, 0, 1); }
+    else if (key === "ArrowLeft") { e.preventDefault(); moveFocus(td, 0, -1); }
+  });
+  $("prCheck").onclick = () => { checked = true; drawTable(); };
+  $("prClear").onclick = () => { answers = new Map(); checked = false; drawTable(); };
+
+  // copy + print
+  const statusFlash = (btn, msg) => { const o = btn.textContent; btn.textContent = msg; setTimeout(() => (btn.textContent = o), 1600); };
+  $("copyBtn").onclick = async () => {
+    if (!model) return;
+    const lines = [];
+    const hdr = ["#", ...view.cols.map((c) => c.header)];
+    lines.push(hdr.join("\t"));
+    model.rows.forEach((row, r) => {
+      lines.push([r + 1, ...view.cols.map((c) => c.type === "letter" ? T(row.env[c.letter]) : c.type === "val" ? T(row.vals[c.f][c.node.id]) : "")].join("\t"));
+    });
+    try { await navigator.clipboard.writeText(lines.join("\n")); statusFlash($("copyBtn"), "Copied"); }
+    catch (e) { statusFlash($("copyBtn"), "Couldn’t copy"); }
+  };
+  $("printBtn").onclick = () => window.print();
+  $("treeLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    const w = window.open($("treeLink").href, "logic-tree");
+    if (w) w.focus(); else location.href = $("treeLink").href;
+  });
+  if (framed) $("printBtn").hidden = true;
+
+  // table size + theme
+  function applySize(v) { document.documentElement.style.setProperty("--tsize", v + "px"); segSync("sizeSeg", v); store.set("ttb-size", v); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  applySize(store.get("ttb-size") || "18");
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", v);
+    segSync("themeSeg", v); store.set("ttb-theme2", v);
+  }
+  $("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  const savedTheme = store.get("ttb-theme2");
+  if (savedTheme && savedTheme !== "auto") applyTheme(savedTheme); else segSync("themeSeg", "auto");
+
+  // ================= Inputs =================
+  let lastInput = null;
+  function wireInput(inp, setter) {
+    inp.addEventListener("focus", () => (lastInput = inp));
+    inp.addEventListener("input", () => {
+      const pos = inp.selectionStart ?? inp.value.length;
+      const before = inp.value.slice(0, pos);
+      const nb = normalize(before), na = normalize(inp.value.slice(pos));
+      if (nb + na !== inp.value) { inp.value = nb + na; inp.setSelectionRange(nb.length, nb.length); }
+      setter(inp.value);
+      clearFieldError(inp);
+      updateDirty();
+    });
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); build(); }
+    });
+  }
+  wireInput($("f-main"), (v) => (draft.formula = v));
+  wireInput($("f-conc"), (v) => (draft.conclusion = v));
+
+  function renderInputs() {
+    $("f-main").value = draft.formula;
+    $("f-conc").value = draft.conclusion;
+    const box = $("premises"); box.innerHTML = "";
+    draft.premises.forEach((p, i) => {
+      const row = document.createElement("div"); row.className = "frow";
+      const lab = document.createElement("label"); lab.htmlFor = `f-p${i}`; lab.textContent = `Premise ${i + 1}`;
+      const fb = document.createElement("div"); fb.className = "fbox";
+      const inp = document.createElement("input");
+      Object.assign(inp, { className: "fin", id: `f-p${i}`, type: "text", autocomplete: "off", spellcheck: false, value: p, placeholder: i === 0 ? "e.g. A → B" : "" });
+      inp.setAttribute("autocapitalize", "characters");
+      const rm = document.createElement("button"); rm.type = "button"; rm.className = "icon-btn"; rm.textContent = "×";
+      rm.setAttribute("aria-label", `Remove premise ${i + 1}`);
+      rm.onclick = () => { draft.premises.splice(i, 1); renderInputs(); updateDirty(); };
+      fb.append(inp, rm);
+      const er = document.createElement("div"); er.className = "errmsg"; er.id = `err-p${i}`; er.hidden = true;
+      row.append(lab, fb, er);
+      box.appendChild(row);
+      wireInput(inp, (v) => (draft.premises[i] = v));
+    });
+  }
+  $("addPrem").onclick = () => {
+    draft.premises.push(""); renderInputs(); updateDirty();
+    $(`f-p${draft.premises.length - 1}`).focus();
+  };
+
+  $("keypad").addEventListener("mousedown", (e) => { if (e.target.closest("button")) e.preventDefault(); });
+  $("keypad").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const inp = lastInput && document.body.contains(lastInput) ? lastInput : (state.kind === "formula" ? $("f-main") : $("f-conc"));
+    const s = b.dataset.s;
+    const a = inp.selectionStart ?? inp.value.length, z = inp.selectionEnd ?? inp.value.length;
+    const pad = /[∧∨→↔↑↓]/.test(s) ? ` ${s} ` : s;
+    const left = inp.value.slice(0, a).replace(/\s+$/, pad.startsWith(" ") ? "" : "$&");
+    inp.value = left + pad + inp.value.slice(z).replace(/^\s+/, pad.endsWith(" ") ? "" : "$&");
+    const c = (left + pad).length;
+    inp.focus(); inp.setSelectionRange(c, c);
+    inp.dispatchEvent(new Event("input"));
+  });
+
+  function renderExamples() {
+    const box = $("examples"); box.innerHTML = "";
+    const l = document.createElement("span"); l.className = "lbl"; l.textContent = "Examples"; box.appendChild(l);
+    if (state.kind === "formula") {
+      EXAMPLES.formula.forEach((f) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = f;
+        b.onclick = () => { draft.formula = f; renderInputs(); build(); };
+        box.appendChild(b);
+      });
+    } else {
+      EXAMPLES.argument.forEach((ex) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = ex.label;
+        b.onclick = () => { draft.premises = [...ex.p]; draft.conclusion = ex.c; renderInputs(); build(); };
+        box.appendChild(b);
+      });
+    }
+  }
+
+  // ================= URL state (local file only) =================
+  function writeHash() {
+    if (framed) return;
+    const p = new URLSearchParams();
+    p.set("k", state.kind);
+    if (state.kind === "formula") p.set("f", state.formula);
+    else { state.premises.forEach((x) => p.append("p", x)); p.set("c", state.conclusion); }
+    p.set("l", state.layout); p.set("m", state.mode);
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (framed || !location.hash.includes("=")) return;
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (p.get("k") === "argument" || p.get("k") === "formula") state.kind = p.get("k");
+    if (p.has("f")) state.formula = normalize(p.get("f"));
+    if (p.has("p")) state.premises = p.getAll("p").map(normalize);
+    if (p.has("c")) state.conclusion = normalize(p.get("c"));
+    if (["under", "cols"].includes(p.get("l"))) state.layout = p.get("l");
+    if (["answers", "step", "practice"].includes(p.get("m"))) state.mode = p.get("m");
+  }
+
+  readHash();
+  syncDraftFromState();
+  renderInputs();
+  render();
+  window.addEventListener("hashchange", () => { readHash(); syncDraftFromState(); renderInputs(); render(); });
+};
+</script>
+<script>
+
+window.initTree = () => {
+  "use strict";
+  const $ = (id) => document.getElementById("st-" + id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+
+  // ================= Logic =================
+  const BIN = {
+    and:  { sym: "∧", assoc: true,  f: (a, b) => a && b, name: "conjunction" },
+    or:   { sym: "∨", assoc: true,  f: (a, b) => a || b, name: "disjunction" },
+    imp:  { sym: "→", assoc: false, f: (a, b) => !a || b, name: "conditional" },
+    iff:  { sym: "↔", assoc: false, f: (a, b) => a === b, name: "biconditional" },
+    nand: { sym: "↑", assoc: false, f: (a, b) => !(a && b), name: "NAND" },
+    nor:  { sym: "↓", assoc: false, f: (a, b) => !(a || b), name: "NOR" }
+  };
+  const MAX_LETTERS = 8;
+
+  class ParseError extends Error {
+    constructor(message, pos, len) { super(message); this.pos = pos; this.len = Math.max(1, len || 1); }
+  }
+
+  // Replace ASCII shortcuts with logic symbols as the user types.
+  function normalize(s) {
+    return s
+      .replace(/<->|<=>|≡/g, "↔")
+      .replace(/->|=>|⊃/g, "→")
+      .replace(/[~!]/g, "¬")
+      .replace(/[&^]/g, "∧")
+      .replace(/\|/g, "∨")
+      .replace(/(^|[\s)])v(?=[\s(¬])/g, "$1∨");
+  }
+
+  function tokenize(src) {
+    const out = [];
+    let i = 0;
+    while (i < src.length) {
+      const ch = src[i];
+      if (/\s/.test(ch)) { i++; continue; }
+      const push = (t) => { out.push({ ...t, pos: i, len: t.len || 1 }); i += t.len || 1; };
+      if (ch === "(" || ch === "[") { push({ t: "lp" }); continue; }
+      if (ch === ")" || ch === "]") { push({ t: "rp" }); continue; }
+      if (ch === "¬") { push({ t: "not" }); continue; }
+      const binBy = { "∧": "and", "∨": "or", "→": "imp", "↔": "iff", "↑": "nand", "↓": "nor" };
+      if (binBy[ch]) { push({ t: "bin", op: binBy[ch] }); continue; }
+      if (ch === "⊤") { push({ t: "const", val: true }); continue; }
+      if (ch === "⊥") { push({ t: "const", val: false }); continue; }
+      if (/[A-Za-z]/.test(ch)) {
+        let j = i + 1;
+        while (j < src.length && /[A-Za-z0-9_₀-₉']/.test(src[j])) j++;
+        const name = src.slice(i, j);
+        if (name === "v") { push({ t: "bin", op: "or" }); continue; }
+        out.push({ t: "var", name, pos: i, len: j - i }); i = j; continue;
+      }
+      if (/[0-9]/.test(ch)) throw new ParseError(`Sentence letters start with a letter; “${ch}” can’t start one.`, i, 1);
+      throw new ParseError(`“${ch}” isn’t a symbol the builder knows.`, i, 1);
+    }
+    return out;
+  }
+
+  function parse(src) {
+    const toks = tokenize(src);
+    if (!toks.length) return null;
+    let k = 0;
+    let nextId = 0;
+    const peek = () => toks[k];
+    const endPos = src.replace(/\s+$/, "").length;
+    const describe = (t) => t.t === "var" ? t.name : t.t === "bin" ? BIN[t.op].sym : t.t === "not" ? "¬" : t.t === "lp" ? "(" : t.t === "rp" ? ")" : (t.val ? "⊤" : "⊥");
+
+    function atom() {
+      const t = peek();
+      if (!t) throw new ParseError("The formula stops too early: something is missing at the end.", endPos, 1);
+      if (t.t === "var") { k++; return { type: "var", name: t.name, id: nextId++, pos: t.pos }; }
+      if (t.t === "const") { k++; return { type: "const", val: t.val, id: nextId++, pos: t.pos }; }
+      if (t.t === "lp") {
+        k++;
+        const inner = expr();
+        const c = peek();
+        if (!c || c.t !== "rp") {
+          if (!c) throw new ParseError("A “(” is never closed.", t.pos, 1);
+          throw new ParseError(`Expected “)” here, found “${describe(c)}”.`, c.pos, c.len);
+        }
+        k++;
+        inner.parens = true;
+        return inner;
+      }
+      if (t.t === "not") { return unary(); }
+      if (t.t === "rp") throw new ParseError("There’s a “)” with nothing before it to close.", t.pos, 1);
+      throw new ParseError(`“${describe(t)}” needs a formula on its left.`, t.pos, t.len);
+    }
+    function unary() {
+      const t = peek();
+      if (t && t.t === "not") {
+        k++;
+        const arg = unary();
+        return { type: "not", arg, id: nextId++, pos: t.pos };
+      }
+      return atom();
+    }
+    function expr() {
+      let left = unary();
+      let first = null;
+      while (peek() && peek().t === "bin") {
+        const t = peek();
+        if (first && (t.op !== first.op || !BIN[t.op].assoc)) {
+          const a = BIN[first.op].sym, b = BIN[t.op].sym;
+          throw new ParseError(
+            t.op === first.op
+              ? `Two “${b}” in a row without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`
+              : `Mixing “${a}” and “${b}” without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`,
+            t.pos, t.len);
+        }
+        first = first || t;
+        k++;
+        const right = unary();
+        left = { type: "bin", op: t.op, left, right, id: nextId++, pos: t.pos };
+      }
+      return left;
+    }
+
+    const ast = expr();
+    if (k < toks.length) {
+      const t = toks[k];
+      if (t.t === "rp") throw new ParseError("This “)” doesn’t match any “(”.", t.pos, 1);
+      const prev = toks[k - 1];
+      throw new ParseError(`A connective is missing between “${describe(prev)}” and “${describe(t)}”.`, t.pos, t.len);
+    }
+    return ast;
+  }
+
+  function lettersOf(node, acc) {
+    if (node.type === "var") { if (!acc.includes(node.name)) acc.push(node.name); }
+    else if (node.type === "not") lettersOf(node.arg, acc);
+    else if (node.type === "bin") { lettersOf(node.left, acc); lettersOf(node.right, acc); }
+    return acc;
+  }
+  function height(node) {
+    if (node.type === "var" || node.type === "const") return (node.h = 0);
+    if (node.type === "not") return (node.h = 1 + height(node.arg));
+    return (node.h = 1 + Math.max(height(node.left), height(node.right)));
+  }
+  function evaluate(node, env, out) {
+    let v;
+    if (node.type === "var") v = env[node.name];
+    else if (node.type === "const") v = node.val;
+    else if (node.type === "not") v = !evaluate(node.arg, env, out);
+    else v = BIN[node.op].f(evaluate(node.left, env, out), evaluate(node.right, env, out));
+    out[node.id] = v;
+    return v;
+  }
+  const kids = (n) => n.type === "not" ? [n.arg] : n.type === "bin" ? [n.left, n.right] : [];
+  const isLeaf = (n) => n.type === "var" || n.type === "const";
+
+  // Printed form, as a list of tokens that remember their node.
+  // Textbook conventions: outer parentheses dropped, ¬ binds to what follows,
+  // and a chain of one associative connective is written without inner parentheses.
+  function printTokens(node, top = true) {
+    if (node.type === "var") return [{ text: node.name, node, kind: "leaf" }];
+    if (node.type === "const") return [{ text: node.val ? "⊤" : "⊥", node, kind: "leaf" }];
+    if (node.type === "not") return [{ text: "¬", node, kind: "conn" }, ...printTokens(node.arg, false)];
+    const leftChain = node.left.type === "bin" && node.left.op === node.op && BIN[node.op].assoc && !node.left.parens;
+    const inner = [
+      ...(leftChain ? printTokens(node.left, true) : printTokens(node.left, false)),
+      { text: BIN[node.op].sym, node, kind: "conn", bin: true },
+      ...printTokens(node.right, false)
+    ];
+    return top ? inner : [{ text: "(", kind: "paren" }, ...inner, { text: ")", kind: "paren" }];
+  }
+  const textOf = (toks) => toks.map((t) => (t.bin ? ` ${t.text} ` : t.text)).join("");
+  const canon = (node) => textOf(printTokens(node, true));
+
+
+  // ================= State =================
+  const state = { formula: "(A ∨ B) ∧ (¬A → (C ↔ D))", mode: "practice" };
+  let draft = state.formula;
+  let ast = null;          // built formula
+  let hadError = false;
+  let split = new Set();   // ids of nodes the student has split
+  let fresh = new Set();   // nodes that just appeared (for the pop-in)
+  let mistakes = 0;
+  let hint = { cls: "", parts: [] };
+
+  const nodesOf = (n, acc = []) => { acc.push(n); kids(n).forEach((k) => nodesOf(k, acc)); return acc; };
+  const nonAtomic = (n) => !isLeaf(n);
+
+  // Tokens shown in a node: the root as typed (outer parens dropped); children keep their
+  // parentheses, as in the textbook's trees.
+  const nodeTokens = (n, isRoot) => printTokens(n, isRoot || n.type !== "bin");
+
+  // ================= Build =================
+  function build() {
+    state.formula = draft;
+    let res;
+    try { res = parse(state.formula); hadError = false; showError(null); }
+    catch (e) {
+      if (!(e instanceof ParseError)) throw e;
+      hadError = true; showError(e); updateDirty(); return;
+    }
+    ast = res;
+    if (ast) height(ast);
+    split = new Set(); fresh = new Set(); mistakes = 0;
+    hint = ast ? startHint() : { cls: "", parts: [] };
+    writeHash();
+    render();
+  }
+
+  function startHint() {
+    if (state.mode === "show") return { cls: "", parts: ["The finished tree. Switch to ", { b: "Build it" }, " to split it yourself."] };
+    if (isLeaf(ast)) return { cls: "", parts: ["A single sentence letter is already a complete tree."] };
+    return { cls: "", parts: ["Click the ", { b: "main connective" }, " of the dashed formula to split it."] };
+  }
+
+  function showError(e) {
+    const box = $("err-main"), inp = $("f-main");
+    box.innerHTML = ""; box.hidden = true; inp.classList.remove("err");
+    if (!e) return;
+    const src = state.formula;
+    inp.classList.add("err");
+    const msg = document.createElement("span");
+    const strong = document.createElement("b"); strong.textContent = "Not a wff: ";
+    msg.append(strong, e.message);
+    const code = document.createElement("code");
+    const a = Math.min(e.pos, src.length);
+    const mk = document.createElement("mark"); mk.textContent = src.slice(a, a + e.len) || " ";
+    code.append(src.slice(0, a), mk, src.slice(a + e.len));
+    box.append(msg, code); box.hidden = false;
+  }
+
+  // ================= Clicking a connective =================
+  function pick(node, tokNode, tokIndex, toks, btn) {
+    if (tokNode === node) {
+      split.add(node.id);
+      fresh = new Set(kids(node).map((k) => k.id));
+      const parts = kids(node).map((k) => disp(k));
+      const what = node.type === "not" ? "a negation" : `a ${BIN[node.op].name}`;
+      hint = { cls: "good", parts: ["Right: ", { f: canon(node) }, ` is ${what}`, node.type === "not" ? ", so it has one part: " : ", so it splits into ", ...joinF(parts), "."] };
+      render();
+      return;
+    }
+    mistakes++;
+    btn.classList.remove("wrong"); void btn.offsetWidth; btn.classList.add("wrong");
+    hint = { cls: "bad", parts: wrongHint(node, tokNode, tokIndex, toks) };
+    drawHint();
+  }
+  // does the first "(" close at the very last token?
+  function wrapsWhole(toks) {
+    if (toks[0].text !== "(") return false;
+    let d = 0;
+    for (let i = 0; i < toks.length; i++) {
+      if (toks[i].text === "(") d++; else if (toks[i].text === ")") d--;
+      if (d === 0) return i === toks.length - 1;
+    }
+    return false;
+  }
+  const disp = (n) => textOf(printTokens(n, n.type !== "bin"));
+  const joinF = (parts) => parts.length === 1 ? [{ f: parts[0] }] : [{ f: parts[0] }, " and ", { f: parts[1] }];
+
+  function wrongHint(node, tokNode, ti, toks) {
+    // depth of the clicked token inside this node, ignoring the node's own outer parentheses
+    let depth = 0;
+    for (let i = 0; i < ti; i++) { if (toks[i].text === "(") depth++; else if (toks[i].text === ")") depth--; }
+    if (wrapsWhole(toks)) depth--;
+    const sym = toks[ti].text;
+    if (depth > 0) return [`That ${sym} is inside parentheses, so it belongs to a smaller part of the formula. Look for the connective that no parentheses enclose.`];
+    if (tokNode.type === "not") return [`That ¬ applies only to `, { f: disp(tokNode.arg) }, ` (¬ attaches to what immediately follows it). Look for a connective that governs the whole formula.`];
+    if (tokNode.type === "bin" && node.type === "bin" && tokNode.op === node.op) return [`In a chain like A ${sym} B ${sym} C, we group from the left, (A ${sym} B) ${sym} C, so the main ${sym} is the last one.`];
+    if (node.type === "not") return [`The ¬ at the front applies to everything after it, so it’s the main connective here.`];
+    return [`That ${sym} isn’t the main connective. Try again.`];
+  }
+
+  // ================= Render =================
+  function render() {
+    syncControls();
+    const wrap = $("treeWrap");
+    wrap.innerHTML = "";
+    if (!ast) {
+      const d = document.createElement("div"); d.className = "empty";
+      d.textContent = "Type a formula and press Enter.";
+      wrap.appendChild(d); drawStatus(); drawHint(); updateDirty(); return;
+    }
+    const tree = document.createElement("div"); tree.className = "tree";
+    const edges = document.createElementNS("http://www.w3.org/2000/svg", "svg"); edges.classList.add("edges");
+    tree.appendChild(edges);
+    wrap.appendChild(tree);
+
+    const show = state.mode === "show";
+    const shown = []; // {node, el, kids:[...]}
+    const make = (n, isRoot) => {
+      const el = document.createElement("div");
+      el.className = "node";
+      const expanded = isLeaf(n) || show || split.has(n.id);
+      const open = !expanded;
+      if (open) el.classList.add("open");
+      if (fresh.has(n.id)) el.classList.add("fresh");
+      const toks = nodeTokens(n, isRoot);
+      toks.forEach((t, i) => {
+        if (t.bin && i > 0) { const s = document.createElement("span"); s.className = "sp"; el.appendChild(s); }
+        let tk;
+        if (open && t.kind === "conn") {
+          tk = document.createElement("button"); tk.type = "button";
+          tk.setAttribute("aria-label", `Split at this ${t.text}`);
+          tk.onclick = () => pick(n, t.node, i, toks, tk);
+        } else tk = document.createElement("span");
+        tk.className = "tk" + (t.kind === "leaf" ? " leaf" : "") + (t.kind === "paren" ? " paren" : "") + (!open && t.node === n && t.kind === "conn" ? " main" : "");
+        tk.textContent = t.text;
+        el.appendChild(tk);
+        if (t.bin && i < toks.length - 1) { const s = document.createElement("span"); s.className = "sp"; el.appendChild(s); }
+      });
+      tree.appendChild(el);
+      const rec = { n, el, kids: [] };
+      if (expanded && !isLeaf(n)) rec.kids = kids(n).map((k) => make(k, false));
+      shown.push(rec);
+      return rec;
+    };
+    const root = make(ast, true);
+
+    // Layout. Each node has an anchor: its main connective once it has been split
+    // (so branches hang from that connective), otherwise its center (so the layout
+    // never gives away the answer). Subtrees are packed by their bounding extents.
+    const em = parseFloat(getComputedStyle(tree).fontSize);
+    const gapX = em * 1.2, gapY = em * 2.1;
+    let rowH = 0;
+    shown.forEach((r) => {
+      r.w = r.el.offsetWidth; r.h = r.el.offsetHeight; rowH = Math.max(rowH, r.h);
+      const m = r.kids.length ? r.el.querySelector(".tk.main") : null;
+      r.a = m ? m.offsetLeft + m.offsetWidth / 2 : r.w / 2;
+    });
+    const extent = (r) => {
+      r.kids.forEach(extent);
+      r.off = [];
+      if (!r.kids.length) { r.L = r.a; r.R = r.w - r.a; return; }
+      const pos = [0];
+      for (let i = 1; i < r.kids.length; i++) pos.push(pos[i - 1] + r.kids[i - 1].R + gapX + r.kids[i].L);
+      const mid = (pos[0] + pos[pos.length - 1]) / 2;
+      r.off = pos.map((p) => p - mid);
+      r.L = Math.max(r.a, ...r.kids.map((k, i) => k.L - r.off[i]));
+      r.R = Math.max(r.w - r.a, ...r.kids.map((k, i) => k.R + r.off[i]));
+    };
+    extent(root);
+    let maxY = 0;
+    const place = (r, ax, depth) => {
+      r.ax = ax; r.x = ax - r.a; r.y = depth * (rowH + gapY);
+      maxY = Math.max(maxY, r.y + r.h);
+      r.kids.forEach((k, i) => place(k, ax + r.off[i], depth + 1));
+    };
+    place(root, root.L, 0);
+    let minX = Infinity, maxX = -Infinity;
+    shown.forEach((r) => { minX = Math.min(minX, r.x); maxX = Math.max(maxX, r.x + r.w); });
+    shown.forEach((r) => { r.x -= minX; r.ax -= minX; r.el.style.left = r.x + "px"; r.el.style.top = r.y + "px"; });
+    const W = maxX - minX;
+    tree.style.width = W + "px"; tree.style.height = maxY + "px";
+    edges.setAttribute("width", W); edges.setAttribute("height", maxY);
+    shown.forEach((r) => r.kids.forEach((k) => {
+      const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      l.setAttribute("x1", r.ax); l.setAttribute("y1", r.y + r.h + 2);
+      l.setAttribute("x2", k.ax); l.setAttribute("y2", k.y - 2);
+      edges.appendChild(l);
+    }));
+
+    fresh = new Set();
+    drawStatus(); drawHint(); updateDirty();
+  }
+
+  function drawStatus() {
+    const el = $("status"); el.innerHTML = "";
+    if (!ast) return;
+    const badge = (cls, t) => { const b = document.createElement("span"); b.className = "badge " + cls; b.textContent = t; return b; };
+    const txt = (parts) => { const s = document.createElement("span"); s.className = "status-text"; parts.forEach((p) => typeof p === "string" ? s.append(p) : s.append(Object.assign(document.createElement("b"), { textContent: p.b }))); return s; };
+    const all = nodesOf(ast).filter(nonAtomic);
+    const letters = [...new Set(nodesOf(ast).filter((n) => n.type === "var").map((n) => n.name))];
+    if (state.mode === "show") {
+      el.append(badge("neutral", "Tree"), txt([{ b: `${all.length} connective${all.length === 1 ? "" : "s"}` }, `, ${letters.length} sentence letter${letters.length === 1 ? "" : "s"}, depth ${ast.h}`]));
+      return;
+    }
+    const done = all.filter((n) => split.has(n.id)).length;
+    if (done === all.length) {
+      el.append(badge("good", "Tree complete"), txt([mistakes === 0 ? "No wrong picks." : { b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, mistakes ? " along the way." : ""]));
+      if (all.length && hint.cls !== "bad") hint = { cls: "good", parts: ["Every node is split down to sentence letters. ", mistakes ? "Try another formula, or Start over to do it cleanly." : "Nicely done."] };
+    } else {
+      el.append(badge("muted", `${done} of ${all.length} split`), txt(mistakes ? [{ b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, " so far"] : ["Split each dashed formula at its main connective."]));
+    }
+  }
+
+  function drawHint() {
+    const h = $("hintbar"); h.innerHTML = ""; h.className = "hintbar" + (hint.cls ? " " + hint.cls : "");
+    hint.parts.forEach((p) => {
+      if (typeof p === "string") h.append(p);
+      else if (p.f !== undefined) { const s = document.createElement("span"); s.className = "f"; s.textContent = p.f; h.append(s); }
+      else h.append(Object.assign(document.createElement("b"), { textContent: p.b }));
+    });
+    h.hidden = !ast;
+  }
+
+  // ================= Controls =================
+  function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
+  function syncControls() {
+    segSync("modeSeg", state.mode);
+    $("modeNote").textContent = state.mode === "practice"
+      ? "Click the main connective of each dashed formula. Wrong picks are marked so you can try again."
+      : "The whole tree at once, with each formula’s main connective highlighted.";
+    $("resetBtn").hidden = state.mode !== "practice" || !ast;
+    const f = ast ? state.formula : draft;
+    $("ttLink").href = location.pathname + location.search + "#" + new URLSearchParams({ view: "table", k: "formula", f, m: "practice" });
+  }
+  $("modeSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    state.mode = b.dataset.v;
+    if (ast) hint = startHint();
+    writeHash(); render();
+  });
+  $("ttLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    const w = window.open($("ttLink").href, "logic-table");
+    if (w) w.focus(); else location.href = $("ttLink").href;
+  });
+  $("resetBtn").onclick = () => { split = new Set(); mistakes = 0; hint = startHint(); render(); };
+
+  function updateDirty() {
+    const dirty = draft !== state.formula;
+    $("dirtyHint").hidden = !dirty;
+    $("treeWrap").classList.toggle("stale", dirty || hadError);
+    $("status").classList.toggle("stale", dirty || hadError);
+  }
+
+  // input: nothing is checked until Enter / Build
+  const inp = $("f-main");
+  inp.addEventListener("input", () => {
+    const pos = inp.selectionStart ?? inp.value.length;
+    const nb = normalize(inp.value.slice(0, pos)), na = normalize(inp.value.slice(pos));
+    if (nb + na !== inp.value) { inp.value = nb + na; inp.setSelectionRange(nb.length, nb.length); }
+    draft = inp.value;
+    inp.classList.remove("err"); $("err-main").hidden = true;
+    updateDirty();
+  });
+  inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); build(); } });
+  $("buildBtn").onclick = build;
+
+  $("keypad").addEventListener("mousedown", (e) => { if (e.target.closest("button")) e.preventDefault(); });
+  $("keypad").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const s = b.dataset.s;
+    const a = inp.selectionStart ?? inp.value.length, z = inp.selectionEnd ?? inp.value.length;
+    const pad = /[∧∨→↔↑↓]/.test(s) ? ` ${s} ` : s;
+    const left = inp.value.slice(0, a).replace(/\s+$/, pad.startsWith(" ") ? "" : "$&");
+    inp.value = left + pad + inp.value.slice(z).replace(/^\s+/, pad.endsWith(" ") ? "" : "$&");
+    const c = (left + pad).length;
+    inp.focus(); inp.setSelectionRange(c, c);
+    inp.dispatchEvent(new Event("input"));
+  });
+
+  // size + theme
+  function applySize(v) { document.documentElement.style.setProperty("--tsize-tree", v + "px"); segSync("sizeSeg", v); store.set("stb-size", v); if (ast) render(); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", v);
+    segSync("themeSeg", v); store.set("ttb-theme2", v);
+  }
+  $("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  const savedTheme = store.get("ttb-theme2");
+  if (savedTheme && savedTheme !== "auto") applyTheme(savedTheme); else segSync("themeSeg", "auto");
+
+  // URL state
+  function writeHash() {
+    const p = new URLSearchParams({ view: "tree", f: state.formula, m: state.mode });
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (!location.hash.includes("=")) return;
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (p.has("f")) state.formula = normalize(p.get("f"));
+    if (["practice", "show"].includes(p.get("m"))) state.mode = p.get("m");
+  }
+
+  readHash();
+  draft = state.formula;
+  inp.value = draft;
+  const size = store.get("stb-size") || "20";
+  document.documentElement.style.setProperty("--tsize-tree", size + "px"); segSync("sizeSeg", size);
+  build();
+  if (document.fonts?.ready) document.fonts.ready.then(() => ast && render());
+  window.addEventListener("hashchange", () => { readHash(); draft = state.formula; inp.value = draft; build(); });
+};
+</script>
+
+<script>
+(() => {
+  // One file, two views. Each view lives in its own named tab, so the jump buttons
+  // bring back the other view's tab if it is already open instead of piling up tabs.
+  const viewOf = () => new URLSearchParams(location.hash.slice(1)).get("view") === "tree" ? "tree" : "table";
+  const VIEW = viewOf();
+  try { window.name = VIEW === "tree" ? "logic-tree" : "logic-table"; } catch (e) { /* ignore */ }
+  document.title = VIEW === "tree" ? "Syntax Tree Builder" : "Truth Table Builder";
+  document.getElementById(VIEW === "tree" ? "treeApp" : "tableApp").hidden = false;
+  window.addEventListener("hashchange", () => { if (viewOf() !== VIEW) location.reload(); });
+  (VIEW === "tree" ? window.initTree : window.initTable)();
+})();
+</script>
+</body>
+</html>
