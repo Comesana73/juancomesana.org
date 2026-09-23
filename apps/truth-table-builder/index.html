@@ -1556,7 +1556,7 @@ window.initTree = () => {
   function startHint() {
     if (state.mode === "show") return { cls: "", parts: ["The finished tree. Switch to ", { b: "Build it" }, " to split it yourself."] };
     if (isLeaf(ast)) return { cls: "", parts: ["A single sentence letter is already a complete tree."] };
-    return { cls: "", parts: ["Click the ", { b: "main connective" }, " of the dashed formula to split it."] };
+    return { cls: "", parts: ["Click the ", { b: "main connective" }, " of the formula to split it."] };
   }
 
   function showError(e) {
@@ -1726,7 +1726,7 @@ window.initTree = () => {
       el.append(badge("good", "Tree complete"), txt([mistakes === 0 ? "No wrong picks." : { b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, mistakes ? " along the way." : ""]));
       if (all.length && hint.cls !== "bad") hint = { cls: "good", parts: ["Every node is split down to sentence letters. ", mistakes ? "Try another formula, or Start over to do it cleanly." : "Nicely done."] };
     } else {
-      el.append(badge("muted", `${done} of ${all.length} split`), txt(mistakes ? [{ b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, " so far"] : ["Split each dashed formula at its main connective."]));
+      el.append(badge("muted", `${done} of ${all.length} split`), txt(mistakes ? [{ b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, " so far"] : ["Split each formula at its main connective."]));
     }
   }
 
@@ -1745,7 +1745,7 @@ window.initTree = () => {
   function syncControls() {
     segSync("modeSeg", state.mode);
     $("modeNote").textContent = state.mode === "practice"
-      ? "Click the main connective of each dashed formula. Wrong picks are marked so you can try again."
+      ? "Click the main connective of each formula. Wrong picks are marked so you can try again."
       : "The whole tree at once, with each formula’s main connective highlighted.";
     $("resetBtn").hidden = state.mode !== "practice" || !ast;
     const f = ast ? state.formula : draft;
