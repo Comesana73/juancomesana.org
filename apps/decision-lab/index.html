@@ -218,6 +218,7 @@
   /* practice affordances */
   .mx td.clickable { cursor: pointer; }
   .mx td.clickable:hover { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .mx input.crossbox { width: 1.1em; height: 1.1em; accent-color: var(--bad); cursor: pointer; vertical-align: middle; }
   .mx th.rowh button.rowbtn {
     border: 1px dashed var(--line); background: transparent; border-radius: 6px; padding: 0.05em 0.45em; cursor: pointer;
     font: inherit; color: inherit; text-decoration: inherit;
@@ -767,7 +768,7 @@
   function practiceIntro(tab) {
     const w = state.work.maximin;
     return {
-      dominance: "Classify each pair of options. Then click the names of the dominated options to cross them off, and press Check.",
+      dominance: "Classify each pair of options, tick “Dominated?” for every option that is dominated by some other option (ticking crosses it off), and press Check.",
       maximin: w.stage === 2
         ? "There’s a tie for maximin. Apply leximin: tick the option(s) leximin keeps, and press Check."
         : "Click each option’s worst outcome to star it (star every cell that ties for worst). Then click the name(s) of the maximin choice to mark them ** and press Check.",
@@ -797,10 +798,12 @@
       const crossed = practice ? w.crossed.has(r) : showCross && res.dominated.has(r);
       const wrong = practice && w.marks && w.marks.rows.has(r);
       const curRow = cur && (cur.i === r || cur.j === r);
-      rows += `<tr class="${crossed ? "crossed" : ""}">${rowHead(r, { button: practice })
-        .replace('class="rowh"', `class="rowh${wrong ? " wrong" : ""}${curRow ? " cur" : ""}"`)}${pb.states.map((_, c) => utilCell(r, c, { cls: curRow ? "curcol" : "" })).join("")}</tr>`;
+      const box = practice
+        ? `<td class="extra${wrong ? " wrong" : ""}"><input type="checkbox" class="crossbox" data-cross="${r}"${w.crossed.has(r) ? " checked" : ""} aria-label="${esc(O(r))} is dominated"></td>`
+        : "";
+      rows += `<tr class="${crossed ? "crossed" : ""}">${rowHead(r).replace('class="rowh"', `class="rowh${curRow ? " cur" : ""}"`)}${pb.states.map((_, c) => utilCell(r, c, { cls: curRow ? "curcol" : "" })).join("")}${box}</tr>`;
     });
-    const table = `<div class="scroll"><table class="mx">${header()}<tbody>${rows}</tbody></table></div>`;
+    const table = `<div class="scroll"><table class="mx">${header(practice ? ["Dominated?"] : [])}<tbody>${rows}</tbody></table></div>`;
     const pairsHtml = res.pairs.map((p, idx) => {
       let v;
       if (practice) {
@@ -940,6 +943,13 @@
     if (state.mode !== "practice") return;
     const t = e.target;
     if (t.dataset.pair !== undefined) { state.work.dominance.pairs[t.dataset.pair] = t.value; t.classList.remove("wrong"); }
+    if (t.dataset.cross !== undefined) {
+      const s = state.work.dominance.crossed, r = +t.dataset.cross;
+      t.checked ? s.add(r) : s.delete(r);
+      state.work.dominance.marks = null; state.hint = null; renderWork();
+      const again = body.querySelector(`input[data-cross="${r}"]`); if (again) again.focus();
+      return;
+    }
     if (t.dataset.lex !== undefined) { const s = state.work.maximin.lex; t.checked ? s.add(+t.dataset.lex) : s.delete(+t.dataset.lex); t.classList.remove("wrong"); }
   });
   body.addEventListener("input", (e) => {
@@ -958,11 +968,12 @@
   const setEq = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
   function check() {
     const res = state.results, w = state.work, tab = state.tab;
-    let right = 0, total = 0, done = false, extra = "";
+    let right = 0, total = 0, done = false;
+    const issues = [];
     if (tab === "dominance") {
       const d = w.dominance, marks = { pairs: new Set(), rows: new Set() };
-      res.pairs.forEach((p, idx) => { total++; if (d.pairs[`${p.i},${p.j}`] === p.rel) right++; else marks.pairs.add(idx); });
-      state.problem.opts.forEach((_, r) => { total++; if (d.crossed.has(r) === res.dominated.has(r)) right++; else marks.rows.add(r); });
+      res.pairs.forEach((p, idx) => { total++; if (d.pairs[`${p.i},${p.j}`] === p.rel) right++; else { marks.pairs.add(idx); issues.push(`the classification of ${O(p.i)}, ${O(p.j)}`); } });
+      state.problem.opts.forEach((_, r) => { total++; if (d.crossed.has(r) === res.dominated.has(r)) right++; else { marks.rows.add(r); issues.push(`whether ${O(r)} is dominated`); } });
       d.marks = marks; done = right === total;
     } else if (tab === "maximin") {
       const m = w.maximin, marks = { rows: new Set(), picks: new Set(), lex: new Set() };
@@ -970,33 +981,33 @@
         state.problem.opts.forEach((_, r) => {
           total++;
           const mine = new Set([...m.stars].filter((k) => k.startsWith(r + ",")).map((k) => +k.split(",")[1]));
-          if (setEq(mine, res.minCells[r])) right++; else marks.rows.add(r);
+          if (setEq(mine, res.minCells[r])) right++; else { marks.rows.add(r); issues.push(`the starred worst outcome(s) of ${O(r)}`); }
         });
         total++;
         const pk = new Set(res.tied);
-        if (setEq(m.picks, pk)) right++; else state.problem.opts.forEach((_, r) => { if (m.picks.has(r) !== pk.has(r)) marks.picks.add(r); });
+        if (setEq(m.picks, pk)) right++; else { issues.push("the ** mark(s) on the chosen option(s)"); state.problem.opts.forEach((_, r) => { if (m.picks.has(r) !== pk.has(r)) marks.picks.add(r); }); }
         m.marks = marks;
         if (right === total && res.tied.length > 1) { m.stage = 2; m.marks = null; state.hint = { tab, cls: "good", html: `Right: ${esc(list(res.tied))} tie at ${esc(fmt(res.best))}. Now apply leximin: compare the sorted utilities below, tick the option(s) leximin keeps, and press Check.` }; renderWork(); return; }
         done = right === total;
       } else {
         const want = new Set(res.lexWin);
-        res.tied.forEach((r) => { total++; if (m.lex.has(r) === want.has(r)) right++; else marks.lex.add(r); });
+        res.tied.forEach((r) => { total++; if (m.lex.has(r) === want.has(r)) right++; else { marks.lex.add(r); issues.push(`whether leximin keeps ${O(r)}`); } });
         m.marks = marks; done = right === total;
       }
     } else if (tab === "regret") {
       const g = w.regret, marks = { cells: new Set(), maxr: new Set(), picks: new Set() };
-      res.regret.forEach((row, r) => row.forEach((q, c) => { total++; const key = `${r},${c}`; if (accepts(g.cells[key] || "", q)) right++; else marks.cells.add(key); }));
-      res.maxReg.forEach((q, r) => { total++; if (accepts(g.maxr[r] || "", q)) right++; else marks.maxr.add(r); });
+      res.regret.forEach((row, r) => row.forEach((q, c) => { total++; const key = `${r},${c}`; if (accepts(g.cells[key] || "", q)) right++; else { marks.cells.add(key); issues.push(`the regret for ${O(r)} in ${S(c)}`); } }));
+      res.maxReg.forEach((q, r) => { total++; if (accepts(g.maxr[r] || "", q)) right++; else { marks.maxr.add(r); issues.push(`the largest regret of ${O(r)}`); } });
       total++;
       const pk = new Set(res.regWin);
-      if (setEq(g.picks, pk)) right++; else state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); });
+      if (setEq(g.picks, pk)) right++; else { issues.push("the ** mark(s) on the chosen option(s)"); state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); }); }
       g.marks = marks; done = right === total;
     } else if (tab === "eu") {
       const g = w.eu, marks = { vals: new Set(), picks: new Set() };
-      res.eu.forEach((q, r) => { total++; if (accepts(g.vals[r] || "", q)) right++; else marks.vals.add(r); });
+      res.eu.forEach((q, r) => { total++; if (accepts(g.vals[r] || "", q)) right++; else { marks.vals.add(r); issues.push(`the ${euName()} of ${O(r)}`); } });
       total++;
       const pk = new Set(res.euWin);
-      if (setEq(g.picks, pk)) right++; else state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); });
+      if (setEq(g.picks, pk)) right++; else { issues.push("the ** mark(s) on the chosen option(s)"); state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); }); }
       g.marks = marks; done = right === total;
     }
     if (done) {
@@ -1011,7 +1022,8 @@
       else verdict = `${euName() === "CEU" ? "conditional expected utility" : "expected utility"} recommends ${list(res.euWin)}`;
       state.hint = { tab, cls: "good", html: `All correct: ${esc(verdict)}.` };
     } else {
-      state.hint = { tab, cls: "bad", html: `${right} of ${total} correct. Wrong or missing entries are marked in red.` };
+      const shown = issues.slice(0, 4).join("; ") + (issues.length > 4 ? `; and ${issues.length - 4} more` : "");
+      state.hint = { tab, cls: "bad", html: `<b>Not right yet (marked in red):</b> ${esc(shown)}.` };
     }
     render();
   }
