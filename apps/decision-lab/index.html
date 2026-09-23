@@ -191,12 +191,12 @@
   .block > h3 { font-size: 0.7em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-family: var(--sans); }
   .scroll { overflow-x: auto; }
 
-  table.mx { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
-  .mx th, .mx td { padding: 0.32em 0.7em; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--line); }
-  .mx thead th { font-family: var(--logic); font-weight: 500; border-bottom: 2px solid var(--line-strong); vertical-align: bottom; }
+  /* full grid, like the textbook's matrices */
+  table.mx { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .mx th, .mx td { padding: 0.32em 0.7em; text-align: center; white-space: nowrap; border: 1px solid var(--line-strong); }
+  .mx thead th { font-family: var(--logic); font-weight: 500; vertical-align: bottom; }
   .mx thead th .pr { display: block; font-family: var(--mono); font-size: 0.72em; color: var(--accent); font-weight: 500; }
-  .mx tbody tr:last-child > * { border-bottom: 2px solid var(--line-strong); }
-  .mx th.rowh { font-family: var(--logic); font-weight: 600; text-align: left; border-right: 2px solid var(--line-strong); padding-right: 0.9em; }
+  .mx th.rowh { font-family: var(--logic); font-weight: 600; text-align: left; padding-right: 0.9em; }
   .mx td { font-family: var(--mono); position: relative; }
   .mx td .pc { display: block; font-size: 0.66em; color: var(--accent); text-align: right; margin-top: -0.1em; }
   .mx td .uv { display: block; text-align: left; }
@@ -208,9 +208,9 @@
   .mx tr.pick td.star { background: color-mix(in srgb, var(--accent-soft) 60%, var(--good-soft)); }
   .mx tr.crossed > * { color: var(--faint); }
   .mx tr.crossed td, .mx tr.crossed th.rowh { text-decoration: line-through; text-decoration-color: var(--bad); text-decoration-thickness: 2px; }
-  .mx .extra { border-left: 2px solid var(--line); font-family: var(--mono); }
+  .mx .extra { border-left: 3px double var(--line-strong); font-family: var(--mono); }
   .mx th.extra { font-family: var(--sans); font-size: 0.72em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-  .mx tr.maxrow th, .mx tr.maxrow td { font-size: 0.8em; color: var(--muted); border-bottom: 2px solid var(--line-strong); }
+  .mx tr.maxrow th, .mx tr.maxrow td { font-size: 0.8em; color: var(--muted); }
   .mx .hid { color: transparent !important; }
   .mx .cur { background: var(--accent-soft) !important; }
   .mx .curcol { background: var(--accent-softer); }
