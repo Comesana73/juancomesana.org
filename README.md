@@ -12,7 +12,7 @@ The site is intentionally simple: most page content is Markdown, the shared page
 - `assets/css/site.css` controls the visual design.
 - `assets/images/` contains images used by the site, currently saved as WebP files.
 - `assets/papers/` contains paper PDFs and conference PDFs.
-- `assets/documents/` contains CV PDFs and similar documents.
+- `assets/documents/` contains CV PDFs and similar documents. `cv.pdf` (full) and `cv-5year.pdf` (last five years) are built from `cv.yaml` in the iCloud `inprogress/cv/` folder; `cv-latex.pdf` and `s/cv*.pdf` are copies of the full CV kept so old links still work.
 - `s/` contains compatibility copies of PDFs so older public links from the Squarespace site keep working.
 - `index.md` is the home page.
 - `index.md`, `books.md`, `papers.md`, `teaching.md`, and `contact.md` are the main pages. The biographical About content now lives on the homepage.

@@ -8,7 +8,7 @@ permalink: /papers/
 
 # Selected papers
 
-Here are some of my papers. For a more or less complete list, see my [cv]({{ '/assets/documents/cv.pdf' | relative_url }}) or my [PhilPeople](https://philpeople.org/profiles/juan-comesana) page.
+Here are some of my papers. For a more or less complete list, see my [CV]({{ '/assets/documents/cv.pdf' | relative_url }}) or my [PhilPeople](https://philpeople.org/profiles/juan-comesana) page.
 
 <article class="publication">
   <p class="publication__citation">“Basing on absences” (with <a href="https://sites.rutgers.edu/carolina-sartorio/">Carolina Sartorio</a>), forthcoming in <em>Philosophical Issues</em>. (<a href="{{ '/assets/papers/basing-on-absences.pdf' | relative_url }}">pdf</a>)</p>
