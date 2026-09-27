@@ -1055,6 +1055,10 @@ window.initTable = () => {
     const stepping = state.mode === "step";
     const revealed = new Set(stepping ? steps.slice(0, state.step).map((c) => c.key) : steps.map((c) => c.key));
     const cur = stepping && state.step > 0 ? steps[state.step - 1] : null;
+    // Finding the main connective is part of the exercise: in Practice it is marked only once the
+    // problem is solved, and in Step through only once its column has been reached.
+    const solved = practice && !!practiceScore()?.done;
+    const markMain = (c) => (stepping ? revealed.has(c.key) : practice ? solved : true);
     const kidKeys = new Set();
     if (cur) {
       if (cur.node.type === "var") kidKeys.add(view.letterCol[cur.node.name].key);
@@ -1087,7 +1091,7 @@ window.initTable = () => {
     cols.forEach((c) => {
       const th = document.createElement("th");
       th.textContent = c.header;
-      th.className = cellClass(c, { cur, kidKeys });
+      th.className = cellClass(c, { cur, kidKeys, markMain });
       if (c.type === "letter") th.classList.add("letter");
       if (c.sub) th.classList.add("sub");
       if (c.title) th.title = c.title;
@@ -1112,7 +1116,7 @@ window.initTable = () => {
       }
       cols.forEach((c) => {
         const td = document.createElement("td");
-        td.className = cellClass(c, { cur, kidKeys });
+        td.className = cellClass(c, { cur, kidKeys, markMain });
         const editable = practice && (c.type === "val" || (c.type === "letter" && state.practiceLetters));
         if (c.type === "prob") {
           const inp = document.createElement("input");
@@ -1272,7 +1276,7 @@ window.initTable = () => {
     drawTable(); writeHash();
   });
 
-  function cellClass(c, { cur, kidKeys }) {
+  function cellClass(c, { cur, kidKeys, markMain }) {
     const cl = [];
     if (c.type === "prob" || c.type === "cprob") { cl.push(c.type === "prob" ? "pc" : "cpv"); if (c.pstart) cl.push("sep"); return cl.join(" "); }
     if (c.type === "letter" && c.first) { /* first column */ }
@@ -1280,7 +1284,7 @@ window.initTable = () => {
     if (c.type === "paren") cl.push("paren");
     if (c.type === "leaf") cl.push("leaf");
     if (c.tight) cl.push("tight");
-    if (c.main) cl.push("main");
+    if (c.main && (!markMain || markMain(c))) cl.push("main");
     if (cur && c.key === cur.key) cl.push("cur");
     else if (kidKeys.has(c.key)) cl.push("kid");
     return cl.join(" ");
@@ -1291,18 +1295,12 @@ window.initTable = () => {
     return c.type === "letter" ? row.env[c.letter] : row.vals[c.f][c.node.id];
   }
 
-  function drawVerdict(allShown, cur) {
-    const el = $("verdict"); el.innerHTML = "";
-    const v = model.verdict;
-    const badge = (cls, txt) => { const b = document.createElement("span"); b.className = "badge " + cls; b.textContent = txt; return b; };
-    const text = (parts) => {
-      const s = document.createElement("span"); s.className = "verdict-text";
-      parts.forEach((p) => { if (typeof p === "string") s.append(p); else { const b = document.createElement("b"); b.textContent = p.b; s.append(b); } });
-      return s;
-    };
-    const rowList = (rs) => rs.map((r) => r + 1).join(", ").replace(/, (\d+)$/, " and $1");
+  // Practice score (null until the student has pressed Check).
+  function practiceScore() {
     let score = null;
-    if (state.mode === "practice" && checked) {
+    if (!(model && view && state.mode === "practice" && checked)) return null;
+    const v = model.verdict;
+    {
       let right = 0, filled = 0, total = 0;
       view.cols.forEach((c) => {
         const ed = c.type === "val" || (c.type === "letter" && state.practiceLetters);
@@ -1319,6 +1317,20 @@ window.initTable = () => {
       score.cxOk = state.kind !== "argument" || (vChecked && pickCx.size === v.cx.length && v.cx.every((r) => pickCx.has(r)));
       score.done = score.cellsDone && score.verdictOk && score.cxOk;
     }
+    return score;
+  }
+
+  function drawVerdict(allShown, cur) {
+    const el = $("verdict"); el.innerHTML = "";
+    const v = model.verdict;
+    const badge = (cls, txt) => { const b = document.createElement("span"); b.className = "badge " + cls; b.textContent = txt; return b; };
+    const text = (parts) => {
+      const s = document.createElement("span"); s.className = "verdict-text";
+      parts.forEach((p) => { if (typeof p === "string") s.append(p); else { const b = document.createElement("b"); b.textContent = p.b; s.append(b); } });
+      return s;
+    };
+    const rowList = (rs) => rs.map((r) => r + 1).join(", ").replace(/, (\d+)$/, " and $1");
+    const score = practiceScore();
     const hideAnswer = (state.mode === "practice" && !(score && score.done)) || !allShown;
 
     if (hideAnswer) {
@@ -1374,9 +1386,10 @@ window.initTable = () => {
     } else pc.hidden = true;
     drawVerdictBar(score);
 
+    const hiding = (state.mode === "practice" && !(score && score.done)) || (state.mode === "step" && !allShown);
     $("foot").textContent = state.layout === "under"
-      ? "Each value sits under the connective it belongs to; the main connective is bold and shaded."
-      : "One column per subformula, innermost first; the whole formula is the bold, shaded column.";
+      ? `Each value sits under the connective it belongs to${hiding ? "." : "; the main connective is bold and shaded."}`
+      : `One column per subformula, innermost first${hiding ? "." : "; the whole formula is the bold, shaded column."}`;
   }
 
   // Practice: the student commits to a verdict (and, for arguments, marks the counterexample rows).
