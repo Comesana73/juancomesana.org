@@ -111,6 +111,8 @@
   .opt { display: flex; flex-direction: column; gap: 6px; }
   .opt > .lbl { font-size: 0.78rem; color: var(--muted); }
   .note { font-size: 0.82rem; color: var(--muted); }
+  .genopt { padding-top: 12px; border-top: 1px solid var(--line); }
+  .genopt .btn { align-self: flex-start; }
 
   details.help summary { cursor: pointer; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
   details.help[open] summary { margin-bottom: 10px; }
@@ -299,6 +301,14 @@
           <button type="button" data-v="ordinal">Ordinal</button><button type="button" data-v="cardinal">Cardinal</button>
         </div>
         <p class="note" id="kindNote"></p>
+      </div>
+      <div class="opt genopt">
+        <span class="lbl" id="levelLbl">Random problem</span>
+        <div class="seg full" role="group" aria-labelledby="levelLbl" id="levelSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="newBtn">New problem</button>
+        <p class="note" id="levelNote"></p>
       </div>
     </section>
 
@@ -1207,6 +1217,88 @@
   $("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
   const savedTheme = store.get("ttb-theme2");
   if (savedTheme && savedTheme !== "auto") applyTheme(savedTheme); else segSync("themeSeg", "auto");
+
+  // ================= Random problems =================
+  // Easy: 2–3 options × 2–3 states, no probabilities. Medium: 3 × 2–3, probabilities on the states (tenths).
+  // Hard: 3–4 × 3–4, negative utilities, probabilities as fractions, sometimes depending on the choice.
+  // Medium and hard problems usually make the rules disagree, and often include a dominated option;
+  // hard ones often need leximin to break a maximin tie.
+  const LEVEL_NOTE = {
+    easy: "2–3 options and states, no probabilities.",
+    medium: "3 options, probabilities on the states; the rules often disagree.",
+    hard: "3–4 options and states, negative utilities, fractions, sometimes probabilities that depend on the choice."
+  };
+  const ri = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = ri(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  // n positive integers adding up to total
+  function composition(total, n) {
+    const cuts = shuffle([...Array(total - 1).keys()].map((k) => k + 1)).slice(0, n - 1).sort((a, b) => a - b);
+    return [...cuts, total].map((c, i) => c - (i ? cuts[i - 1] : 0));
+  }
+  const gcdN = (a, b) => (b ? gcdN(b, a % b) : a);
+  const fracText = (k, d) => { const g = gcdN(k, d); return d / g === 1 ? String(k / g) : `${k / g}/${d / g}`; };
+  function probRow(C, level) {
+    if (level === "medium") return composition(10, C).map((k) => String(k / 10));
+    const d = C === 4 ? [4, 5, 10][ri(0, 2)] : [4, 5, 10][ri(0, 2)];
+    if (d < C) return composition(10, C).map((k) => fracText(k, 10));
+    return composition(d, C).map((k) => fracText(k, d));
+  }
+  function randomProblem(level) {
+    const R = level === "easy" ? ri(2, 3) : level === "medium" ? 3 : ri(3, 4);
+    const C = level === "easy" ? ri(2, 3) : level === "medium" ? ri(2, 3) : ri(3, 4);
+    const [lo, hi] = level === "easy" ? [0, 9] : level === "medium" ? [0, 10] : [-5, 12];
+    const probMode = level === "easy" ? "none" : level === "medium" ? "states" : (Math.random() < 0.3 ? "cells" : "states");
+    const wantDominated = level !== "easy" && Math.random() < 0.5;
+    const wantDisagree = level !== "easy" && Math.random() < 0.7;
+    const wantTie = level === "hard" && Math.random() < 0.5;
+    let fallback = null;
+    for (let tries = 0; tries < 3000; tries++) {
+      const u = Array.from({ length: R }, () => Array.from({ length: C }, () => ri(lo, hi)));
+      if (wantDominated) {
+        // make one option (weakly) dominated by another
+        const [i, j] = shuffle([...Array(R).keys()]);
+        u[j] = u[i].map((x) => Math.max(lo, x - ri(0, 3)));
+      }
+      if (new Set(u.map((r) => r.join())).size < R) continue;           // no two identical options
+      const pState = probMode === "states" ? probRow(C, level) : Array(C).fill("");
+      const pCell = probMode === "cells" ? u.map(() => probRow(C, level)) : u.map(() => [...pState]);
+      const pb = {
+        opts: u.map((_, r) => r), states: Array(C).fill(0), probMode,
+        u: u.map((row) => row.map((x) => new Q(BigInt(x)))),
+        pState: probMode === "states" ? pState.map((t) => ({ q: parseQ(t).q, text: t })) : null,
+        pCell: probMode === "cells" ? pCell.map((row) => row.map((t) => ({ q: parseQ(t).q, text: t }))) : null
+      };
+      const res = analyze(pb);
+      const cand = { u, pState, pCell, probMode };
+      if (!fallback) fallback = cand;
+      if (wantDominated !== (res.dominated.size > 0)) continue;
+      if (wantTie !== (res.tied.length > 1)) continue;
+      if (res.tied.length > 1 && res.lexWin.length > 1) continue;         // leximin should settle a tie
+      const winners = [res.tied.length > 1 ? res.lexWin : res.tied, res.regWin, res.euWin].filter(Boolean).map((w) => w.join());
+      if (wantDisagree && new Set(winners).size < 2) continue;
+      return cand;
+    }
+    return fallback;
+  }
+  let level = ["easy", "medium", "hard"].includes(store.get("dl-level")) ? store.get("dl-level") : "medium";
+  function syncLevel() { segSync("levelSeg", level); $("levelNote").textContent = LEVEL_NOTE[level]; }
+  $("levelSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    level = b.dataset.v; store.set("dl-level", level); syncLevel();
+  });
+  $("newBtn").onclick = () => {
+    const p = randomProblem(level);
+    const R = p.u.length, C = p.u[0].length;
+    Object.assign(draft, {
+      opts: Array.from({ length: R }, (_, r) => `A${sub(r + 1)}`),
+      states: Array.from({ length: C }, (_, c) => `S${sub(c + 1)}`),
+      u: p.u.map((row) => row.map(String)),
+      pState: p.pState, pCell: p.pCell, probMode: p.probMode
+    });
+    state.kind = "cardinal";
+    renderEditor(); build();
+  };
+  syncLevel();
 
   // ================= URL state =================
   // The address bar always holds the built problem, so a link (or a reload) reopens it exactly:

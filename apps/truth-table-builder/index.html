@@ -256,6 +256,24 @@
 
   .foot { font-size: 0.8rem; color: var(--muted); padding: 0 16px 14px; }
 
+  /* random problems */
+  .genrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--line); }
+  .genrow .lbl { font-size: 0.78rem; color: var(--muted); width: 100%; }
+
+  /* practice: the student's verdict */
+  .verdictbar { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; }
+  .verdictbar .vrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .verdictbar .vlbl { font-weight: 600; }
+  .verdictbar .note { color: var(--muted); font-size: 0.85rem; }
+  .verdictbar .fb { font-weight: 600; font-size: 0.85rem; }
+  .verdictbar .fb.ok { color: var(--good); }
+  .verdictbar .fb.no { color: var(--bad); }
+  .tt td.num.pickable { cursor: pointer; text-decoration: underline dotted var(--faint); text-underline-offset: 3px; }
+  .tt td.num.pickable:hover { color: var(--bad); }
+  .tt tr.mark td { background: var(--bad-soft); }
+  .tt tr.mark td.num { color: var(--bad); font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--bad); }
+  .tt tr.cxwrong td.num { box-shadow: inset 0 0 0 2px var(--bad); color: var(--bad); font-weight: 700; }
+
   @media (max-width: 640px) {
     .result-head { padding: 12px; }
     .table-wrap { padding: 6px 4px 10px; }
@@ -263,7 +281,7 @@
   }
   @media print {
     body { background: #fff; }
-    .topbar, .panel, .actions, .stepcap, .practicecap, .foot { display: none !important; }
+    .topbar, .panel, .actions, .stepcap, .practicecap, .verdictbar, .foot { display: none !important; }
     .app { display: block; padding: 0; }
     .card { border: 0; }
   }
@@ -374,6 +392,14 @@
         <span class="hint" id="dirtyHint" hidden>Not built yet. Press Enter or click Build.</span>
       </div>
 
+      <div class="genrow">
+        <span class="lbl" id="levelLbl">Random problem</span>
+        <div class="seg" role="group" aria-labelledby="levelLbl" id="levelSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="newBtn">New problem</button>
+      </div>
+
       <div class="examples" id="examples"></div>
     </section>
 
@@ -434,6 +460,7 @@
       <div class="stepcap" id="stepcap" hidden></div>
       <div class="practicecap" id="practicecap" hidden></div>
       <div class="table-wrap" id="tableWrap"></div>
+      <div class="verdictbar" id="verdictbar" hidden></div>
       <p class="foot" id="foot"></p>
     </section>
   </main>
@@ -487,6 +514,14 @@
       <div class="buildrow">
         <button type="button" class="btn primary" id="st-buildBtn">Build tree</button>
         <span class="hint" id="st-dirtyHint" hidden>Not built yet. Press Enter or click Build.</span>
+      </div>
+
+      <div class="genrow">
+        <span class="lbl" id="st-levelLbl">Random formula</span>
+        <div class="seg" role="group" aria-labelledby="st-levelLbl" id="st-levelSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="st-newBtn">New formula</button>
       </div>
     </section>
 
@@ -700,7 +735,92 @@ window.LogicCore = (() => {
   }
   const textOf = (toks) => toks.map((t) => (t.bin ? ` ${t.text} ` : t.text)).join("");
   const canon = (node) => textOf(printTokens(node, true));
-  return { BIN, MAX_LETTERS, ParseError, normalize, tokenize, parse, lettersOf, height, evaluate, kids, isLeaf, printTokens, textOf, canon };
+  // ================= Random problems =================
+  // Formulas use the five main connectives only. Every sentence letter in play appears,
+  // there is no ¬¬, and no binary connective joins a formula to itself (A ∧ A).
+  const LEVELS = {
+    easy:   { letters: ["A", "B"],           conns: [2, 3], ops: ["and", "or", "imp"],        prem: [2, 2], premConns: [0, 1], concConns: [0, 1] },
+    medium: { letters: ["A", "B", "C"],      conns: [3, 4], ops: ["and", "or", "imp", "iff"], prem: [2, 2], premConns: [1, 2], concConns: [0, 2] },
+    hard:   { letters: ["A", "B", "C", "D"], conns: [5, 6], ops: ["and", "or", "imp", "iff"], prem: [2, 3], premConns: [1, 3], concConns: [1, 2] }
+  };
+  const rnd = (n) => Math.floor(Math.random() * n);
+  const pick = (a) => a[rnd(a.length)];
+  const between = ([lo, hi]) => lo + rnd(hi - lo + 1);
+
+  function randTree(n, letters, ops, underNot) {
+    if (n === 0) return { type: "var", name: pick(letters) };
+    if (!underNot && Math.random() < 0.28) return { type: "not", arg: randTree(n - 1, letters, ops, true) };
+    const l = rnd(n);
+    return { type: "bin", op: pick(ops), left: randTree(l, letters, ops, false), right: randTree(n - 1 - l, letters, ops, false) };
+  }
+  function selfJoined(node) {
+    if (node.type === "not") return selfJoined(node.arg);
+    if (node.type !== "bin") return false;
+    return canon(node.left) === canon(node.right) || selfJoined(node.left) || selfJoined(node.right);
+  }
+  // Truth values of each formula's main connective in every row, over the letters of all of them.
+  function tableOf(srcs) {
+    const asts = srcs.map(parse);
+    const letters = [];
+    asts.forEach((a) => lettersOf(a, letters));
+    const n = letters.length, rows = [];
+    for (let i = 0; i < 1 << n; i++) {
+      const env = {};
+      letters.forEach((L, j) => { env[L] = ((i >> (n - 1 - j)) & 1) === 0; });
+      rows.push(asts.map((a) => evaluate(a, env, {})));
+    }
+    return { letters, rows };
+  }
+  function randFormulaOver(letters, conns, ops) {
+    for (;;) {
+      const t = randTree(conns, letters, ops, false);
+      if (selfJoined(t)) continue;
+      return canon(t);
+    }
+  }
+  function randomFormula(level = "medium") {
+    const L = LEVELS[level] || LEVELS.medium;
+    const r = Math.random();
+    const want = r < 0.25 ? "taut" : r < 0.4 ? "contra" : "contingent";
+    let fallback = null;
+    for (let tries = 0; tries < 4000; tries++) {
+      const src = randFormulaOver(L.letters, between(L.conns), L.ops);
+      const { letters, rows } = tableOf([src]);
+      if (letters.length !== L.letters.length) continue;
+      const t = rows.filter((r) => r[0]).length;
+      const type = t === rows.length ? "taut" : t === 0 ? "contra" : "contingent";
+      if (type === "contingent" && !fallback) fallback = src;
+      if (type === want) return src;
+    }
+    return fallback;
+  }
+  function randomArgument(level = "medium") {
+    const L = LEVELS[level] || LEVELS.medium;
+    const wantValid = Math.random() < 0.5;
+    let fallback = null;
+    for (let tries = 0; tries < 4000; tries++) {
+      const nLet = level === "hard" ? between([3, 4]) : L.letters.length;
+      const letters = L.letters.slice(0, nLet);
+      const p = Array.from({ length: between(L.prem) }, () => randFormulaOver(letters, between(L.premConns), L.ops));
+      const c = randFormulaOver(letters, between(L.concConns), L.ops);
+      if (!p.some((x) => /[∧∨→↔¬]/.test(x))) continue;              // at least one premise with a connective
+      if (new Set(p).size < p.length || p.includes(c)) continue;      // no repeats, conclusion isn't a premise
+      const { letters: used, rows } = tableOf([...p, c]);
+      if (used.length !== nLet) continue;
+      const pl = []; p.forEach((x) => lettersOf(parse(x), pl));
+      if (lettersOf(parse(c), []).some((x) => !pl.includes(x))) continue; // conclusion only talks about the premises' letters
+      const k = p.length;
+      if (!rows.some((r) => r.slice(0, k).every(Boolean))) continue;  // premises can all be true together
+      if (rows.every((r) => r[k])) continue;                           // conclusion isn't a tautology
+      if (p.some((_, i) => rows.every((r) => r[i]))) continue;        // no premise is a tautology
+      const valid = rows.every((r) => !r.slice(0, k).every(Boolean) || r[k]);
+      if (!fallback) fallback = { p, c };
+      if (valid === wantValid) return { p, c };
+    }
+    return fallback;
+  }
+
+  return { BIN, MAX_LETTERS, ParseError, normalize, tokenize, parse, lettersOf, height, evaluate, kids, isLeaf, printTokens, textOf, canon, randomFormula, randomArgument };
 })();
 </script>
 <script>
@@ -739,6 +859,10 @@ window.initTable = () => {
   let model = null;          // last good model
   let answers = new Map();   // practice answers: key -> true/false
   let checked = false;
+  let pickVerdict = null;    // practice: the student's verdict ("taut" | "contra" | "contingent" | "valid" | "invalid")
+  let pickCx = new Set();    // practice: rows the student marked as counterexamples
+  let vChecked = false;      // has the verdict been checked since it last changed?
+  const resetPractice = () => { answers = new Map(); checked = false; pickVerdict = null; pickCx = new Set(); vChecked = false; };
   let signature = "";
 
   // ================= Model =================
@@ -876,7 +1000,7 @@ window.initTable = () => {
     const sig = state.kind + "|" + m.formulas.map((f) => canon(f.ast)).join("|") + "|" + state.layout;
     if (sig !== signature) {
       signature = sig;
-      answers = new Map(); checked = false; state.step = 0;
+      resetPractice(); state.step = 0;
     }
     drawTable();
     syncControls();
@@ -938,6 +1062,12 @@ window.initTable = () => {
       if (N >= 8 && r > 0 && r % 4 === 0) tr.classList.add("grp");
       if (markRows) { if (v.cx.includes(r)) tr.classList.add("cx"); else if (v.pt.includes(r)) tr.classList.add("pt"); }
       const tn = document.createElement("td"); tn.className = "num"; tn.textContent = r + 1; tr.appendChild(tn);
+      if (practice && state.kind === "argument") {
+        tn.classList.add("pickable"); tn.dataset.row = r;
+        tn.title = "Click to mark this row as a counterexample";
+        if (pickCx.has(r)) tr.classList.add("mark");
+        if (vChecked && pickCx.has(r) && !v.cx.includes(r)) tr.classList.add("cxwrong");
+      }
       cols.forEach((c) => {
         const td = document.createElement("td");
         td.className = cellClass(c, { cur, kidKeys });
@@ -1013,7 +1143,10 @@ window.initTable = () => {
           filled++; if (a === expected(c, r)) right++;
         });
       });
-      score = { right, filled, total, done: right === total };
+      score = { right, filled, total, cellsDone: right === total };
+      score.verdictOk = vChecked && pickVerdict === v.type;
+      score.cxOk = state.kind !== "argument" || (vChecked && pickCx.size === v.cx.length && v.cx.every((r) => pickCx.has(r)));
+      score.done = score.cellsDone && score.verdictOk && score.cxOk;
     }
     const hideAnswer = (state.mode === "practice" && !(score && score.done)) || !allShown;
 
@@ -1064,15 +1197,74 @@ window.initTable = () => {
       if (score) {
         const sp = document.createElement("span");
         sp.className = "score" + (score.done ? " ok" : "");
-        sp.textContent = score.done ? `All ${score.total} cells correct.` : `${score.right} of ${score.filled} filled cells correct${score.filled < score.total ? `, ${score.total - score.filled} still blank` : ""}.`;
+        sp.textContent = score.done ? "All correct: every cell, and the verdict." : score.cellsDone ? `All ${score.total} cells correct. ${pickVerdict ? "Check the verdict below." : "Now choose the verdict below."}` : score.filled === 0 ? "No cells filled in yet." : `${score.right} of ${score.filled} filled cells correct${score.filled < score.total ? `, ${score.total - score.filled} still blank` : ""}.`;
         pc.append(sp);
       }
     } else pc.hidden = true;
+    drawVerdictBar(score);
 
     $("foot").textContent = state.layout === "under"
       ? "Each value sits under the connective it belongs to; the main connective is bold and shaded."
       : "One column per subformula, innermost first; the whole formula is the bold, shaded column.";
   }
+
+  // Practice: the student commits to a verdict (and, for arguments, marks the counterexample rows).
+  function drawVerdictBar(score) {
+    const bar = $("verdictbar");
+    if (state.mode !== "practice" || !model) { bar.hidden = true; return; }
+    bar.hidden = false; bar.innerHTML = "";
+    const v = model.verdict;
+    const choices = state.kind === "formula"
+      ? [["taut", "Tautology"], ["contra", "Contradiction"], ["contingent", "Contingency"]]
+      : [["valid", "Valid"], ["invalid", "Invalid"]];
+    const row1 = document.createElement("div"); row1.className = "vrow";
+    const lbl = document.createElement("span"); lbl.className = "vlbl"; lbl.id = "vLbl";
+    lbl.textContent = state.kind === "formula" ? "The formula is a" : "The argument is";
+    const seg = document.createElement("div"); seg.className = "seg"; seg.setAttribute("role", "group"); seg.setAttribute("aria-labelledby", "vLbl");
+    choices.forEach(([k, t]) => {
+      const b = document.createElement("button"); b.type = "button"; b.dataset.verdict = k; b.textContent = t;
+      b.setAttribute("aria-pressed", String(pickVerdict === k));
+      seg.append(b);
+    });
+    row1.append(lbl, seg);
+    if (vChecked && pickVerdict) {
+      const fb = document.createElement("span");
+      const ok = pickVerdict === v.type;
+      fb.className = "fb " + (ok ? "ok" : "no"); fb.textContent = ok ? "Right" : "Not right";
+      row1.append(fb);
+    }
+    const chk = document.createElement("button"); chk.type = "button"; chk.className = "btn small primary"; chk.dataset.check = "1"; chk.textContent = "Check";
+    row1.append(chk);
+    bar.append(row1);
+    if (state.kind === "argument") {
+      const row2 = document.createElement("div"); row2.className = "vrow";
+      const note = document.createElement("span"); note.className = "note";
+      const marked = [...pickCx].sort((a, b) => a - b).map((r) => r + 1);
+      note.textContent = `Counterexamples: click the number of every row where all the premises are true and the conclusion is false (mark none if there are none). ${marked.length ? `Marked: row${marked.length > 1 ? "s" : ""} ${marked.join(", ")}.` : "None marked."}`;
+      row2.append(note);
+      if (vChecked && pickVerdict === "valid" && pickCx.size) {
+        const fb = document.createElement("span"); fb.className = "fb no";
+        fb.textContent = "You chose Valid, but marked rows: a valid argument has no counterexamples.";
+        row2.append(fb);
+      } else if (vChecked && pickVerdict === "invalid") {
+        const extra = [...pickCx].filter((r) => !v.cx.includes(r)).length;
+        const missing = v.cx.filter((r) => !pickCx.has(r)).length;
+        const ok = !extra && !missing;
+        const fb = document.createElement("span"); fb.className = "fb " + (ok ? "ok" : "no");
+        const parts = [];
+        if (extra) parts.push(`${extra} marked row${extra > 1 ? "s aren’t" : " isn’t a"} counterexample${extra > 1 ? "s" : ""} (outlined in red)`);
+        if (missing) parts.push(`${missing} counterexample${missing > 1 ? "s" : ""} still unmarked`);
+        fb.textContent = ok ? (v.cx.length ? "Rows right" : "Right: there are none") : parts.join("; ");
+        row2.append(fb);
+      }
+      bar.append(row2);
+    }
+  }
+  $("verdictbar").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.verdict) { pickVerdict = pickVerdict === b.dataset.verdict ? null : b.dataset.verdict; vChecked = false; drawTable(); }
+    else if (b.dataset.check) { checked = true; vChecked = true; drawTable(); }
+  });
 
   function clearFieldError(inp) {
     inp.classList.remove("err");
@@ -1193,6 +1385,8 @@ window.initTable = () => {
     if (next) { td.tabIndex = -1; next.tabIndex = 0; next.focus(); }
   }
   $("tableWrap").addEventListener("click", (e) => {
+    const num = e.target.closest("td.num.pickable");
+    if (num) { const r = +num.dataset.row; pickCx.has(r) ? pickCx.delete(r) : pickCx.add(r); vChecked = false; drawTable(); return; }
     const td = e.target.closest("td.edit"); if (!td) return;
     const k = `${td.dataset.key}:${td.dataset.r}`;
     const cur = answers.get(k);
@@ -1212,8 +1406,19 @@ window.initTable = () => {
     else if (key === "ArrowRight") { e.preventDefault(); moveFocus(td, 0, 1); }
     else if (key === "ArrowLeft") { e.preventDefault(); moveFocus(td, 0, -1); }
   });
-  $("prCheck").onclick = () => { checked = true; drawTable(); };
-  $("prClear").onclick = () => { answers = new Map(); checked = false; drawTable(); };
+  $("prCheck").onclick = () => { checked = true; vChecked = true; drawTable(); };
+  $("prClear").onclick = () => { resetPractice(); drawTable(); };
+
+  // random problems
+  const LEVEL_KEY = "ttb-level";
+  let level = ["easy", "medium", "hard"].includes(store.get(LEVEL_KEY)) ? store.get(LEVEL_KEY) : "medium";
+  segSync("levelSeg", level);
+  $("levelSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; level = b.dataset.v; store.set(LEVEL_KEY, level); segSync("levelSeg", level); });
+  $("newBtn").onclick = () => {
+    if (state.kind === "formula") draft.formula = window.LogicCore.randomFormula(level);
+    else { const a = window.LogicCore.randomArgument(level); draft.premises = a.p; draft.conclusion = a.c; }
+    renderInputs(); build();
+  };
 
   // copy + print
   const statusFlash = (btn, msg) => { const o = btn.textContent; btn.textContent = msg; setTimeout(() => (btn.textContent = o), 1600); };
@@ -1632,6 +1837,13 @@ window.initTree = () => {
   });
   inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); build(); } });
   $("buildBtn").onclick = build;
+
+  // random formulas
+  const LEVEL_KEY = "ttb-level";
+  let level = ["easy", "medium", "hard"].includes(store.get(LEVEL_KEY)) ? store.get(LEVEL_KEY) : "medium";
+  segSync("levelSeg", level);
+  $("levelSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; level = b.dataset.v; store.set(LEVEL_KEY, level); segSync("levelSeg", level); });
+  $("newBtn").onclick = () => { draft = window.LogicCore.randomFormula(level); inp.value = draft; build(); };
 
   $("keypad").addEventListener("mousedown", (e) => { if (e.target.closest("button")) e.preventDefault(); });
   $("keypad").addEventListener("click", (e) => {

@@ -26,6 +26,8 @@
     --divider: #14202e;
     --handle: #ffffff;
     --focus: #2c5cc9;
+    --good: #1d7f53;
+    --bad: #b93a32;
     --radius: 10px;
     --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -50,6 +52,8 @@
       --divider: #e7ecf3;
       --handle: #151c26;
       --focus: #86a9f6;
+      --good: #5fcf97;
+      --bad: #f08a80;
     }
   }
   :root[data-theme="dark"] {
@@ -71,6 +75,8 @@
     --divider: #e7ecf3;
     --handle: #151c26;
     --focus: #86a9f6;
+    --good: #5fcf97;
+    --bad: #f08a80;
   }
 
   * { box-sizing: border-box; }
@@ -123,6 +129,9 @@
     .stage { order: 1; }
     .panel > .card { order: 2; }
     .diagram-card { order: -1; }
+    .problem { order: -2; }
+    .panel > .card.pcard { order: 0; }
+    body.practicing .panel > .card.pcard { display: none; }
   }
 
   /* ---------- brand ---------- */
@@ -201,6 +210,27 @@
   .btn:hover { border-color: var(--muted); }
   .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .btn.primary:hover { filter: brightness(1.08); }
+
+  /* practice */
+  .seg { display: flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; }
+  .seg button { flex: 1; border: 0; background: transparent; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+  .problem { gap: 12px; border-color: var(--accent); }
+  .problem .phead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .problem .phead h2 { color: var(--accent); }
+  .problem .lvl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+  .problem .ptext { font-size: 1rem; line-height: 1.55; max-width: 75ch; }
+  .problem .task { font-size: 0.92rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 7px; padding: 10px 12px; }
+  .problem .task b { font-weight: 600; }
+  .answers { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+  .answers .field { width: 11em; }
+  .answers input { font-family: var(--mono); }
+  .answers input.wrong { border-color: var(--bad); box-shadow: inset 0 0 0 1px var(--bad); }
+  .pbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pfb { font-size: 0.9rem; min-height: 1.2em; }
+  .pfb.good { color: var(--good); }
+  .pfb.bad { color: var(--bad); }
+  .pfb .work { display: block; font-family: var(--mono); font-size: 0.82rem; color: var(--ink); margin-top: 6px; line-height: 1.6; }
   .status { font-size: 0.82rem; color: var(--muted); min-height: 1.2em; }
   .note { font-size: 0.8rem; color: var(--muted); }
 
@@ -295,6 +325,15 @@
       </div>
   </header>
   <aside class="panel" aria-label="Controls">
+    <section class="card pcard" aria-labelledby="pracHead">
+      <h2 id="pracHead">Practice</h2>
+      <div class="seg" role="group" aria-label="Difficulty" id="levelSeg">
+        <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+      </div>
+      <button class="btn primary" id="newProbBtn" type="button">New problem</button>
+      <p class="note">A word problem: build its eikosogram, then work out the posterior.</p>
+    </section>
+
     <section class="card" aria-labelledby="probHead">
       <h2 id="probHead">Probabilities</h2>
       <div class="control">
@@ -351,6 +390,23 @@
   </aside>
 
   <main class="stage">
+    <section class="card problem" id="problem" aria-labelledby="probHead2" hidden>
+      <div class="phead"><h2 id="probHead2">Problem</h2><span class="lvl" id="probLvl"></span></div>
+      <p class="ptext" id="probText"></p>
+      <div class="task" id="probTask"></div>
+      <div class="answers" id="probAnswers" hidden>
+        <div class="field"><label for="ans-pB" id="ansLbl-pB">P(E)</label><input id="ans-pB" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.23 or 23%"></div>
+        <div class="field"><label for="ans-pAgB" id="ansLbl-pAgB">P(H|E)</label><input id="ans-pAgB" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.41 or 41%"></div>
+      </div>
+      <div class="pbtns">
+        <button class="btn primary" id="probCheck" type="button">Check</button>
+        <button class="btn" id="probShow" type="button">Show solution</button>
+        <button class="btn" id="probNew" type="button">Next problem</button>
+        <button class="btn" id="probEnd" type="button">End practice</button>
+      </div>
+      <p class="pfb" id="probFb" role="status" aria-live="polite"></p>
+    </section>
+
     <div class="readouts" aria-live="polite">
       <div class="readout"><span class="t">Prior</span><span class="v" id="r-pA">50.0%</span><span class="k" id="k-pA">P(H)</span></div>
       <div class="readout"><span class="t">Evidence</span><span class="v" id="r-pB">50.0%</span><span class="k" id="k-pB">P(E)</span></div>
@@ -364,7 +420,7 @@
           <h2 id="titleOut">Probability Eikosogram</h2>
           <p class="sentence" id="sentence"></p>
         </div>
-        <label class="toggle" title="Shortcut: P">
+        <label class="toggle" id="postToggle" title="Shortcut: P">
           <input id="f-post" type="checkbox">
           <span class="knob" aria-hidden="true"></span>
           <span>Show <span id="postLabel">P(H|E)</span></span>
@@ -656,6 +712,17 @@
     $("postLabel").textContent = lab.pAgB;
     $("titleOut").textContent = state.title || " ";
 
+    // Practice: until the problem is solved, hide what the student has to work out.
+    const solving = practice && practice.stage < 3;
+    $("postToggle").hidden = solving;
+    if (solving) {
+      ["r-pB", "r-pAgB", "r-pAgNB"].forEach((id) => ($(id).textContent = "?"));
+      $("sentence").textContent = practice.stage === 1
+        ? "Set the three probabilities so the diagram matches the problem."
+        : "Now read the answers off the diagram.";
+      renderDiagram(); return;
+    }
+
     const S = $("sentence");
     S.innerHTML = "";
     const b = (t) => { const e = document.createElement("b"); e.textContent = t; return e; };
@@ -689,6 +756,7 @@
   $("f-bg").addEventListener("change", (e) => { state.transparentBg = e.target.checked; writeHash(); });
   $("f-post").addEventListener("change", (e) => { state.posterior = e.target.checked; render(); });
   window.addEventListener("keydown", (e) => {
+    if (practice && practice.stage < 3) return;
     if ((e.key === "p" || e.key === "P") && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) {
       state.posterior = !state.posterior; $("f-post").checked = state.posterior; render();
     }
@@ -818,7 +886,10 @@
     try { await navigator.clipboard.writeText(location.href); say("Link copied. It opens with this exact diagram."); }
     catch { say("Couldn’t reach the clipboard here."); }
   });
-  $("resetBtn").addEventListener("click", () => { Object.assign(state, DEFAULTS); syncFields(); render(); say("Reset to 50 / 50 / 50."); });
+  $("resetBtn").addEventListener("click", () => {
+    if (practice) { state.pA = state.pBgA = state.pBgNotA = 0.5; render(); say("Probabilities reset to 50 / 50 / 50."); return; }
+    Object.assign(state, DEFAULTS); syncFields(); render(); say("Reset to 50 / 50 / 50.");
+  });
 
   if (framed) {
     // Downloads and URL state don't work inside the hosted viewer.
@@ -828,7 +899,7 @@
 
   // ---------- URL state (local file only) ----------
   function writeHash() {
-    if (framed) return;
+    if (framed || practice) return; // a practice problem's answer shouldn't end up in the address bar
     const p = new URLSearchParams({
       t: state.title, a: state.a, na: state.notA, b: state.b, nb: state.notB,
       bg: state.transparentBg ? 1 : 0, post: state.posterior ? 1 : 0,
@@ -845,6 +916,211 @@
     state.transparentBg = p.get("bg") === "1"; state.posterior = p.get("post") === "1";
     for (const k of probKeys) state[k] = cleanProb(p.get(k), state[k]);
   }
+
+  // ================= Practice: generated word problems =================
+  let practice = null; // { level, text, labels, title, target, stage: 1 build | 2 compute | 3 solved, saved }
+  const rint = (n) => Math.floor(Math.random() * n);
+  const choose = (a) => a[rint(a.length)];
+  const P = (v) => `${+(v * 100).toFixed(1)}%`;                  // 0.05 -> "5%", 0.015 -> "1.5%"
+  const N = (n) => n.toLocaleString("en-US");
+  const TENTHS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+  const RANGES = {
+    prior: [0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3],
+    hit: [0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.98],
+    fa: [0.02, 0.05, 0.08, 0.1, 0.15, 0.2, 0.25, 0.3]
+  };
+
+  // Each scenario: its labels, and ways to state the prior and the two likelihoods,
+  // directly (easy, medium) or indirectly (hard: complements or natural frequencies).
+  const SCENARIOS = [
+    {
+      labels: { a: "D", notA: "not D", b: "Positive", notB: "Negative" }, title: "Screening test",
+      prior: (p) => `${P(p)} of the patients at a clinic have condition D.`,
+      priorFreq: (k, n) => `Of the ${N(n)} patients at a clinic, ${N(k)} have condition D.`,
+      hit: (x) => `A screening test comes back positive for ${P(x)} of patients who have D`,
+      hitC: (x) => `A screening test misses ${P(1 - x)} of cases of D (it comes back negative even though the patient has D),`,
+      fa: (x) => `and for ${P(x)} of patients who don’t.`,
+      faC: (x) => `and it correctly comes back negative for ${P(1 - x)} of patients who don’t have D.`,
+      freq: (m, k, j, rest) => `Of the ${N(k)} with D, ${N(m)} test positive on a screening test; of the other ${N(rest)}, ${N(j)} test positive too.`,
+      ev: "A patient tests positive.", q: "How likely is it that they have D?"
+    },
+    {
+      labels: { a: "Maine Coon", notA: "Other breed", b: "Tufted ears", notB: "No tufts" }, title: "Shelter cats",
+      prior: (p) => `${P(p)} of the cats at a shelter are Maine Coons.`,
+      priorFreq: (k, n) => `A shelter has ${N(n)} cats, and ${N(k)} of them are Maine Coons.`,
+      hit: (x) => `${P(x)} of Maine Coons have large tufted ears,`,
+      hitC: (x) => `Only ${P(1 - x)} of Maine Coons lack large tufted ears,`,
+      fa: (x) => `compared with ${P(x)} of the other cats.`,
+      faC: (x) => `while ${P(1 - x)} of the other cats have no tufts.`,
+      freq: (m, k, j, rest) => `${N(m)} of the Maine Coons have large tufted ears, and so do ${N(j)} of the other ${N(rest)} cats.`,
+      ev: "A volunteer picks a cat at random, and it has tufted ears.", q: "How likely is it to be a Maine Coon?"
+    },
+    {
+      labels: { a: "Spam", notA: "Not spam", b: "“Winner”", notB: "No “winner”" }, title: "Spam filter",
+      prior: (p) => `${P(p)} of the email reaching an inbox is spam.`,
+      priorFreq: (k, n) => `Of the last ${N(n)} emails to reach an inbox, ${N(k)} were spam.`,
+      hit: (x) => `The word “winner” appears in ${P(x)} of spam messages`,
+      hitC: (x) => `${P(1 - x)} of spam messages don’t contain the word “winner”,`,
+      fa: (x) => `and in ${P(x)} of legitimate ones.`,
+      faC: (x) => `and ${P(1 - x)} of legitimate messages don’t contain it either.`,
+      freq: (m, k, j, rest) => `${N(m)} of the spam messages contained the word “winner”, as did ${N(j)} of the ${N(rest)} legitimate ones.`,
+      ev: "A new message contains “winner”.", q: "How likely is it to be spam?"
+    },
+    {
+      labels: { a: "Rain", notA: "Dry", b: "Forecast rain", notB: "Forecast dry" }, title: "Weather forecast",
+      prior: (p) => `It rains on ${P(p)} of days in a town.`,
+      priorFreq: (k, n) => `Over ${N(n)} days, it rained in a town on ${N(k)} of them.`,
+      hit: (x) => `On days when it rained, the forecast had called for rain ${P(x)} of the time;`,
+      hitC: (x) => `On days when it rained, the forecast had called for a dry day ${P(1 - x)} of the time;`,
+      fa: (x) => `on dry days, it had called for rain ${P(x)} of the time.`,
+      faC: (x) => `on dry days, it had correctly called for a dry day ${P(1 - x)} of the time.`,
+      freq: (m, k, j, rest) => `On ${N(m)} of the rainy days the forecast had called for rain, and it had also called for rain on ${N(j)} of the ${N(rest)} dry days.`,
+      ev: "Today’s forecast calls for rain.", q: "How likely is it to rain?"
+    },
+    {
+      labels: { a: "Urn 1", notA: "Urn 2", b: "Red", notB: "Black" }, title: "Two urns",
+      prior: (p) => `An urn is picked at random: urn 1 with probability ${P(p)}, and urn 2 otherwise.`,
+      priorFreq: null,
+      hit: (x) => `${P(x)} of the balls in urn 1 are red,`,
+      hitC: (x) => `${P(1 - x)} of the balls in urn 1 are black (the rest are red),`,
+      fa: (x) => `and ${P(x)} of the balls in urn 2 are red.`,
+      faC: (x) => `and ${P(1 - x)} of the balls in urn 2 are black (the rest are red).`,
+      freq: null,
+      ev: "A ball is drawn at random from the chosen urn, and it is red.", q: "How likely is it that it came from urn 1?"
+    }
+  ];
+
+  function makeProblem(level) {
+    const sc = choose(SCENARIOS);
+    let pA, hit, fa, text;
+    if (level === "easy") {
+      pA = choose(TENTHS); hit = choose(TENTHS); do { fa = choose(TENTHS); } while (fa === hit);
+      text = [sc.prior(pA), sc.hit(hit), sc.fa(fa)];
+    } else if (level === "medium") {
+      pA = choose(RANGES.prior); hit = choose(RANGES.hit); fa = choose(RANGES.fa);
+      text = [sc.prior(pA), sc.hit(hit), sc.fa(fa)];
+    } else if (sc.freq && Math.random() < 0.5) {
+      // hard, natural frequencies: counts instead of probabilities
+      for (;;) {
+        const n = choose([200, 400, 500, 1000, 2000]), k = n * choose([0.05, 0.1, 0.15, 0.2, 0.25]);
+        const m = Math.round(k * choose(RANGES.hit)), rest = n - k, j = Math.round(rest * choose(RANGES.fa));
+        if (m > 0 && j > 0 && m < k) { pA = k / n; hit = m / k; fa = j / rest; text = [sc.priorFreq(k, n), sc.freq(m, k, j, rest)]; break; }
+      }
+    } else {
+      // hard, complements: at least one likelihood is stated through its complement
+      pA = choose(RANGES.prior); hit = choose(RANGES.hit); fa = choose(RANGES.fa);
+      const cHit = Math.random() < 0.6, cFa = !cHit || Math.random() < 0.5;
+      text = [sc.prior(pA), (cHit ? sc.hitC : sc.hit)(hit), (cFa ? sc.faC : sc.fa)(fa)];
+    }
+    return { level, labels: sc.labels, title: sc.title, text: `${text.join(" ")} ${sc.ev} ${sc.q}`, target: { pA, pBgA: hit, pBgNotA: fa } };
+  }
+
+  // Answers can be decimals (0.23), percentages (23%) or fractions (3/13), to about two decimal places.
+  function parseAnswer(raw) {
+    const t = String(raw).trim();
+    let m;
+    if ((m = t.match(/^(\d*\.?\d+)\s*%$/))) return +m[1] / 100;
+    if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/)) && +m[2] > 0) return +m[1] / +m[2];
+    if (/^\d*\.?\d+$/.test(t)) return +t;
+    return NaN;
+  }
+  const close = (x, y, tol) => Number.isFinite(x) && Math.abs(x - y) <= tol + 1e-9;
+  const r3 = (v) => +v.toFixed(3);
+  const r4 = (v) => +v.toFixed(4);
+
+  function workedLines() {
+    const t = practice.target, lab = L(state), m = metrics({ ...state, ...t });
+    const nA = `P(${state.notA})`;
+    return [
+      `${lab.pB} = ${lab.pA}·${lab.pBgA} + ${nA}·${lab.pBgNotA} = ${r3(t.pA)}·${r3(t.pBgA)} + ${r3(1 - t.pA)}·${r3(t.pBgNotA)} = ${r4(m.pB)}`,
+      `${lab.pAgB} = ${lab.pA}·${lab.pBgA} / ${lab.pB} = ${r4(m.tl)} / ${r4(m.pB)} ≈ ${r4(m.pAgB)} (${pct(m.pAgB)})`
+    ];
+  }
+  function feedback(cls, msg, work) {
+    const fb = $("probFb"); fb.className = "pfb" + (cls ? " " + cls : ""); fb.textContent = msg;
+    if (work) { const w = document.createElement("span"); w.className = "work"; work.forEach((l, i) => { if (i) w.append(document.createElement("br")); w.append(l); }); fb.append(w); }
+  }
+  function drawProblem() {
+    $("problem").hidden = !practice;
+    document.body.classList.toggle("practicing", !!practice);
+    if (!practice) return;
+    const lab = L(state);
+    $("probLvl").textContent = practice.level;
+    $("probText").textContent = practice.text;
+    const task = $("probTask"); task.innerHTML = "";
+    const bold = (t) => { const b = document.createElement("b"); b.textContent = t; return b; };
+    if (practice.stage === 1) task.append(bold("Step 1. "), `Build the eikosogram: set ${lab.pA}, ${lab.pBgA} and ${lab.pBgNotA} with the sliders or boxes (or drag the diagram), then press Check.`);
+    else if (practice.stage === 2) task.append(bold("Step 2. "), `Using the diagram, work out ${lab.pB} and ${lab.pAgB}. Decimals, percentages or fractions are fine, to two decimal places.`);
+    else task.append(bold("Solved. "), `The bar under the diagram shows ${lab.pAgB}. Try the next problem, or change the numbers to see how the posterior moves.`);
+    $("probAnswers").hidden = practice.stage !== 2;
+    $("ansLbl-pB").textContent = lab.pB; $("ansLbl-pAgB").textContent = lab.pAgB;
+    $("probCheck").hidden = practice.stage === 3;
+    $("probShow").hidden = practice.stage === 3;
+  }
+  function startProblem() {
+    const saved = practice ? practice.saved : { ...state };
+    const pb = makeProblem(level);
+    practice = { ...pb, stage: 1, saved };
+    Object.assign(state, pb.labels, { title: pb.title, pA: 0.5, pBgA: 0.5, pBgNotA: 0.5, posterior: false });
+    $("f-post").checked = false;
+    ["ans-pB", "ans-pAgB"].forEach((id) => { $(id).value = ""; $(id).classList.remove("wrong"); });
+    syncFields(); feedback("", ""); render(); drawProblem();
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* ignore */ }
+    $("problem").scrollIntoView({ block: "nearest" });
+  }
+  function solved(msg) {
+    practice.stage = 3; state.posterior = true; $("f-post").checked = true;
+    render(); drawProblem();
+    feedback("good", msg, workedLines());
+  }
+  $("probCheck").addEventListener("click", () => {
+    if (!practice) return;
+    const t = practice.target, lab = L(state);
+    if (practice.stage === 1) {
+      const names = { pA: lab.pA, pBgA: lab.pBgA, pBgNotA: lab.pBgNotA };
+      const off = Object.keys(names).filter((k) => !close(state[k], t[k], 0.0006));
+      if (!off.length) {
+        Object.assign(state, t); // snap to the exact values (frequencies can give repeating decimals)
+        practice.stage = 2; render(); drawProblem();
+        feedback("good", "Right: that’s the problem’s eikosogram. On to step 2.");
+        $("ans-pB").focus({ preventScroll: true });
+      } else feedback("bad", `Not yet: ${off.map((k) => names[k]).join(", ")} ${off.length > 1 ? "don’t" : "doesn’t"} match the problem. (Type exact values in the boxes if dragging is fiddly.)`);
+    } else if (practice.stage === 2) {
+      const m = metrics({ ...state, ...t });
+      const okB = close(parseAnswer($("ans-pB").value), m.pB, 0.005), okP = close(parseAnswer($("ans-pAgB").value), m.pAgB, 0.005);
+      $("ans-pB").classList.toggle("wrong", !okB); $("ans-pAgB").classList.toggle("wrong", !okP);
+      if (okB && okP) solved("Both right.");
+      else feedback("bad", `Not yet: check ${[!okB && lab.pB, !okP && lab.pAgB].filter(Boolean).join(" and ")}. ${!okB ? `Hint: ${lab.pB} is the total area of the two bottom (${state.b}) cells.` : `Hint: ${lab.pAgB} is the share of the ${state.b} area that sits in the ${state.a} column.`}`);
+    }
+  });
+  $("probShow").addEventListener("click", () => {
+    if (!practice) return;
+    Object.assign(state, practice.target);
+    solved("Here’s the solution.");
+  });
+  $("probNew").addEventListener("click", startProblem);
+  $("newProbBtn").addEventListener("click", startProblem);
+  $("probEnd").addEventListener("click", () => {
+    if (!practice) return;
+    Object.assign(state, practice.saved);
+    practice = null;
+    $("f-post").checked = state.posterior;
+    syncFields(); feedback("", ""); drawProblem(); render();
+  });
+  ["ans-pB", "ans-pAgB"].forEach((id) => {
+    $(id).addEventListener("input", () => $(id).classList.remove("wrong"));
+    $(id).addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("probCheck").click(); } });
+  });
+  // difficulty, remembered per browser
+  let level = "medium";
+  try { const v = localStorage.getItem("eik-level"); if (["easy", "medium", "hard"].includes(v)) level = v; } catch (e) { /* ignore */ }
+  const syncLevel = () => $("levelSeg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === level)));
+  $("levelSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    level = b.dataset.v; syncLevel();
+    try { localStorage.setItem("eik-level", level); } catch (err) { /* ignore */ }
+  });
+  syncLevel();
 
   readHash();
   syncFields();
