@@ -399,14 +399,14 @@
       <dl>
         <dt>¬</dt><dd>~  !</dd>
         <dt>∧</dt><dd>&amp;  ^</dd>
-        <dt>∨</dt><dd>|  v (between spaces)</dd>
+        <dt>∨</dt><dd>|  v</dd>
         <dt>→</dt><dd>-&gt;  =&gt;  ⊃</dd>
         <dt>↔</dt><dd>&lt;-&gt;  &lt;=&gt;  ≡</dd>
         <dt>↑ ↓</dt><dd>NAND, NOR (keypad)</dd>
         <dt>⊤ ⊥</dt><dd>always true / always false</dd>
       </dl>
       <p>Type the whole formula, then press Enter (or click Build). The builder only checks whether it’s a wff at that point.</p>
-      <p>Sentence letters are capitals like A, B, C (A1, P2 also work). As in the textbook, ¬ applies to what immediately follows it and outer parentheses can be dropped. Mixing binary connectives without parentheses, as in A ∧ B ∨ C, is ambiguous, so the builder asks you to add them. Chains of a single ∧ or ∨ (A ∧ B ∧ C) are fine.</p>
+      <p>Sentence letters are single capitals like A, B, C (A1, P2 also work), so AB is two letters, not one. As in the textbook, ¬ applies to what immediately follows it and outer parentheses can be dropped. Mixing binary connectives without parentheses, as in A ∧ B ∨ C, is ambiguous, so the builder asks you to add them. Chains of a single ∧ or ∨ (A ∧ B ∧ C) are fine.</p>
     </details>
   </aside>
 
@@ -503,13 +503,13 @@
       <dl>
         <dt>¬</dt><dd>~  !</dd>
         <dt>∧</dt><dd>&amp;  ^</dd>
-        <dt>∨</dt><dd>|  v (between spaces)</dd>
+        <dt>∨</dt><dd>|  v</dd>
         <dt>→</dt><dd>-&gt;  =&gt;  ⊃</dd>
         <dt>↔</dt><dd>&lt;-&gt;  &lt;=&gt;  ≡</dd>
         <dt>↑ ↓</dt><dd>NAND, NOR (keypad)</dd>
       </dl>
       <p>Type the whole formula, then press Enter (or click Build). The builder only checks whether it’s a wff at that point.</p>
-      <p>Sentence letters are capitals like A, B, C. As in the textbook, ¬ applies to what immediately follows it and outer parentheses can be dropped. Mixing binary connectives without parentheses (A ∧ B ∨ C) is ambiguous, so the builder asks you to add them. A chain of one ∧ or ∨ (A ∧ B ∧ C) is read from the left, as (A ∧ B) ∧ C.</p>
+      <p>Sentence letters are single capitals like A, B, C, so AB is two letters, not one. As in the textbook, ¬ applies to what immediately follows it and outer parentheses can be dropped. Mixing binary connectives without parentheses (A ∧ B ∨ C) is ambiguous, so the builder asks you to add them. A chain of one ∧ or ∨ (A ∧ B ∧ C) is read from the left, as (A ∧ B) ∧ C.</p>
     </details>
   </aside>
 
@@ -531,16 +531,9 @@
 
 </div>
 <script>
-
-window.initTable = () => {
+// Shared by the truth-table and syntax-tree views: parsing, evaluation and printing.
+window.LogicCore = (() => {
   "use strict";
-  const $ = (id) => document.getElementById(id);
-  const framed = false;
-  const store = {
-    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
-  };
-
   // ================= Logic =================
   const BIN = {
     and:  { sym: "∧", assoc: true,  f: (a, b) => a && b, name: "conjunction" },
@@ -564,7 +557,8 @@ window.initTable = () => {
       .replace(/[~!]/g, "¬")
       .replace(/[&^]/g, "∧")
       .replace(/\|/g, "∨")
-      .replace(/(^|[\s)])v(?=[\s(¬])/g, "$1∨");
+      // a lowercase v between formulas is "or", with or without spaces: A v B, AvB, (A)v¬B
+      .replace(/(^|[\s)A-Z0-9₀-₉'])v(?=[\s(¬A-Z~!])/g, "$1∨");
   }
 
   function tokenize(src) {
@@ -581,13 +575,15 @@ window.initTable = () => {
       if (binBy[ch]) { push({ t: "bin", op: binBy[ch] }); continue; }
       if (ch === "⊤") { push({ t: "const", val: true }); continue; }
       if (ch === "⊥") { push({ t: "const", val: false }); continue; }
-      if (/[A-Za-z]/.test(ch)) {
+      // A sentence letter is ONE capital letter, optionally followed by digits or primes (A, B, A1, P₂, A').
+      // So "AB" is two letters (and the parser reports the missing connective), and "AvB" is A ∨ B.
+      if (/[A-Z]/.test(ch)) {
         let j = i + 1;
-        while (j < src.length && /[A-Za-z0-9_₀-₉']/.test(src[j])) j++;
-        const name = src.slice(i, j);
-        if (name === "v") { push({ t: "bin", op: "or" }); continue; }
-        out.push({ t: "var", name, pos: i, len: j - i }); i = j; continue;
+        while (j < src.length && /[0-9₀-₉']/.test(src[j])) j++;
+        out.push({ t: "var", name: src.slice(i, j), pos: i, len: j - i }); i = j; continue;
       }
+      if (ch === "v") { push({ t: "bin", op: "or" }); continue; }
+      if (/[a-z]/.test(ch)) throw new ParseError(`Sentence letters are capitals: write “${ch.toUpperCase()}”, not “${ch}”.`, i, 1);
       if (/[0-9]/.test(ch)) throw new ParseError(`Sentence letters start with a letter; “${ch}” can’t start one.`, i, 1);
       throw new ParseError(`“${ch}” isn’t a symbol the builder knows.`, i, 1);
     }
@@ -704,6 +700,21 @@ window.initTable = () => {
   }
   const textOf = (toks) => toks.map((t) => (t.bin ? ` ${t.text} ` : t.text)).join("");
   const canon = (node) => textOf(printTokens(node, true));
+  return { BIN, MAX_LETTERS, ParseError, normalize, tokenize, parse, lettersOf, height, evaluate, kids, isLeaf, printTokens, textOf, canon };
+})();
+</script>
+<script>
+
+window.initTable = () => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const framed = false;
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+
+  const { BIN, MAX_LETTERS, ParseError, normalize, tokenize, parse, lettersOf, height, evaluate, kids, isLeaf, printTokens, textOf, canon } = window.LogicCore;
 
   // ================= State =================
   const EXAMPLES = {
@@ -1354,169 +1365,7 @@ window.initTree = () => {
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
   };
 
-  // ================= Logic =================
-  const BIN = {
-    and:  { sym: "∧", assoc: true,  f: (a, b) => a && b, name: "conjunction" },
-    or:   { sym: "∨", assoc: true,  f: (a, b) => a || b, name: "disjunction" },
-    imp:  { sym: "→", assoc: false, f: (a, b) => !a || b, name: "conditional" },
-    iff:  { sym: "↔", assoc: false, f: (a, b) => a === b, name: "biconditional" },
-    nand: { sym: "↑", assoc: false, f: (a, b) => !(a && b), name: "NAND" },
-    nor:  { sym: "↓", assoc: false, f: (a, b) => !(a || b), name: "NOR" }
-  };
-  const MAX_LETTERS = 8;
-
-  class ParseError extends Error {
-    constructor(message, pos, len) { super(message); this.pos = pos; this.len = Math.max(1, len || 1); }
-  }
-
-  // Replace ASCII shortcuts with logic symbols as the user types.
-  function normalize(s) {
-    return s
-      .replace(/<->|<=>|≡/g, "↔")
-      .replace(/->|=>|⊃/g, "→")
-      .replace(/[~!]/g, "¬")
-      .replace(/[&^]/g, "∧")
-      .replace(/\|/g, "∨")
-      .replace(/(^|[\s)])v(?=[\s(¬])/g, "$1∨");
-  }
-
-  function tokenize(src) {
-    const out = [];
-    let i = 0;
-    while (i < src.length) {
-      const ch = src[i];
-      if (/\s/.test(ch)) { i++; continue; }
-      const push = (t) => { out.push({ ...t, pos: i, len: t.len || 1 }); i += t.len || 1; };
-      if (ch === "(" || ch === "[") { push({ t: "lp" }); continue; }
-      if (ch === ")" || ch === "]") { push({ t: "rp" }); continue; }
-      if (ch === "¬") { push({ t: "not" }); continue; }
-      const binBy = { "∧": "and", "∨": "or", "→": "imp", "↔": "iff", "↑": "nand", "↓": "nor" };
-      if (binBy[ch]) { push({ t: "bin", op: binBy[ch] }); continue; }
-      if (ch === "⊤") { push({ t: "const", val: true }); continue; }
-      if (ch === "⊥") { push({ t: "const", val: false }); continue; }
-      if (/[A-Za-z]/.test(ch)) {
-        let j = i + 1;
-        while (j < src.length && /[A-Za-z0-9_₀-₉']/.test(src[j])) j++;
-        const name = src.slice(i, j);
-        if (name === "v") { push({ t: "bin", op: "or" }); continue; }
-        out.push({ t: "var", name, pos: i, len: j - i }); i = j; continue;
-      }
-      if (/[0-9]/.test(ch)) throw new ParseError(`Sentence letters start with a letter; “${ch}” can’t start one.`, i, 1);
-      throw new ParseError(`“${ch}” isn’t a symbol the builder knows.`, i, 1);
-    }
-    return out;
-  }
-
-  function parse(src) {
-    const toks = tokenize(src);
-    if (!toks.length) return null;
-    let k = 0;
-    let nextId = 0;
-    const peek = () => toks[k];
-    const endPos = src.replace(/\s+$/, "").length;
-    const describe = (t) => t.t === "var" ? t.name : t.t === "bin" ? BIN[t.op].sym : t.t === "not" ? "¬" : t.t === "lp" ? "(" : t.t === "rp" ? ")" : (t.val ? "⊤" : "⊥");
-
-    function atom() {
-      const t = peek();
-      if (!t) throw new ParseError("The formula stops too early: something is missing at the end.", endPos, 1);
-      if (t.t === "var") { k++; return { type: "var", name: t.name, id: nextId++, pos: t.pos }; }
-      if (t.t === "const") { k++; return { type: "const", val: t.val, id: nextId++, pos: t.pos }; }
-      if (t.t === "lp") {
-        k++;
-        const inner = expr();
-        const c = peek();
-        if (!c || c.t !== "rp") {
-          if (!c) throw new ParseError("A “(” is never closed.", t.pos, 1);
-          throw new ParseError(`Expected “)” here, found “${describe(c)}”.`, c.pos, c.len);
-        }
-        k++;
-        inner.parens = true;
-        return inner;
-      }
-      if (t.t === "not") { return unary(); }
-      if (t.t === "rp") throw new ParseError("There’s a “)” with nothing before it to close.", t.pos, 1);
-      throw new ParseError(`“${describe(t)}” needs a formula on its left.`, t.pos, t.len);
-    }
-    function unary() {
-      const t = peek();
-      if (t && t.t === "not") {
-        k++;
-        const arg = unary();
-        return { type: "not", arg, id: nextId++, pos: t.pos };
-      }
-      return atom();
-    }
-    function expr() {
-      let left = unary();
-      let first = null;
-      while (peek() && peek().t === "bin") {
-        const t = peek();
-        if (first && (t.op !== first.op || !BIN[t.op].assoc)) {
-          const a = BIN[first.op].sym, b = BIN[t.op].sym;
-          throw new ParseError(
-            t.op === first.op
-              ? `Two “${b}” in a row without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`
-              : `Mixing “${a}” and “${b}” without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`,
-            t.pos, t.len);
-        }
-        first = first || t;
-        k++;
-        const right = unary();
-        left = { type: "bin", op: t.op, left, right, id: nextId++, pos: t.pos };
-      }
-      return left;
-    }
-
-    const ast = expr();
-    if (k < toks.length) {
-      const t = toks[k];
-      if (t.t === "rp") throw new ParseError("This “)” doesn’t match any “(”.", t.pos, 1);
-      const prev = toks[k - 1];
-      throw new ParseError(`A connective is missing between “${describe(prev)}” and “${describe(t)}”.`, t.pos, t.len);
-    }
-    return ast;
-  }
-
-  function lettersOf(node, acc) {
-    if (node.type === "var") { if (!acc.includes(node.name)) acc.push(node.name); }
-    else if (node.type === "not") lettersOf(node.arg, acc);
-    else if (node.type === "bin") { lettersOf(node.left, acc); lettersOf(node.right, acc); }
-    return acc;
-  }
-  function height(node) {
-    if (node.type === "var" || node.type === "const") return (node.h = 0);
-    if (node.type === "not") return (node.h = 1 + height(node.arg));
-    return (node.h = 1 + Math.max(height(node.left), height(node.right)));
-  }
-  function evaluate(node, env, out) {
-    let v;
-    if (node.type === "var") v = env[node.name];
-    else if (node.type === "const") v = node.val;
-    else if (node.type === "not") v = !evaluate(node.arg, env, out);
-    else v = BIN[node.op].f(evaluate(node.left, env, out), evaluate(node.right, env, out));
-    out[node.id] = v;
-    return v;
-  }
-  const kids = (n) => n.type === "not" ? [n.arg] : n.type === "bin" ? [n.left, n.right] : [];
-  const isLeaf = (n) => n.type === "var" || n.type === "const";
-
-  // Printed form, as a list of tokens that remember their node.
-  // Textbook conventions: outer parentheses dropped, ¬ binds to what follows,
-  // and a chain of one associative connective is written without inner parentheses.
-  function printTokens(node, top = true) {
-    if (node.type === "var") return [{ text: node.name, node, kind: "leaf" }];
-    if (node.type === "const") return [{ text: node.val ? "⊤" : "⊥", node, kind: "leaf" }];
-    if (node.type === "not") return [{ text: "¬", node, kind: "conn" }, ...printTokens(node.arg, false)];
-    const leftChain = node.left.type === "bin" && node.left.op === node.op && BIN[node.op].assoc && !node.left.parens;
-    const inner = [
-      ...(leftChain ? printTokens(node.left, true) : printTokens(node.left, false)),
-      { text: BIN[node.op].sym, node, kind: "conn", bin: true },
-      ...printTokens(node.right, false)
-    ];
-    return top ? inner : [{ text: "(", kind: "paren" }, ...inner, { text: ")", kind: "paren" }];
-  }
-  const textOf = (toks) => toks.map((t) => (t.bin ? ` ${t.text} ` : t.text)).join("");
-  const canon = (node) => textOf(printTokens(node, true));
+  const { BIN, MAX_LETTERS, ParseError, normalize, tokenize, parse, lettersOf, height, evaluate, kids, isLeaf, printTokens, textOf, canon } = window.LogicCore;
 
 
   // ================= State =================

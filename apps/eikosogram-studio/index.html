@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-</head>
-<body>
 <title>Eikosogram Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -115,6 +113,16 @@
     .brand { grid-area: brand; }
     .panel { grid-area: panel; overflow-y: auto; padding-right: 4px; }
     .stage { grid-area: stage; min-height: 0; }
+  }
+
+  /* On phones and narrow windows: the diagram comes first, then the readouts,
+     then the probability sliders; labels and export go last. */
+  @media (max-width: 959px) {
+    .panel { display: contents; }
+    .brand { order: 0; }
+    .stage { order: 1; }
+    .panel > .card { order: 2; }
+    .diagram-card { order: -1; }
   }
 
   /* ---------- brand ---------- */
@@ -275,6 +283,8 @@
     * { transition: none !important; }
   }
 </style>
+</head>
+<body>
 
 <div class="app">
   <header class="brand">
@@ -290,25 +300,25 @@
       <div class="control">
         <div class="control-head">
           <label for="in-pA"><span class="swatch sw-h"></span><span data-l="pA">P(H)</span></label>
-          <input id="in-pA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
+          <input id="in-pA" type="number" min="0" max="1" step="0.001" inputmode="decimal">
         </div>
-        <input id="rg-pA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Prior probability">
+        <input id="rg-pA" type="range" min="0" max="1" step="0.001" aria-label="Prior probability">
         <p class="hint">Width of the left column</p>
       </div>
       <div class="control">
         <div class="control-head">
           <label for="in-pBgA"><span class="swatch sw-h"></span><span data-l="pBgA">P(E|H)</span></label>
-          <input id="in-pBgA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
+          <input id="in-pBgA" type="number" min="0" max="1" step="0.001" inputmode="decimal">
         </div>
-        <input id="rg-pBgA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Likelihood given the left category">
+        <input id="rg-pBgA" type="range" min="0" max="1" step="0.001" aria-label="Likelihood given the left category">
         <p class="hint">Height of the bottom cell, left column</p>
       </div>
       <div class="control">
         <div class="control-head">
           <label for="in-pBgNotA"><span class="swatch sw-n"></span><span data-l="pBgNotA">P(E|not H)</span></label>
-          <input id="in-pBgNotA" type="number" min="0.001" max="0.999" step="0.001" inputmode="decimal">
+          <input id="in-pBgNotA" type="number" min="0" max="1" step="0.001" inputmode="decimal">
         </div>
-        <input id="rg-pBgNotA" type="range" min="0.001" max="0.999" step="0.001" aria-label="Likelihood given the right category">
+        <input id="rg-pBgNotA" type="range" min="0" max="1" step="0.001" aria-label="Likelihood given the right category">
         <p class="hint">Height of the bottom cell, right column</p>
       </div>
     </section>
@@ -372,7 +382,7 @@
 (() => {
   "use strict";
   const NS = "http://www.w3.org/2000/svg";
-  const MIN = 0.001, MAX = 0.999;
+  const MIN = 0, MAX = 1;
   const FONT = "IBM Plex Sans, Helvetica Neue, Helvetica, Arial, sans-serif";
   const MONO = "IBM Plex Mono, SF Mono, Menlo, Consolas, monospace";
   const DEFAULTS = { title: "Probability Eikosogram", a: "H", notA: "not H", b: "E", notB: "not E", transparentBg: false, posterior: false, pA: 0.5, pBgA: 0.5, pBgNotA: 0.5 };
@@ -382,7 +392,7 @@
   const state = { ...DEFAULTS };
 
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  const pct = (v) => `${(v * 100).toFixed(1)}%`;
+  const pct = (v) => (Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : "undefined");
   const prob = (v) => v.toFixed(3);
   const cleanProb = (v, fb) => { const n = Number(v); return Number.isFinite(n) && String(v).trim() !== "" ? clamp(n, MIN, MAX) : fb; };
 
@@ -390,7 +400,8 @@
     const tl = s.pA * s.pBgA, bl = s.pA * (1 - s.pBgA);
     const tr = (1 - s.pA) * s.pBgNotA, br = (1 - s.pA) * (1 - s.pBgNotA);
     const pB = tl + tr, pNB = bl + br;
-    return { tl, bl, tr, br, pA: s.pA, pNA: 1 - s.pA, pB, pNB, pAgB: tl / pB, pAgNB: bl / pNB };
+    // A conditional probability is undefined when the condition has probability 0.
+    return { tl, bl, tr, br, pA: s.pA, pNA: 1 - s.pA, pB, pNB, pAgB: pB > 0 ? tl / pB : NaN, pAgNB: pNB > 0 ? bl / pNB : NaN };
   }
 
   // ---------- Scene: builds persistent SVG nodes, updates attributes ----------
@@ -549,14 +560,17 @@
       if (s.posterior) {
         this.post.style.display = "";
         const by = y0 + h + postH * 0.52, bh = Math.max(20, postH * 0.36);
-        const wH = w * m.pAgB;
+        const undef = !Number.isFinite(m.pAgB);
+        const wH = undef ? 0 : w * m.pAgB;
         const capSize = nameSize;
         setA(this.postCap, { x: x0, y: by - capSize * 0.55, "font-size": capSize, fill: pal.ink });
-        this.postCap.firstChild && this.postCap.firstChild.nodeType === 3 ? (this.postCap.firstChild.nodeValue = `Within ${s.b}: P(${s.a}|${s.b}) = `) : this.postCap.insertBefore(document.createTextNode(`Within ${s.b}: P(${s.a}|${s.b}) = `), this.postCapV);
+        const capText = undef ? `P(${s.b}) = 0, so P(${s.a}|${s.b}) is ` : `Within ${s.b}: P(${s.a}|${s.b}) = `;
+        this.postCap.firstChild && this.postCap.firstChild.nodeType === 3 ? (this.postCap.firstChild.nodeValue = capText) : this.postCap.insertBefore(document.createTextNode(capText), this.postCapV);
         this.postCapV.textContent = pct(m.pAgB);
         setA(this.postCapV, { fill: pal.accent });
         setA(this.postH, { x: x0, y: by, width: Math.max(0, wH), height: bh, fill: pal.hStrong });
         setA(this.postN, { x: x0 + wH, y: by, width: Math.max(0, w - wH), height: bh, fill: pal.nStrong });
+        this.postH.style.display = this.postN.style.display = undef ? "none" : "";
         const vs = Math.round(nameSize * 1.05);
         const put = (t, cx, cw, str, fill) => {
           setA(t, { x: cx + cw / 2, y: by + bh / 2 + vs * 0.36, "font-size": vs, fill });
@@ -565,6 +579,7 @@
         };
         put(this.postHt, x0, wH, `${s.a} ${pct(m.pAgB)}`, pal.onStrong);
         put(this.postNt, x0 + wH, w - wH, `${s.notA} ${pct(1 - m.pAgB)}`, pal.onStrong);
+        if (undef) this.postHt.style.display = this.postNt.style.display = "none";
       } else this.post.style.display = "none";
     }
 
@@ -641,11 +656,15 @@
     $("postLabel").textContent = lab.pAgB;
     $("titleOut").textContent = state.title || " ";
 
+    const S = $("sentence");
+    S.innerHTML = "";
+    const b = (t) => { const e = document.createElement("b"); e.textContent = t; return e; };
+    if (!Number.isFinite(m.pAgB)) {
+      S.append(b(state.b), ` has probability 0, so ${lab.pAgB} is undefined: there is no way to conditionalize on it.`);
+      renderDiagram(); writeHash(); return;
+    }
     const d = m.pAgB - m.pA;
     const verb = Math.abs(d) < 0.0005 ? "leaves" : d > 0 ? "raises" : "lowers";
-    $("sentence").innerHTML = "";
-    const S = $("sentence");
-    const b = (t) => { const e = document.createElement("b"); e.textContent = t; return e; };
     S.append("Learning ", b(state.b), ` ${verb} ${lab.pA} `, verb === "leaves" ? "unchanged at " : "from ", b(pct(m.pA)));
     if (verb !== "leaves") S.append(" to ", b(pct(m.pAgB)));
     S.append(".");
