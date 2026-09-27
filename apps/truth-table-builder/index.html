@@ -256,6 +256,28 @@
 
   .foot { font-size: 0.8rem; color: var(--muted); padding: 0 16px 14px; }
 
+  /* stochastic truth tables */
+  .tt th.pc { font-family: var(--logic); font-weight: 500; }
+  .tt td.pc { padding: 0.12em 0.3em; }
+  .tt td.pc input.pin {
+    width: 5.4em; padding: 0.15em 0.3em; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface-2); font-family: var(--mono); font-size: 0.66em; text-align: center; color: var(--accent);
+  }
+  .tt td.pc input.pin.bad { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+  .tt td.cpv { font-family: var(--mono); font-size: 0.66em; color: var(--accent); }
+  .tt th.cpv { font-size: 0.8em; }
+  .stochbar { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; }
+  .stochbar .vrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .stochbar .vlbl { font-weight: 600; }
+  .stochbar .fb { font-size: 0.85rem; font-weight: 600; }
+  .stochbar .fb.ok { color: var(--good); }
+  .stochbar .fb.no { color: var(--bad); }
+  .stochbar .plines { display: flex; flex-direction: column; gap: 6px; }
+  .stochbar .pline { font-family: var(--logic); }
+  .stochbar .pline b { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+  .stochbar .pline .approx, .stochbar .pline .prow { color: var(--muted); font-size: 0.85em; font-family: var(--sans); }
+  .stochbar .note { color: var(--muted); font-size: 0.85rem; }
+
   /* random problems */
   .genrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--line); }
   .genrow .lbl { font-size: 0.78rem; color: var(--muted); width: 100%; }
@@ -281,7 +303,7 @@
   }
   @media print {
     body { background: #fff; }
-    .topbar, .panel, .actions, .stepcap, .practicecap, .verdictbar, .foot { display: none !important; }
+    .topbar, .panel, .actions, .stepcap, .practicecap, .verdictbar, .stochbar .vrow button, .foot { display: none !important; }
     .app { display: block; padding: 0; }
     .card { border: 0; }
   }
@@ -364,6 +386,11 @@
         <input class="fin" id="f-main" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. (A ∨ B) ∧ ¬C">
         <div class="errmsg" id="err-main" hidden></div>
       </div>
+      <div id="condIn" class="frow" hidden>
+        <label for="f-cond">Given (optional): a condition ψ, for P(φ | ψ)</label>
+        <input class="fin" id="f-cond" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. B ∨ C">
+        <div class="errmsg" id="err-cond" hidden></div>
+      </div>
 
       <div id="argIn" hidden>
         <div id="premises" class="frow" style="gap:10px"></div>
@@ -418,6 +445,7 @@
         </div>
       </div>
       <label class="check" id="lettersOpt" hidden><input type="checkbox" id="f-letters"> Students fill in the letter columns too</label>
+      <label class="check" id="stochOpt"><input type="checkbox" id="f-stoch"> Stochastic truth table (a probability for each row)</label>
     </section>
 
     <details class="card help">
@@ -461,6 +489,7 @@
       <div class="practicecap" id="practicecap" hidden></div>
       <div class="table-wrap" id="tableWrap"></div>
       <div class="verdictbar" id="verdictbar" hidden></div>
+      <div class="stochbar" id="stochbar" hidden></div>
       <p class="foot" id="foot"></p>
     </section>
   </main>
@@ -854,7 +883,9 @@ window.initTable = () => {
     layout: "under",
     mode: "practice",
     practiceLetters: false,
-    step: 0
+    step: 0,
+    stoch: false,       // stochastic truth table: a probability column (ch. 4–5); off unless switched on
+    condition: ""       // optional condition ψ, for P(φ | ψ) (formula mode, stochastic only)
   };
   let model = null;          // last good model
   let answers = new Map();   // practice answers: key -> true/false
@@ -862,13 +893,17 @@ window.initTable = () => {
   let pickVerdict = null;    // practice: the student's verdict ("taut" | "contra" | "contingent" | "valid" | "invalid")
   let pickCx = new Set();    // practice: rows the student marked as counterexamples
   let vChecked = false;      // has the verdict been checked since it last changed?
-  const resetPractice = () => { answers = new Map(); checked = false; pickVerdict = null; pickCx = new Set(); vChecked = false; };
+  const resetPractice = () => { answers = new Map(); checked = false; pickVerdict = null; pickCx = new Set(); vChecked = false; showProbs = false; };
+  let showProbs = false;     // practice: the stochastic results stay hidden until asked for
   let signature = "";
 
   // ================= Model =================
   function buildModel() {
     const items = state.kind === "formula"
-      ? [{ role: "Formula", src: state.formula, errId: "err-main", inputId: "f-main" }]
+      ? [
+          { role: "Formula", src: state.formula, errId: "err-main", inputId: "f-main" },
+          ...(state.stoch && state.condition.trim() ? [{ role: "Condition", src: state.condition, errId: "err-cond", inputId: "f-cond" }] : [])
+        ]
       : [
           ...state.premises.map((p, i) => ({ role: `Premise ${i + 1}`, src: p, errId: `err-p${i}`, inputId: `f-p${i}` })),
           { role: "Conclusion", src: state.conclusion, errId: "err-conc", inputId: "f-conc" }
@@ -925,6 +960,11 @@ window.initTable = () => {
       const c = { key: `L:${L}`, type: "letter", header: L, letter: L, first: i === 0 };
       letterCol[L] = c; cols.push(c);
     });
+    if (state.stoch) {
+      cols.push({ key: "P", type: "prob", header: "P( )", pstart: true });
+      const cf = m.formulas.find((f) => f.role === "Condition");
+      if (cf) { const t = canon(cf.ast); cols.push({ key: "PG", type: "cprob", header: `P( | ${t.length <= 14 ? t : "ψ"})`, title: `P( · | ${t})` }); }
+    }
     const nodeCol = new Map(); // node -> column
     m.formulas.forEach((f, fi) => {
       const group = [];
@@ -989,7 +1029,7 @@ window.initTable = () => {
         : m.needConclusion ? "Add a conclusion to test the argument." : "Type a formula, or pick an example.";
       wrap.appendChild(d);
       $("verdict").innerHTML = "";
-      $("stepcap").hidden = true; $("practicecap").hidden = true;
+      $("stepcap").hidden = true; $("practicecap").hidden = true; $("stochbar").hidden = true; $("verdictbar").hidden = true;
       $("foot").textContent = "";
       syncControls();
       return;
@@ -997,11 +1037,12 @@ window.initTable = () => {
 
     model = m;
     view = buildColumns(m);
-    const sig = state.kind + "|" + m.formulas.map((f) => canon(f.ast)).join("|") + "|" + state.layout;
+    const sig = state.kind + "|" + m.formulas.map((f) => canon(f.ast)).join("|") + "|" + state.layout + "|" + state.stoch;
     if (sig !== signature) {
       signature = sig;
       resetPractice(); state.step = 0;
     }
+    syncProbs();
     drawTable();
     syncControls();
     writeHash();
@@ -1027,9 +1068,9 @@ window.initTable = () => {
     table.className = "tt";
     const thead = document.createElement("thead");
 
-    if (state.kind === "argument") {
+    if (m.formulas.length > 1) {
       const gr = document.createElement("tr"); gr.className = "groups";
-      const th0 = document.createElement("th"); th0.colSpan = 1 + m.letters.length; gr.appendChild(th0);
+      const th0 = document.createElement("th"); th0.colSpan = 1 + cols.filter((c) => ["letter", "prob", "cprob"].includes(c.type)).length; gr.appendChild(th0);
       let i = 1 + 0;
       cols.forEach((c) => {
         if (c.type === "letter" || !c.fstart) return;
@@ -1049,6 +1090,7 @@ window.initTable = () => {
       th.className = cellClass(c, { cur, kidKeys });
       if (c.type === "letter") th.classList.add("letter");
       if (c.sub) th.classList.add("sub");
+      if (c.title) th.title = c.title;
       th.scope = "col";
       hr.appendChild(th);
     });
@@ -1072,7 +1114,15 @@ window.initTable = () => {
         const td = document.createElement("td");
         td.className = cellClass(c, { cur, kidKeys });
         const editable = practice && (c.type === "val" || (c.type === "letter" && state.practiceLetters));
-        if (c.type === "letter") {
+        if (c.type === "prob") {
+          const inp = document.createElement("input");
+          inp.className = "pin"; inp.type = "text"; inp.autocomplete = "off"; inp.spellcheck = false;
+          inp.value = probState.vals[r] ?? ""; inp.dataset.pr = r;
+          inp.setAttribute("aria-label", `Probability of row ${r + 1}`);
+          td.append(inp);
+        } else if (c.type === "cprob") {
+          td.dataset.r = r; td.textContent = "·";
+        } else if (c.type === "letter") {
           td.classList.add("letter");
           if (!editable) td.textContent = T(row.env[c.letter]);
         } else if (c.type === "val" && !editable) {
@@ -1100,10 +1150,131 @@ window.initTable = () => {
       if (first) first.tabIndex = 0;
     }
     drawVerdict(allShown, cur);
+    drawStochastic();
   }
+
+  // ================= Stochastic truth tables (ch. 4–5) =================
+  // Exact fractions, so 1/1250 + 1/125 + … adds up to exactly 1.
+  const bgcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) [a, b] = [b, a % b]; return a; };
+  const Rq = (n, d = 1n) => { if (d < 0n) { n = -n; d = -d; } const g = bgcd(n, d) || 1n; return { n: n / g, d: d / g }; };
+  const radd = (a, b) => Rq(a.n * b.d + b.n * a.d, a.d * b.d);
+  const rdiv = (a, b) => Rq(a.n * b.d, a.d * b.n);
+  const RZ = Rq(0n), R1 = Rq(1n);
+  const req = (a, b) => a.n === b.n && a.d === b.d;
+  const rstr = (q) => (q.d === 1n ? `${q.n}` : `${q.n}/${q.d}`);
+  const rnum = (q) => Number(q.n) / Number(q.d);
+  const rapprox = (q) => { const x = rnum(q); return x > 0 && x < 0.001 ? x.toPrecision(2) : String(+x.toFixed(4)); };
+  // 1/8, 0.125, .125, 12.5%
+  function parseR(raw) {
+    const t = String(raw ?? "").trim();
+    let m;
+    if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/))) return BigInt(m[2]) === 0n ? null : Rq(BigInt(m[1]), BigInt(m[2]));
+    const dec = (w, f) => Rq(BigInt((w || "0") + (f || "")), 10n ** BigInt((f || "").length));
+    if ((m = t.match(/^(\d*)\.?(\d*)\s*%$/)) && (m[1] || m[2])) { const q = dec(m[1], m[2]); return Rq(q.n, q.d * 100n); }
+    if ((m = t.match(/^(\d*)\.?(\d*)$/)) && (m[1] || m[2])) return dec(m[1], m[2]);
+    return null;
+  }
+  let probState = { sig: "", vals: [] };  // the row probabilities, as typed, for the current sentence letters
+  let pendingProbs = null;                // from a link, applied once the table is built
+  let condDist = null;                    // conditionalized distribution, when there is a condition
+  const uniform = (N) => Array(N).fill(N === 1 ? "1" : `1/${N}`);
+  function syncProbs() {
+    if (!model || !state.stoch) return;
+    const N = model.rows.length, sig = model.letters.join(",");
+    if (probState.sig === sig && probState.vals.length === N) return;
+    probState = { sig, vals: pendingProbs && pendingProbs.length === N ? pendingProbs : uniform(N) };
+    pendingProbs = null;
+  }
+  function randomDist(N) {
+    const D = N <= 4 ? 10 : N <= 8 ? 20 : N <= 32 ? 100 : 1000;
+    const cuts = Array.from({ length: N - 1 }, () => Math.floor(Math.random() * (D + 1))).sort((a, b) => a - b);
+    return [...cuts, D].map((c, i) => rstr(Rq(BigInt(c - (i ? cuts[i - 1] : 0)), BigInt(D))));
+  }
+  const par = (t) => (/\s/.test(t) ? `(${t})` : t);
+  function drawStochastic() {
+    const bar = $("stochbar"), wrap = $("tableWrap");
+    condDist = null;
+    if (!state.stoch || !model) { bar.hidden = true; return; }
+    bar.hidden = false; bar.innerHTML = "";
+    const N = model.rows.length;
+    const parsed = probState.vals.map(parseR);
+    const bad = parsed.map((q, r) => (!q || q.n > q.d ? r : -1)).filter((r) => r >= 0);
+    wrap.querySelectorAll("input.pin").forEach((inp) => inp.classList.toggle("bad", bad.includes(+inp.dataset.pr)));
+    const total = bad.length ? null : parsed.reduce(radd, RZ);
+    const ok = total && req(total, R1);
+
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+    const btn = (act, text) => { const b = el("button", "btn small", text); b.type = "button"; b.dataset.act = act; return b; };
+    const row1 = el("div", "vrow");
+    row1.append(el("span", "vlbl", "Row probabilities"), btn("equal", "Equal (indifference)"), btn("random", "Random"));
+    const list = (rs) => rs.map((r) => r + 1).join(", ");
+    row1.append(el("span", "fb " + (ok ? "ok" : "no"),
+      bad.length ? `Row${bad.length > 1 ? "s" : ""} ${list(bad)}: not a probability between 0 and 1. Use a fraction like 1/8, or a decimal.`
+        : ok ? "They add up to 1." : `They add up to ${rstr(total)}, not 1.`));
+    bar.append(row1);
+
+    const fillCond = (show) => wrap.querySelectorAll("td.cpv").forEach((td) => (td.textContent = show && condDist ? rstr(condDist[+td.dataset.r]) : "·"));
+    if (!ok) { fillCond(false); return; }
+    if (state.mode === "practice" && !showProbs) {
+      const r2 = el("div", "vrow");
+      r2.append(el("span", "note", "Work out the probabilities from the table, then compare:"), btn("show", "Show the probabilities"));
+      bar.append(r2); fillCond(false); return;
+    }
+
+    const fs = model.formulas, ci = fs.findIndex((f) => f.role === "Condition");
+    const main = (fi, r) => model.rows[r].vals[fi][fs[fi].ast.id];
+    const rowsWhere = (pred) => [...Array(N).keys()].filter(pred);
+    const sumOver = (rs) => rs.reduce((a, r) => radd(a, parsed[r]), RZ);
+    const lines = el("div", "plines");
+    const line = (lhs, q, rs, extra) => {
+      const d = el("div", "pline");
+      d.append(`${lhs} = `);
+      if (extra) d.append(extra);
+      d.append(el("b", "", rstr(q)));
+      if (q.d !== 1n) d.append(" ", el("span", "approx", `≈ ${rapprox(q)}`));
+      if (rs) d.append(" ", el("span", "prow", rs.length === 0 ? "(true in no row)" : rs.length === N ? "(true in every row)" : rs.length <= 16 ? `(sum of rows ${list(rs)})` : `(sum of ${rs.length} rows)`));
+      lines.append(d);
+    };
+    fs.forEach((f, fi) => { if (fi !== ci) { const rs = rowsWhere((r) => main(fi, r)); line(`P(${canon(f.ast)})`, sumOver(rs), rs); } });
+    if (ci >= 0) {
+      const phi = canon(fs[0].ast), psi = canon(fs[ci].ast);
+      const rPsi = rowsWhere((r) => main(ci, r)), rBoth = rowsWhere((r) => main(0, r) && main(ci, r));
+      const pPsi = sumOver(rPsi), pBoth = sumOver(rBoth);
+      line(`P(${psi})`, pPsi, rPsi);
+      line(`P(${par(phi)} ∧ ${par(psi)})`, pBoth, rBoth);
+      if (pPsi.n === 0n) lines.append(el("div", "pline", `P(${phi} | ${psi}) is undefined, because P(${psi}) = 0.`));
+      else {
+        line(`P(${phi} | ${psi})`, rdiv(pBoth, pPsi), null, `P(${par(phi)} ∧ ${par(psi)}) / P(${psi}) = ${rstr(pBoth)} / ${rstr(pPsi)} = `);
+        condDist = parsed.map((q, r) => (main(ci, r) ? rdiv(q, pPsi) : RZ));
+        lines.append(el("div", "note", `The P( | ${psi.length <= 14 ? psi : "ψ"}) column is the result of conditionalizing on ${psi}: rows where it is false drop to 0, and the rest are divided by ${rstr(pPsi)}.`));
+      }
+    }
+    bar.append(lines);
+    fillCond(true);
+  }
+  $("tableWrap").addEventListener("input", (e) => {
+    const inp = e.target.closest("input.pin"); if (!inp) return;
+    probState.vals[+inp.dataset.pr] = inp.value;
+    drawStochastic(); writeHash();
+  });
+  $("tableWrap").addEventListener("keydown", (e) => {
+    const inp = e.target.closest("input.pin"); if (!inp || !["Enter", "ArrowDown", "ArrowUp"].includes(e.key)) return;
+    e.preventDefault();
+    const next = $("tableWrap").querySelector(`input.pin[data-pr="${+inp.dataset.pr + (e.key === "ArrowUp" ? -1 : 1)}"]`);
+    if (next) { next.focus(); next.select(); }
+  });
+  $("stochbar").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-act]"); if (!b || !model) return;
+    const N = model.rows.length;
+    if (b.dataset.act === "equal") probState.vals = uniform(N);
+    else if (b.dataset.act === "random") probState.vals = randomDist(N);
+    else if (b.dataset.act === "show") showProbs = true;
+    drawTable(); writeHash();
+  });
 
   function cellClass(c, { cur, kidKeys }) {
     const cl = [];
+    if (c.type === "prob" || c.type === "cprob") { cl.push(c.type === "prob" ? "pc" : "cpv"); if (c.pstart) cl.push("sep"); return cl.join(" "); }
     if (c.type === "letter" && c.first) { /* first column */ }
     if (c.fstart) cl.push(c.sep ? "sep" : "gsep");
     if (c.type === "paren") cl.push("paren");
@@ -1291,10 +1462,10 @@ window.initTable = () => {
 
   // ================= Draft vs. built =================
   // What's in the input boxes (draft) only becomes the table (state) on Build / Enter.
-  const draft = { formula: "", premises: [], conclusion: "" };
-  const syncDraftFromState = () => { draft.formula = state.formula; draft.premises = [...state.premises]; draft.conclusion = state.conclusion; };
+  const draft = { formula: "", premises: [], conclusion: "", condition: "" };
+  const syncDraftFromState = () => { draft.formula = state.formula; draft.premises = [...state.premises]; draft.conclusion = state.conclusion; draft.condition = state.condition; };
   function isDirty() {
-    if (state.kind === "formula") return draft.formula !== state.formula;
+    if (state.kind === "formula") return draft.formula !== state.formula || (state.stoch && draft.condition !== state.condition);
     return draft.conclusion !== state.conclusion || draft.premises.length !== state.premises.length || draft.premises.some((p, i) => p !== state.premises[i]);
   }
   function updateDirty() {
@@ -1307,6 +1478,7 @@ window.initTable = () => {
     state.formula = draft.formula;
     state.premises = [...draft.premises];
     state.conclusion = draft.conclusion;
+    state.condition = draft.condition;
     render();
   }
 
@@ -1330,6 +1502,8 @@ window.initTable = () => {
     $("formulaIn").hidden = state.kind !== "formula";
     $("argIn").hidden = state.kind !== "argument";
     $("lettersOpt").hidden = state.mode !== "practice";
+    $("f-stoch").checked = state.stoch;
+    $("condIn").hidden = !(state.stoch && state.kind === "formula");
     $("f-letters").checked = state.practiceLetters;
     $("stepper").hidden = state.mode !== "step" || !view;
     $("practiceBtns").hidden = state.mode !== "practice" || !view;
@@ -1348,6 +1522,7 @@ window.initTable = () => {
   $("buildBtn").onclick = build;
   segInit("layoutSeg", "layout", () => { state.step = 0; });
   segInit("modeSeg", "mode", (v) => { if (v === "step") state.step = 0; checked = false; });
+  $("f-stoch").addEventListener("change", (e) => { state.stoch = e.target.checked; store.set("ttb-stoch", state.stoch ? "1" : "0"); render(); });
   $("f-letters").addEventListener("change", (e) => { state.practiceLetters = e.target.checked; checked = false; render(); });
 
   // stepping
@@ -1428,7 +1603,7 @@ window.initTable = () => {
     const hdr = ["#", ...view.cols.map((c) => c.header)];
     lines.push(hdr.join("\t"));
     model.rows.forEach((row, r) => {
-      lines.push([r + 1, ...view.cols.map((c) => c.type === "letter" ? T(row.env[c.letter]) : c.type === "val" ? T(row.vals[c.f][c.node.id]) : "")].join("\t"));
+      lines.push([r + 1, ...view.cols.map((c) => c.type === "letter" ? T(row.env[c.letter]) : c.type === "val" ? T(row.vals[c.f][c.node.id]) : c.type === "prob" ? (probState.vals[r] ?? "") : c.type === "cprob" ? (condDist ? rstr(condDist[r]) : "") : "")].join("\t"));
     });
     try { await navigator.clipboard.writeText(lines.join("\n")); statusFlash($("copyBtn"), "Copied"); }
     catch (e) { statusFlash($("copyBtn"), "Couldn’t copy"); }
@@ -1473,10 +1648,12 @@ window.initTable = () => {
   }
   wireInput($("f-main"), (v) => (draft.formula = v));
   wireInput($("f-conc"), (v) => (draft.conclusion = v));
+  wireInput($("f-cond"), (v) => (draft.condition = v));
 
   function renderInputs() {
     $("f-main").value = draft.formula;
     $("f-conc").value = draft.conclusion;
+    $("f-cond").value = draft.condition;
     const box = $("premises"); box.innerHTML = "";
     draft.premises.forEach((p, i) => {
       const row = document.createElement("div"); row.className = "frow";
@@ -1540,6 +1717,11 @@ window.initTable = () => {
     if (state.kind === "formula") p.set("f", state.formula);
     else { state.premises.forEach((x) => p.append("p", x)); p.set("c", state.conclusion); }
     p.set("l", state.layout); p.set("m", state.mode);
+    if (state.stoch) {
+      p.set("s", "1");
+      if (state.kind === "formula" && state.condition.trim()) p.set("g", state.condition);
+      if (probState.vals.length) p.set("pr", probState.vals.map((v) => v.trim()).join(","));
+    } else p.set("s", "0");
     try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
   }
   function readHash() {
@@ -1551,8 +1733,12 @@ window.initTable = () => {
     if (p.has("c")) state.conclusion = normalize(p.get("c"));
     if (["under", "cols"].includes(p.get("l"))) state.layout = p.get("l");
     if (["answers", "step", "practice"].includes(p.get("m"))) state.mode = p.get("m");
+    if (p.has("s")) state.stoch = p.get("s") === "1";
+    state.condition = p.has("g") ? normalize(p.get("g")) : "";
+    if (p.has("pr")) { pendingProbs = p.get("pr").split(","); probState = { sig: "", vals: [] }; }
   }
 
+  state.stoch = store.get("ttb-stoch") === "1";
   readHash();
   syncDraftFromState();
   renderInputs();

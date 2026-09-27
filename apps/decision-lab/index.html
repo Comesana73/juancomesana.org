@@ -294,6 +294,9 @@
           <button type="button" data-v="none">None</button><button type="button" data-v="states">On states</button><button type="button" data-v="cells">Depend on choice</button>
         </div>
         <p class="note" id="probNote"></p>
+        <div class="seg full" role="group" aria-label="Show probabilities as" id="pfSeg">
+          <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
+        </div>
       </div>
       <div class="opt">
         <span class="lbl" id="kindLbl">Utilities</span>
@@ -432,6 +435,9 @@
     if (terminating(q.d)) return decStr(q);
     return minus(`${q.n}/${q.d}`);
   }
+  // Probabilities are shown as fractions by default (7/10), or as decimals (0.7), whatever was typed.
+  let probFmt = "f";
+  const pText = (p) => (probFmt === "f" ? fracStr(p.q) : terminating(p.q.d) ? decStr(p.q) : `≈${p.q.num().toFixed(3)}`);
   const fracStr = (q) => q.d === 1n ? minus(q.n.toString()) : minus(`${q.n}/${q.d}`);
   // "19/10 = 1.9" or "1/3 ≈ 0.333" or "2"
   function exactAndDec(q) {
@@ -608,7 +614,7 @@
     const terms = pb.u[r].map((x, c) => {
       const p = pb.probMode === "states" ? pb.pState[c] : pb.pCell[r][c];
       const us = x.cmp(ZERO) < 0 ? `(${fmt(x)})` : fmt(x);
-      return `${us} × ${p.text}`;
+      return `${us} × ${pText(p)}`;
     });
     return `${euName()}(${O(r)}) = ${terms.join(" + ")} = ${exactAndDec(res.eu[r])}`;
   }
@@ -701,14 +707,14 @@
   function header(extraHeads = [], { probs = true } = {}) {
     const pb = state.problem;
     const ths = pb.states.map((s, c) => {
-      const pr = probs && pb.probMode === "states" ? `<span class="pr">${esc(pb.pState[c].text)}</span>` : "";
+      const pr = probs && pb.probMode === "states" ? `<span class="pr">${esc(pText(pb.pState[c]))}</span>` : "";
       return `<th scope="col" data-c="${c}">${esc(s)}${pr}</th>`;
     }).join("");
     return `<thead><tr><th></th>${ths}${extraHeads.map((h) => `<th class="extra">${h}</th>`).join("")}</tr></thead>`;
   }
   function utilCell(r, c, { cls = "", star = false, showProb = true } = {}) {
     const pb = state.problem;
-    const pc = showProb && pb.probMode === "cells" ? `<span class="pc">${esc(pb.pCell[r][c].text)}</span>` : "";
+    const pc = showProb && pb.probMode === "cells" ? `<span class="pc">${esc(pText(pb.pCell[r][c]))}</span>` : "";
     const inner = pb.probMode === "cells" && showProb ? `<span class="uv">${esc(pb.uText[r][c])}${star ? '<sup class="st">*</sup>' : ""}</span>${pc}` : `${esc(pb.uText[r][c])}${star ? '<sup class="st">*</sup>' : ""}`;
     return `<td class="${cls}${pb.probMode === "cells" && showProb ? " cellp" : ""}${star ? " star" : ""}" data-r="${r}" data-c="${c}">${inner}</td>`;
   }
@@ -1181,6 +1187,7 @@
   function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
   function syncControls() {
     segSync("probSeg", draft.probMode); segSync("kindSeg", state.kind); segSync("modeSeg", state.mode);
+    segSync("pfSeg", probFmt); $("pfSeg").hidden = draft.probMode === "none";
     $("probNote").textContent = {
       none: "Decision under ignorance: no probabilities for the states.",
       states: "Decision under risk: each state has a probability, the same whatever you choose.",
@@ -1201,6 +1208,10 @@
     if (draft.probMode === "cells") draft.pCell = draft.pCell.map((row) => row.map((v, c) => (v.trim() ? v : draft.pState[c] || "")));
     syncControls(); renderEditor(); updateDirty();
     if (draft.probMode !== "none" || state.built !== snapshot()) setEditing(true);
+  });
+  $("pfSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    probFmt = b.dataset.v; store.set("dl-pf", probFmt); render(); writeHash();
   });
   $("kindSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.kind = b.dataset.v; render(); writeHash(); });
   $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.v; state.hint = null; render(); writeHash(); });
@@ -1238,7 +1249,7 @@
   const gcdN = (a, b) => (b ? gcdN(b, a % b) : a);
   const fracText = (k, d) => { const g = gcdN(k, d); return d / g === 1 ? String(k / g) : `${k / g}/${d / g}`; };
   function probRow(C, level) {
-    if (level === "medium") return composition(10, C).map((k) => String(k / 10));
+    if (level === "medium") return composition(10, C).map((k) => (probFmt === "f" ? fracText(k, 10) : String(k / 10)));
     const d = C === 4 ? [4, 5, 10][ri(0, 2)] : [4, 5, 10][ri(0, 2)];
     if (d < C) return composition(10, C).map((k) => fracText(k, 10));
     return composition(d, C).map((k) => fracText(k, d));
@@ -1314,12 +1325,14 @@
     if (d.probMode === "states") p.set("p", d.pState.map((v) => v.trim()).join(","));
     if (d.probMode === "cells") d.pCell.forEach((row) => p.append("pc", row.map((v) => v.trim()).join(",")));
     p.set("k", state.kind); p.set("m", state.mode); p.set("t", state.tab);
+    if (probFmt === "d") p.set("pf", "d");
     try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
   }
   function readHash() {
     if (!location.hash.includes("=")) return false;
     const p = new URLSearchParams(location.hash.slice(1));
     if (["cardinal", "ordinal"].includes(p.get("k"))) state.kind = p.get("k");
+    if (p.get("pf") === "d") probFmt = "d";
     if (["practice", "answers", "step"].includes(p.get("m"))) state.mode = p.get("m");
     if (TABS.includes(p.get("t"))) state.tab = p.get("t");
     const opts = p.getAll("o"), states = p.getAll("s");
@@ -1345,6 +1358,7 @@
   };
   window.addEventListener("hashchange", () => { if (readHash()) { renderEditor(); build(); } });
 
+  probFmt = store.get("dl-pf") === "d" ? "d" : "f";
   readHash();
   renderEditor();
   build();
