@@ -163,8 +163,8 @@
   .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 0; }
   .sw-h { background: var(--h-strong); }
   .sw-n { background: var(--n-strong); }
-  .control input[type="number"] {
-    width: 5.6em; padding: 5px 8px; text-align: right;
+  .control input.pin {
+    width: 6.8em; padding: 5px 8px; text-align: right;
     border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2);
     font-family: var(--mono); font-size: 0.9rem;
   }
@@ -246,6 +246,7 @@
   .readout + .readout { border-left: 1px solid var(--line); }
   .readout .k { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .readout .v { font-family: var(--mono); font-size: clamp(1.25rem, 2.2vw, 1.75rem); font-weight: 500; letter-spacing: -0.02em; }
+  .readout .v .approx { font-size: 0.55em; color: var(--muted); letter-spacing: 0; margin-left: 0.4em; white-space: nowrap; }
   .readout .t { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
   .readout.key { background: color-mix(in srgb, var(--accent) 9%, transparent); }
   .readout.key .v { color: var(--accent); }
@@ -336,10 +337,13 @@
 
     <section class="card" aria-labelledby="probHead">
       <h2 id="probHead">Probabilities</h2>
+      <div class="seg" role="group" aria-label="Show numbers as" id="fmtSeg">
+        <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
+      </div>
       <div class="control">
         <div class="control-head">
           <label for="in-pA"><span class="swatch sw-h"></span><span data-l="pA">P(H)</span></label>
-          <input id="in-pA" type="number" min="0" max="1" step="0.001" inputmode="decimal">
+          <input id="in-pA" class="pin" type="text" autocomplete="off" spellcheck="false">
         </div>
         <input id="rg-pA" type="range" min="0" max="1" step="0.001" aria-label="Prior probability">
         <p class="hint">Width of the left column</p>
@@ -347,7 +351,7 @@
       <div class="control">
         <div class="control-head">
           <label for="in-pBgA"><span class="swatch sw-h"></span><span data-l="pBgA">P(E|H)</span></label>
-          <input id="in-pBgA" type="number" min="0" max="1" step="0.001" inputmode="decimal">
+          <input id="in-pBgA" class="pin" type="text" autocomplete="off" spellcheck="false">
         </div>
         <input id="rg-pBgA" type="range" min="0" max="1" step="0.001" aria-label="Likelihood given the left category">
         <p class="hint">Height of the bottom cell, left column</p>
@@ -355,7 +359,7 @@
       <div class="control">
         <div class="control-head">
           <label for="in-pBgNotA"><span class="swatch sw-n"></span><span data-l="pBgNotA">P(E|not H)</span></label>
-          <input id="in-pBgNotA" type="number" min="0" max="1" step="0.001" inputmode="decimal">
+          <input id="in-pBgNotA" class="pin" type="text" autocomplete="off" spellcheck="false">
         </div>
         <input id="rg-pBgNotA" type="range" min="0" max="1" step="0.001" aria-label="Likelihood given the right category">
         <p class="hint">Height of the bottom cell, right column</p>
@@ -395,8 +399,8 @@
       <p class="ptext" id="probText"></p>
       <div class="task" id="probTask"></div>
       <div class="answers" id="probAnswers" hidden>
-        <div class="field"><label for="ans-pB" id="ansLbl-pB">P(E)</label><input id="ans-pB" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.23 or 23%"></div>
-        <div class="field"><label for="ans-pAgB" id="ansLbl-pAgB">P(H|E)</label><input id="ans-pAgB" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.41 or 41%"></div>
+        <div class="field"><label for="ans-pB" id="ansLbl-pB">P(E)</label><input id="ans-pB" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 3/13 or 0.23"></div>
+        <div class="field"><label for="ans-pAgB" id="ansLbl-pAgB">P(H|E)</label><input id="ans-pAgB" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 9/29 or 0.31"></div>
       </div>
       <div class="pbtns">
         <button class="btn primary" id="probCheck" type="button">Check</button>
@@ -448,9 +452,44 @@
   const state = { ...DEFAULTS };
 
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  const pct = (v) => (Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : "undefined");
-  const prob = (v) => v.toFixed(3);
-  const cleanProb = (v, fb) => { const n = Number(v); return Number.isFinite(n) && String(v).trim() !== "" ? clamp(n, MIN, MAX) : fb; };
+  // Numbers are shown as fractions (the default) or as percentages.
+  let fmtMode = "f";
+  // Recover the fraction behind a value (1/3 from 0.3333…), if there is one with a small denominator.
+  function toFrac(v, maxDen) {
+    if (!Number.isFinite(v) || v < 0) return null;
+    let h0 = 0, h1 = 1, k0 = 1, k1 = 0, x = v;
+    for (let i = 0; i < 40; i++) {
+      const a = Math.floor(x), h2 = a * h1 + h0, k2 = a * k1 + k0;
+      if (k2 > maxDen) break;
+      h0 = h1; h1 = h2; k0 = k1; k1 = k2;
+      if (Math.abs(h1 / k1 - v) < 1e-9) return [h1, k1];
+      const f = x - a; if (f < 1e-12) break; x = 1 / f;
+    }
+    return k1 && Math.abs(h1 / k1 - v) < 1e-9 ? [h1, k1] : null;
+  }
+  const fracStr = ([n, d]) => (d === 1 ? String(n) : `${n}/${d}`);
+  const pctStr = (v) => `${(v * 100).toFixed(1)}%`;
+  const pct = (v) => {
+    if (!Number.isFinite(v)) return "undefined";
+    if (fmtMode === "d") return pctStr(v);
+    const f = toFrac(v, 10000);
+    return f ? fracStr(f) : `≈${v.toFixed(3)}`;
+  };
+  // The value in an input box (and in links): exact fraction when there is a simple one.
+  const prob = (v) => { if (fmtMode === "d") return v.toFixed(3); const f = toFrac(v, 1000); return f ? fracStr(f) : v.toFixed(3); };
+  const linkVal = (v) => { const f = toFrac(v, 1000); return f ? fracStr(f) : v.toFixed(4); };
+  // Accepts 1/3, 0.25, .25, 25%.
+  function parseProb(raw) {
+    const t = String(raw ?? "").trim();
+    let m;
+    if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/))) return +m[2] > 0 ? +m[1] / +m[2] : NaN;
+    if ((m = t.match(/^(\d*\.?\d+)\s*%$/))) return +m[1] / 100;
+    if (/^\d*\.?\d+$/.test(t)) return +t;
+    return NaN;
+  }
+  const cleanProb = (v, fb) => { const n = parseProb(v); return Number.isFinite(n) ? clamp(n, MIN, MAX) : fb; };
+  // Slider, drag and arrow-key values snap to hundredths with fractions, thousandths with decimals.
+  const snap = (v) => (fmtMode === "f" ? Math.round(v * 100) / 100 : Math.round(v * 1000) / 1000);
 
   function metrics(s = state) {
     const tl = s.pA * s.pBgA, bl = s.pA * (1 - s.pBgA);
@@ -696,7 +735,8 @@
     const m = metrics(), lab = L(state);
     for (const k of probKeys) {
       const { rg, inp } = ctl[k];
-      rg.value = prob(state[k]);
+      rg.step = fmtMode === "f" ? "0.01" : "0.001";
+      rg.value = String(state[k]);
       rg.style.setProperty("--fill", `${((state[k] - MIN) / (MAX - MIN)) * 100}%`);
       if (document.activeElement !== inp) inp.value = prob(state[k]);
     }
@@ -704,11 +744,16 @@
       const k = n.dataset.l;
       n.textContent = lab[k] ?? state[k] ?? n.textContent;
     });
-    $("r-pA").textContent = pct(m.pA); $("k-pA").textContent = lab.pA;
-    $("r-pB").textContent = pct(m.pB); $("k-pB").textContent = lab.pB;
-    $("r-pAgB").textContent = pct(m.pAgB); $("k-pAgB").textContent = lab.pAgB;
+    $("k-pA").textContent = lab.pA; $("k-pB").textContent = lab.pB; $("k-pAgB").textContent = lab.pAgB;
+    const readout = (id, v) => {
+      const el = $(id); el.textContent = pct(v);
+      if (fmtMode === "f" && Number.isFinite(v) && v > 0 && v < 1) {
+        const a = document.createElement("span"); a.className = "approx"; a.textContent = `≈ ${pctStr(v)}`; el.append(a);
+      }
+    };
+    readout("r-pA", m.pA); readout("r-pB", m.pB); readout("r-pAgB", m.pAgB);
     $("t-pAgNB").textContent = `If ${state.notB}`;
-    $("r-pAgNB").textContent = pct(m.pAgNB); $("k-pAgNB").textContent = lab.pAgNB;
+    readout("r-pAgNB", m.pAgNB); $("k-pAgNB").textContent = lab.pAgNB;
     $("postLabel").textContent = lab.pAgB;
     $("titleOut").textContent = state.title || " ";
 
@@ -743,10 +788,10 @@
   // ---------- inputs ----------
   for (const k of probKeys) {
     const { rg, inp } = ctl[k];
-    rg.addEventListener("input", () => { state[k] = cleanProb(rg.value, state[k]); render(); });
+    rg.addEventListener("input", () => { state[k] = snap(cleanProb(rg.value, state[k])); render(); });
     inp.addEventListener("input", () => {
-      const n = Number(inp.value);
-      if (inp.value.trim() !== "" && Number.isFinite(n) && n >= MIN && n <= MAX) { state[k] = n; render(); }
+      const n = parseProb(inp.value);
+      if (Number.isFinite(n) && n >= MIN && n <= MAX) { state[k] = n; render(); }
     });
     inp.addEventListener("change", () => { state[k] = cleanProb(inp.value, state[k]); inp.value = prob(state[k]); render(); });
   }
@@ -772,7 +817,7 @@
   function move(e) {
     if (!drag) return;
     const r = svg.getBoundingClientRect(), g = scene.geom;
-    const c = (v) => clamp(v, MIN, MAX);
+    const c = (v) => clamp(snap(v), MIN, MAX);
     if (drag.kind === "cl" || drag.kind === "cr") {
       const dx = (e.clientX - drag.sx) / g.w, dy = (e.clientY - drag.sy) / g.h;
       state.pA = c(drag.s0.pA + dx);
@@ -818,7 +863,7 @@
       else if (e.key === "End") v = MAX;
       else return;
       e.preventDefault();
-      state[key] = clamp(Math.round(v * 1000) / 1000, MIN, MAX);
+      state[key] = clamp(snap(v), MIN, MAX);
       render();
     });
   }
@@ -903,7 +948,7 @@
     const p = new URLSearchParams({
       t: state.title, a: state.a, na: state.notA, b: state.b, nb: state.notB,
       bg: state.transparentBg ? 1 : 0, post: state.posterior ? 1 : 0,
-      pA: prob(state.pA), pBgA: prob(state.pBgA), pBgNotA: prob(state.pBgNotA)
+      pA: linkVal(state.pA), pBgA: linkVal(state.pBgA), pBgNotA: linkVal(state.pBgNotA), n: fmtMode
     });
     try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
   }
@@ -915,7 +960,18 @@
     state.b = p.get("b") || state.b; state.notB = p.get("nb") || state.notB;
     state.transparentBg = p.get("bg") === "1"; state.posterior = p.get("post") === "1";
     for (const k of probKeys) state[k] = cleanProb(p.get(k), state[k]);
+    if (["f", "d"].includes(p.get("n"))) fmtMode = p.get("n");
   }
+  // fraction / decimal switch, remembered per browser
+  try { const v = localStorage.getItem("eik-fmt"); if (v === "f" || v === "d") fmtMode = v; } catch (e) { /* ignore */ }
+  const syncFmt = () => $("fmtSeg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === fmtMode)));
+  $("fmtSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    fmtMode = b.dataset.v; syncFmt();
+    try { localStorage.setItem("eik-fmt", fmtMode); } catch (err) { /* ignore */ }
+    for (const k of probKeys) ctl[k].inp.value = prob(state[k]);
+    render();
+  });
 
   // ================= Practice: generated word problems =================
   let practice = null; // { level, text, labels, title, target, stage: 1 build | 2 compute | 3 solved, saved }
@@ -1027,13 +1083,14 @@
   const close = (x, y, tol) => Number.isFinite(x) && Math.abs(x - y) <= tol + 1e-9;
   const r3 = (v) => +v.toFixed(3);
   const r4 = (v) => +v.toFixed(4);
+  const W = (v) => (fmtMode === "f" ? pct(v) : String(r4(v)));
 
   function workedLines() {
     const t = practice.target, lab = L(state), m = metrics({ ...state, ...t });
     const nA = `P(${state.notA})`;
     return [
-      `${lab.pB} = ${lab.pA}·${lab.pBgA} + ${nA}·${lab.pBgNotA} = ${r3(t.pA)}·${r3(t.pBgA)} + ${r3(1 - t.pA)}·${r3(t.pBgNotA)} = ${r4(m.pB)}`,
-      `${lab.pAgB} = ${lab.pA}·${lab.pBgA} / ${lab.pB} = ${r4(m.tl)} / ${r4(m.pB)} ≈ ${r4(m.pAgB)} (${pct(m.pAgB)})`
+      `${lab.pB} = ${lab.pA}·${lab.pBgA} + ${nA}·${lab.pBgNotA} = ${W(t.pA)}·${W(t.pBgA)} + ${W(1 - t.pA)}·${W(t.pBgNotA)} = ${W(m.pB)}`,
+      `${lab.pAgB} = ${lab.pA}·${lab.pBgA} / ${lab.pB} = ${W(m.tl)} / ${W(m.pB)} = ${W(m.pAgB)} (${pctStr(m.pAgB)})`
     ];
   }
   function feedback(cls, msg, work) {
@@ -1123,6 +1180,7 @@
   syncLevel();
 
   readHash();
+  syncFmt();
   syncFields();
   render();
   if (document.fonts?.ready) document.fonts.ready.then(renderDiagram);
