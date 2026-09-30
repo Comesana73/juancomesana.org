@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Decision Lab</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+<link rel="preload" href="../fonts/plex-sans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts/plex.css">
 <style>
   :root {
     --bg: #f3f5f8;
@@ -100,7 +99,8 @@
   @media (max-width: 979px) {
     .app { display: flex; flex-direction: column; }
     .panel { display: contents; }
-    .setup-card { order: 1; } .mode-card { order: 2; } .stage { order: 3; } .help { order: 4; }
+    /* the matrix and the work come first; setup and mode follow */
+    .stage { order: 1; } .setup-card { order: 2; } .mode-card { order: 3; } .help { order: 4; }
   }
   .card {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
@@ -1156,6 +1156,14 @@
   };
   $("buildBtn").onclick = build;
 
+  // On narrow screens the setup controls sit below the matrix, so bring the matrix into view
+  // when one of them changes it.
+  const narrow = window.matchMedia("(max-width: 979px)");
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  function showStage() {
+    if (narrow.matches) document.querySelector(".stage").scrollIntoView({ behavior: calm.matches ? "auto" : "smooth", block: "start" });
+  }
+
   // One matrix on screen at a time: the entry grid while editing, the working matrix otherwise.
   function setEditing(on) {
     state.editing = on;
@@ -1207,7 +1215,7 @@
     draft.probMode = b.dataset.v;
     if (draft.probMode === "cells") draft.pCell = draft.pCell.map((row) => row.map((v, c) => (v.trim() ? v : draft.pState[c] || "")));
     syncControls(); renderEditor(); updateDirty();
-    if (draft.probMode !== "none" || state.built !== snapshot()) setEditing(true);
+    if (draft.probMode !== "none" || state.built !== snapshot()) { setEditing(true); showStage(); }
   });
   $("pfSeg").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
@@ -1307,7 +1315,7 @@
       pState: p.pState, pCell: p.pCell, probMode: p.probMode
     });
     state.kind = "cardinal";
-    renderEditor(); build();
+    renderEditor(); build(); showStage();
   };
   syncLevel();
 

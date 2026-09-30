@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Eikosogram Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="preload" href="../fonts/plex-sans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts/plex.css">
 <style>
   :root {
     --bg: #f3f5f8;
@@ -27,6 +26,7 @@
     --handle: #ffffff;
     --focus: #2c5cc9;
     --radius: 10px;
+    --dscale: 1; /* text size: S / M / L / XL */
     --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
   }
@@ -106,11 +106,11 @@
       height: 100%;
       grid-template-columns: 320px minmax(0, 1fr);
       grid-template-rows: auto minmax(0, 1fr);
-      grid-template-areas: "brand stage" "panel stage";
+      grid-template-areas: "top top" "panel stage";
       gap: 16px 20px;
       padding: 20px;
     }
-    .brand { grid-area: brand; }
+    .topbar { grid-area: top; }
     .panel { grid-area: panel; overflow-y: auto; padding-right: 4px; }
     .stage { grid-area: stage; min-height: 0; }
   }
@@ -119,14 +119,19 @@
      then the probability sliders; labels and export go last. */
   @media (max-width: 959px) {
     .panel { display: contents; }
-    .brand { order: 0; }
+    .topbar { order: 0; }
     .stage { order: 1; }
     .panel > .card { order: 2; }
     .diagram-card { order: -1; }
   }
 
-  /* ---------- brand ---------- */
+  /* ---------- top bar ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .brand { display: flex; align-items: center; gap: 10px; padding: 2px 2px 4px; }
+  .top-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .top-controls .lbl { font-size: 0.78rem; color: var(--muted); }
+  .top-controls .seg { display: inline-flex; }
+  .top-controls .seg button { flex: none; }
   .brand-mark {
     width: 28px; height: 28px; flex: none; border-radius: 6px; overflow: hidden;
     display: grid; grid-template-columns: 11fr 17fr;
@@ -220,8 +225,8 @@
   }
   .readout { padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .readout + .readout { border-left: 1px solid var(--line); }
-  .readout .k { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .readout .v { font-family: var(--mono); font-size: clamp(1.25rem, 2.2vw, 1.75rem); font-weight: 500; letter-spacing: -0.02em; }
+  .readout .k { font-size: calc(0.78rem * var(--dscale)); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .readout .v { font-family: var(--mono); font-size: calc(clamp(1.25rem, 2.2vw, 1.75rem) * var(--dscale)); font-weight: 500; letter-spacing: -0.02em; }
   .readout .v .approx { font-size: 0.55em; color: var(--muted); letter-spacing: 0; margin-left: 0.4em; white-space: nowrap; }
   .readout .t { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
   .readout.key { background: color-mix(in srgb, var(--accent) 9%, transparent); }
@@ -237,8 +242,8 @@
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
     padding: 12px 16px 0;
   }
-  .diagram-bar h2 { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
-  .sentence { font-size: 0.9rem; color: var(--muted); }
+  .diagram-bar h2 { font-size: calc(1.15rem * var(--dscale)); font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+  .sentence { font-size: calc(0.9rem * var(--dscale)); color: var(--muted); }
   .sentence b { color: var(--ink); font-weight: 600; }
 
   .toggle {
@@ -294,12 +299,23 @@
 <body>
 
 <div class="app">
-  <header class="brand">
+  <header class="topbar">
+    <div class="brand">
       <div class="brand-mark" aria-hidden="true"><span></span><span></span></div>
       <div>
         <h1>Eikosogram Studio</h1>
         <p>Joint probability, drawn to scale</p>
       </div>
+    </div>
+    <div class="top-controls">
+      <span class="lbl" id="sizeLbl">Text size</span>
+      <div class="seg" role="group" aria-labelledby="sizeLbl" id="sizeSeg">
+        <button type="button" data-v="0.85">S</button><button type="button" data-v="1">M</button><button type="button" data-v="1.25">L</button><button type="button" data-v="1.55">XL</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme" id="themeSeg">
+        <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+      </div>
+    </div>
   </header>
   <aside class="panel" aria-label="Controls">
     <section class="card" aria-labelledby="probHead">
@@ -516,7 +532,7 @@
       const svg = this.svg;
       setA(svg, { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
 
-      const base = clamp(Math.min(W, H * 1.45) / 38, 13, 30);
+      const base = Math.round(clamp(Math.min(W, H * 1.45) / 38, 13, 30) * (opts.scale || 1) * 10) / 10;
       const nameSize = Math.max(11, Math.round(base * 0.64));
       const headSize = Math.max(12, Math.round(base * 0.74));
       const titleSize = Math.round(base * 1.15);
@@ -662,7 +678,7 @@
   const fields = { title: $("f-title"), a: $("f-a"), notA: $("f-na"), b: $("f-b"), notB: $("f-nb") };
   const probKeys = ["pA", "pBgA", "pBgNotA"];
   const ctl = Object.fromEntries(probKeys.map((k) => [k, { rg: $("rg-" + k), inp: $("in-" + k) }]));
-  let focusKind = null, drag = null;
+  let focusKind = null, drag = null, textScale = 1;
 
   function palette() {
     const cs = getComputedStyle(document.documentElement);
@@ -678,10 +694,18 @@
   function renderDiagram() {
     const r = svg.getBoundingClientRect();
     if (r.width < 10 || r.height < 10) return;
-    scene.update(Math.round(r.width), Math.round(r.height), state, palette(), { focus: focusKind });
+    scene.update(Math.round(r.width), Math.round(r.height), state, palette(), { focus: focusKind, scale: textScale });
   }
 
+  // Pointer and slider events can arrive faster than the screen refreshes, so draw at most once per frame.
+  // (The timer is a fallback for when frames are suspended, e.g. in a background tab.)
+  let frame = 0, frameTimer = 0;
   function render() {
+    if (frame) return;
+    const run = () => { cancelAnimationFrame(frame); clearTimeout(frameTimer); frame = 0; renderNow(); };
+    frame = requestAnimationFrame(run); frameTimer = setTimeout(run, 100);
+  }
+  function renderNow() {
     const m = metrics(), lab = L(state);
     for (const k of probKeys) {
       const { rg, inp } = ctl[k];
@@ -713,7 +737,7 @@
     const b = (t) => { const e = document.createElement("b"); e.textContent = t; return e; };
     if (!Number.isFinite(m.pAgB)) {
       S.append(b(state.b), ` has probability 0, so ${lab.pAgB} is undefined: there is no way to conditionalize on it.`);
-      renderDiagram(); writeHash(); return;
+      renderDiagram(); scheduleHash(); return;
     }
     const d = m.pAgB - m.pA;
     const verb = Math.abs(d) < 0.0005 ? "leaves" : d > 0 ? "raises" : "lowers";
@@ -722,7 +746,7 @@
     S.append(".");
 
     renderDiagram();
-    writeHash();
+    scheduleHash();
   }
 
   // ---------- inputs ----------
@@ -783,7 +807,7 @@
     if (kind !== "cl" && kind !== "cr") move(e);
   });
   svg.addEventListener("pointermove", move);
-  const end = () => { drag = null; };
+  const end = () => { if (drag) { drag = null; writeHash(); } };
   svg.addEventListener("pointerup", end);
   svg.addEventListener("pointercancel", end);
   svg.addEventListener("lostpointercapture", end);
@@ -867,6 +891,7 @@
     catch { say("Couldn’t reach the clipboard here."); }
   });
   $("linkBtn").addEventListener("click", async () => {
+    writeHash();
     try { await navigator.clipboard.writeText(location.href); say("Link copied. It opens with this exact diagram."); }
     catch { say("Couldn’t reach the clipboard here."); }
   });
@@ -881,7 +906,13 @@
   }
 
   // ---------- URL state (local file only) ----------
+  // Browsers limit how often a page may rewrite its URL (Safari throws after ~100 calls in 30 s),
+  // so it is written once things settle rather than on every drag step.
+  let hashTimer = 0;
+  function scheduleHash() { clearTimeout(hashTimer); hashTimer = setTimeout(writeHash, drag ? 400 : 150); }
+  window.addEventListener("pagehide", () => writeHash());
   function writeHash() {
+    clearTimeout(hashTimer);
     if (framed) return;
     const p = new URLSearchParams({
       t: state.title, a: state.a, na: state.notA, b: state.b, nb: state.notB,
@@ -911,10 +942,31 @@
     render();
   });
 
+  // text size + theme (the theme is shared with the other apps)
+  const segSync = (id, val) => $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val))));
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  function applySize(v) {
+    textScale = +v; document.documentElement.style.setProperty("--dscale", v);
+    segSync("sizeSeg", v); store.set("eik-size", v); renderDiagram();
+  }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  const savedSize = store.get("eik-size");
+  applySize(["0.85", "1", "1.25", "1.55"].includes(savedSize) ? savedSize : "1");
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", v);
+    segSync("themeSeg", v); store.set("ttb-theme2", v);
+  }
+  $("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  const savedTheme = store.get("ttb-theme2");
+  if (savedTheme && savedTheme !== "auto") applyTheme(savedTheme); else segSync("themeSeg", "auto");
+
   readHash();
   syncFmt();
   syncFields();
-  render();
+  renderNow();
   if (document.fonts?.ready) document.fonts.ready.then(renderDiagram);
 })();
 </script>

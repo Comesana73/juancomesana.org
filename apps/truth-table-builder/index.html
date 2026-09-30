@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Truth Table Builder</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+<link rel="preload" href="../fonts/plex-sans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts/plex.css">
 <style>
   :root {
     --bg: #f3f5f8;
@@ -927,6 +926,8 @@ window.initTable = () => {
 
     const letters = [];
     formulas.forEach((f) => lettersOf(f.ast, letters));
+    // reference columns in alphabetical order (A2 before A10)
+    letters.sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
     if (letters.length > MAX_LETTERS) return { tooMany: letters.length };
 
     const n = letters.length, N = 1 << n;
