@@ -315,6 +315,18 @@
   #tableApp .st-edit h3 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-top: 4px; }
   #tableApp .erow { display: grid; grid-template-columns: minmax(0, 14em) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
   #tableApp .erow label { font-size: 0.84rem; color: var(--muted); }
+  /* Enter your own: the fields sit in the Problem card */
+  #st-probCard .st-edit { padding: 12px 0 0; border: 0; border-top: 1px solid var(--line); gap: 8px; }
+  #st-probCard #st-editQs { border-top: 0; padding-top: 0; }
+  #st-probCard .st-edit h3 { margin-top: 0; }
+  #st-probCard .st-edit .note { font-size: 0.84rem; color: var(--muted); }
+  #st-probCard .st-edit .lbl { font-size: 0.84rem; color: var(--muted); margin-right: 2px; }
+  #st-probCard .erow { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; }
+  #st-probCard .erow label { grid-column: 1 / -1; }
+  #st-probCard .sum { font-size: 0.84rem; }
+  #st-probCard .sum.ok { color: var(--good); } #st-probCard .sum.bad { color: var(--bad); }
+  #tableApp .st-checkbar { padding: 4px 16px 12px; }
+  #tableApp .st-checkbar[hidden] { display: none; }
   #tableApp .sum { font-size: 0.85rem; font-weight: 600; }
   #tableApp .sum.ok { color: var(--good); } #tableApp .sum.bad { color: var(--bad); }
   @media (max-width: 979px) { #st-probCard { order: 1; } #tableApp .stage { order: 2; } #st-modeCard { order: 3; } #st-help { order: 4; } }
@@ -351,6 +363,15 @@
   #bayesApp #by-view { display: flex; flex-direction: column; gap: 12px; }
   @media (max-width: 979px) { #by-probCard { order: 1; } #bayesApp .stage { order: 2; } #by-modeCard { order: 3; } #by-help { order: 4; } }
   @media (max-width: 560px) { #bayesApp .qgrid { grid-template-columns: auto minmax(0, 1fr); } #bayesApp .qgrid .smsg { grid-column: 1 / -1; } }
+  /* Problem card: Random problem / Your own problem rows, as in Logic Lab */
+  .genrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--line); }
+  .genrow .lbl { font-size: 0.78rem; color: var(--muted); width: 100%; }
+  .card > h2 + .genrow { border-top: 0; padding-top: 0; }
+  /* Present: the questions under the table grow with the table */
+  html.presenting #tableApp .st-qs { font-size: 1.35rem; }
+  html.presenting #tableApp .st-qs .ain { font-size: 1.25rem; width: 8em; }
+  html.presenting #tableApp .qmsg { font-size: 1.05rem; }
+  html.presenting #bayesApp .dictline, html.presenting #bayesApp #by-practice, html.presenting #bayesApp #by-view { zoom: 1.35; }
 :root { --h-strong: #6e9bf2; --h-soft: #d9e5fc; --n-strong: #f0a848; --n-soft: #fbe8cc; --on-strong: #14202e; --on-soft: #14202e; --divider: #14202e; --handle: #ffffff; --dscale: 1; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --h-strong: #5d8ded; --h-soft: #22324f; --n-strong: #e39b3f; --n-soft: #3d2d18; --on-strong: #0e131a; --on-soft: #e7ecf3; --divider: #e7ecf3; --handle: #151c26; } }
 :root[data-theme="dark"] { --h-strong: #5d8ded; --h-soft: #22324f; --n-strong: #e39b3f; --n-soft: #3d2d18; --on-strong: #0e131a; --on-soft: #e7ecf3; --divider: #e7ecf3; --handle: #151c26; }
@@ -448,12 +469,49 @@
   @media (prefers-reduced-motion: reduce) {#eikApp * { transition: none !important; }
   }
 
-  /* inside Probability Lab: no Eikosogram top bar */
+  /* inside Probability Lab: no Eikosogram top bar; the page scrolls, as in the other tabs (review item 11) */
   #eikApp .app { height: auto; }
   @media (min-width: 960px) {
-    #eikApp .app { height: calc(100vh - 118px); min-height: 560px; grid-template-rows: minmax(0, 1fr); grid-template-areas: "panel stage"; }
-    #eikApp .panel { position: static; max-height: none; align-self: stretch; }
+    #eikApp .app { grid-template-columns: 350px minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "panel stage"; gap: 20px; padding: 16px 20px 28px; }
+    #eikApp .panel { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 2px; }
+    #eikApp .diagram-card { flex: none; }
+    #eikApp .diagram { flex: none; aspect-ratio: 4 / 3; min-height: 340px; max-height: calc(100vh - 210px); }
   }
+  #eikApp .resetrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  #eikApp .postctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  #eikApp #givenSeg { align-items: center; }
+  #eikApp #givenSeg .lbl { font-size: 0.78rem; color: var(--muted); padding: 0 6px 0 8px; }
+  #eikApp #givenSeg button { min-width: 2.6em; }
+
+  /* ================= shared lab shell: Present mode ================= */
+  .ll-present { margin-left: 4px; }
+  #ll-presentExit { display: none; }
+  #ll-presentExit kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+  html.presenting #ll-presentExit { display: inline-flex; align-items: center; position: fixed; top: 10px; right: 12px; z-index: 60; opacity: 0.5; }
+  html.presenting #ll-presentExit:hover, html.presenting #ll-presentExit:focus-visible { opacity: 1; }
+  html.presenting .ll-top, html.presenting #ll-tabs, html.presenting .app > .panel, html.presenting [data-nopresent] { display: none !important; }
+  html.presenting .app { display: block !important; max-width: none !important; height: auto !important; min-height: 0 !important; padding: 50px 24px 28px !important; }
+  html.presenting .stage { width: 100%; }
+  @media (max-width: 640px) { .ll-present { display: none; } }
+
+  /* ================= shared: Check bar at the end of the task, sticky on phones ================= */
+  .checkbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  @media (max-width: 640px) {
+    .checkbar.sticky, .sticky-phone {
+      position: sticky; bottom: 0; z-index: 5; background: var(--surface);
+      box-shadow: 0 -1px 0 var(--line), 0 -6px 12px -8px rgb(0 0 0 / 0.25);
+    }
+  }
+
+  /* ================= shared: wide content scrolls with a visible edge fade ================= */
+  .scrollx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scrollfade { position: relative; }
+  .scrollfade::after {
+    content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 40px; pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--surface)); opacity: 0; transition: opacity 0.15s;
+  }
+  .scrollfade.more::after { opacity: 1; }
 </style>
 </head>
 <body>
@@ -473,8 +531,10 @@
     <div class="seg" role="group" aria-label="Theme" id="ll-themeSeg">
       <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
     </div>
+    <button type="button" class="btn small ll-present" id="ll-presentBtn" title="Full-width view for the projector (Esc to exit)">Present</button>
   </div>
 </header>
+<button type="button" class="btn small" id="ll-presentExit" hidden>Exit <kbd>Esc</kbd></button>
 <nav class="tabs" role="tablist" aria-label="Probability Lab tools" id="ll-tabs">
   <button type="button" role="tab" data-tab="table" id="ll-tab-table" aria-controls="tableApp">Stochastic tables</button>
   <button type="button" role="tab" data-tab="bayes" id="ll-tab-bayes" aria-controls="bayesApp">Bayes</button>
@@ -486,12 +546,33 @@
   <aside class="panel" aria-label="Problem and options">
     <section class="card" id="st-probCard" aria-labelledby="st-probHead">
       <h2 id="st-probHead">Problem</h2>
-      <div class="seg full" role="group" aria-label="Difficulty" id="st-diffSeg">
-        <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+      <div class="genrow">
+        <span class="lbl" id="st-diffLbl">Random problem</span>
+        <div class="seg" role="group" aria-labelledby="st-diffLbl" id="st-diffSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="st-newBtn">New problem</button>
       </div>
-      <div class="buildrow">
-        <button type="button" class="btn primary" id="st-newBtn">New problem</button>
-        <button type="button" class="btn" id="st-editBtn">Your own table</button>
+      <div class="genrow" id="st-ownRow">
+        <span class="lbl">Your own problem</span>
+        <button type="button" class="btn" id="st-editBtn">Enter your own</button>
+      </div>
+      <div id="st-editTop" class="st-edit" hidden>
+        <h3>Your own problem</h3>
+        <p class="note">Type each row’s probability in the table, then the formulas below.</p>
+        <div class="opt">
+          <span id="st-nLbl">Sentence letters</span>
+          <div class="seg full" role="group" aria-labelledby="st-nLbl" id="st-nSeg">
+            <button type="button" data-v="2">P, Q</button><button type="button" data-v="3">P, Q, R</button><button type="button" data-v="4">P, Q, R, S</button>
+          </div>
+        </div>
+        <div class="xlinks"><span class="lbl">Row probabilities</span><button type="button" class="btn small" id="st-eqBtn">Equal</button><button type="button" class="btn small" id="st-rndBtn">Random</button></div>
+        <p class="sum" id="st-sum"></p>
+      </div>
+      <div id="st-editQs" class="st-edit" hidden></div>
+      <div class="buildrow" id="st-editBtns" hidden>
+        <button class="btn primary" type="button" id="st-done">Use this problem</button>
+        <button class="btn" type="button" id="st-cancel">Cancel</button>
       </div>
       <div class="opt">
         <span id="st-fmtLbl">Show probabilities as</span>
@@ -504,7 +585,7 @@
     <section class="card" id="st-modeCard" aria-labelledby="st-modeHead">
       <h2 id="st-modeHead">Mode</h2>
       <div class="seg full" role="group" aria-label="Mode" id="st-modeSeg">
-        <button type="button" data-v="practice">Practice</button><button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button>
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="step">Step through</button><button type="button" data-v="answers">Show answers</button>
       </div>
       <p class="status-text" id="st-modeNote"></p>
       <p class="tally" id="st-tally"></p>
@@ -535,29 +616,16 @@
             <button class="btn small primary" type="button" id="st-stNext" aria-label="Next step">▶</button>
             <button class="btn small" type="button" id="st-stLast" aria-label="Show all">⏭</button>
           </div>
-          <div class="actions" id="st-practiceBtns">
-            <button class="btn small primary" type="button" id="st-check">Check</button>
-            <button class="btn small" type="button" id="st-clear">Clear</button>
-          </div>
-          <div class="actions" id="st-editBtns" hidden>
-            <button class="btn small primary" type="button" id="st-done">Use this table</button>
-            <button class="btn small" type="button" id="st-cancel">Cancel</button>
-          </div>
         </div>
       </div>
       <div class="stepcap" id="st-stepcap" hidden></div>
-      <div id="st-editTop" class="st-edit" hidden>
-        <div class="opt">
-          <span id="st-nLbl">Sentence letters</span>
-          <div class="seg" role="group" aria-labelledby="st-nLbl" id="st-nSeg">
-            <button type="button" data-v="2">P, Q</button><button type="button" data-v="3">P, Q, R</button><button type="button" data-v="4">P, Q, R, S</button>
-          </div>
-        </div>
-        <div class="xlinks"><button type="button" class="btn small" id="st-eqBtn">Equal (indifference)</button><button type="button" class="btn small" id="st-rndBtn">Random</button><span class="sum" id="st-sum"></span></div>
-      </div>
-      <div class="table-wrap" id="st-tableWrap"></div>
+      <div class="scrollfade"><div class="table-wrap scrollx" id="st-tableWrap"></div></div>
       <div class="st-qs" id="st-qs"></div>
-      <div id="st-editQs" class="st-edit" hidden></div>
+      <div class="checkbar sticky-phone st-checkbar" id="st-practiceBtns">
+        <button class="btn primary" type="button" id="st-check">Check</button>
+        <button class="btn" type="button" id="st-clear">Clear</button>
+        <button class="btn" type="button" id="st-next" hidden>Next →</button>
+      </div>
       <div class="st-feedback" id="st-feedback" aria-live="polite"></div>
     </section>
   </main>
@@ -569,11 +637,12 @@
   <aside class="panel" aria-label="Problem and options">
     <section class="card" id="by-probCard" aria-labelledby="by-probHead">
       <h2 id="by-probHead">Problem</h2>
-      <div class="seg full" role="group" aria-label="Difficulty" id="by-diffSeg">
-        <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
-      </div>
-      <div class="buildrow">
-        <button type="button" class="btn primary" id="by-newBtn">New problem</button>
+      <div class="genrow">
+        <span class="lbl" id="by-diffLbl">Random problem</span>
+        <div class="seg" role="group" aria-labelledby="by-diffLbl" id="by-diffSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="by-newBtn">New problem</button>
       </div>
       <div class="opt">
         <span id="by-fmtLbl">Show probabilities as</span>
@@ -586,7 +655,7 @@
     <section class="card" id="by-modeCard" aria-labelledby="by-modeHead">
       <h2 id="by-modeHead">Mode</h2>
       <div class="seg full" role="group" aria-label="Mode" id="by-modeSeg">
-        <button type="button" data-v="practice">Practice</button><button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button>
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="step">Step through</button><button type="button" data-v="answers">Show answers</button>
       </div>
       <p class="status-text" id="by-modeNote"></p>
       <p class="tally" id="by-tally"></p>
@@ -641,7 +710,7 @@
               <label for="by-post" id="by-postLbl">P(H | E) =</label><input class="ain" id="by-post" autocomplete="off" spellcheck="false"><span class="smsg" id="by-mPost"></span>
             </div>
           </section>
-          <div class="buildrow">
+          <div class="buildrow checkbar sticky-phone">
             <button type="button" class="btn primary" id="by-check">Check</button>
             <button type="button" class="btn" id="by-show">Show answer</button>
             <button type="button" class="btn" id="by-next" hidden>Next →</button>
@@ -698,12 +767,13 @@
       </div>
       <div class="control">
         <div class="control-head">
-          <label for="in-pBgNotA"><span class="swatch sw-n"></span><span data-l="pBgNotA">P(E|not H)</span></label>
+          <label for="in-pBgNotA"><span class="swatch sw-n"></span><span data-l="pBgNotA">P(E|¬H)</span></label>
           <input id="in-pBgNotA" class="pin" type="text" autocomplete="off" spellcheck="false">
         </div>
         <input id="rg-pBgNotA" type="range" min="0" max="1" step="0.001" aria-label="Likelihood given the right category">
         <p class="hint">Height of the bottom cell, right column</p>
       </div>
+      <div class="resetrow"><button class="btn small" id="resetBtn" type="button">Reset to ½ / ½ / ½</button><p class="status" id="status" role="status" aria-live="polite"></p></div>
     </section>
 
     <section class="card" aria-labelledby="labelHead">
@@ -717,20 +787,6 @@
       </div>
     </section>
 
-    <section class="card" aria-labelledby="exportHead">
-      <h2 id="exportHead">Export for slides</h2>
-      <label class="check"><input id="f-bg" type="checkbox"> Transparent background</label>
-      <div class="btns">
-        <button class="btn primary" id="svgBtn" type="button">Download SVG</button>
-        <button class="btn" id="pngBtn" type="button">Download PNG</button>
-        <button class="btn" id="copyImgBtn" type="button">Copy image</button>
-        <button class="btn" id="copySvgBtn" type="button">Copy SVG code</button>
-        <button class="btn" id="linkBtn" type="button">Copy link</button>
-        <button class="btn" id="resetBtn" type="button">Reset</button>
-      </div>
-      <p class="status" id="status" role="status" aria-live="polite"></p>
-      <p class="note" id="exportNote">SVG stays sharp at any size in Keynote and PowerPoint. The exported figure is always light, and includes the P(<span data-l="a">H</span>|<span data-l="b">E</span>) bar when it’s showing.</p>
-    </section>
   </aside>
 
   <main class="stage">
@@ -738,7 +794,7 @@
       <div class="readout"><span class="t">Prior</span><span class="v" id="r-pA">50.0%</span><span class="k" id="k-pA">P(H)</span></div>
       <div class="readout"><span class="t">Evidence</span><span class="v" id="r-pB">50.0%</span><span class="k" id="k-pB">P(E)</span></div>
       <div class="readout key"><span class="t">Posterior</span><span class="v" id="r-pAgB">50.0%</span><span class="k" id="k-pAgB">P(H|E)</span></div>
-      <div class="readout"><span class="t" id="t-pAgNB">If not E</span><span class="v" id="r-pAgNB">50.0%</span><span class="k" id="k-pAgNB">P(H|not E)</span></div>
+      <div class="readout"><span class="t" id="t-pAgNB">If ¬E</span><span class="v" id="r-pAgNB">50.0%</span><span class="k" id="k-pAgNB">P(H|¬E)</span></div>
     </div>
 
     <div class="diagram-card">
@@ -747,11 +803,16 @@
           <h2 id="titleOut">Probability Eikosogram</h2>
           <p class="sentence" id="sentence"></p>
         </div>
-        <label class="toggle" id="postToggle" title="Shortcut: P">
-          <input id="f-post" type="checkbox">
-          <span class="knob" aria-hidden="true"></span>
-          <span>Show <span id="postLabel">P(H|E)</span></span>
-        </label>
+        <div class="postctl">
+          <div class="seg" role="group" aria-label="Condition on" id="givenSeg">
+            <span class="lbl">Given</span><button type="button" data-v="b">E</button><button type="button" data-v="nb">¬E</button>
+          </div>
+          <label class="toggle" id="postToggle" title="Shortcut: P">
+            <input id="f-post" type="checkbox">
+            <span class="knob" aria-hidden="true"></span>
+            <span>Show <span id="postLabel">P(H|E)</span></span>
+          </label>
+        </div>
       </div>
       <div class="diagram" id="diagramBox">
         <svg id="svg" role="group" aria-label="Interactive eikosogram"></svg>
@@ -1313,12 +1374,13 @@ window.initTable = () => {
     const ed = state.editing;
     $("editTop").hidden = !ed; $("editQs").hidden = !ed; $("editBtns").hidden = !ed;
     $("practiceBtns").hidden = ed || state.mode !== "practice";
+    $("ownRow").hidden = ed;
     $("stepper").hidden = ed || state.mode !== "step"; $("stepcap").hidden = ed || state.mode !== "step";
-    $("modeNote").textContent = ed ? "Type the probability of each row, then the formulas you want students to work on."
+    $("modeNote").textContent = ed ? "Type each row’s probability in the table, and the formulas in the Problem card."
       : { practice: "Fill in a value under every connective of each formula: click a cell, or type T or F. Then type the probabilities and click Check.", answers: "Every answer, with the rows that add up to it.", step: "One question at a time, the way the book does it. Use ▶ or the arrow keys." }[state.mode];
-    $("tally").textContent = tally.n ? `All right on the first check: ${tally.ok} of ${tally.n} problems` : "";
+    $("tally").textContent = tally.n ? `Right on the first check: ${tally.ok} of ${tally.n} problems` : "";
     renderTable();
-    if (ed) { renderEditQs(); setVerdict("Your own table", "neutral", ""); $("qs").innerHTML = ""; $("feedback").innerHTML = ""; editSum(); writeHash(); return; }
+    if (ed) { renderEditQs(); setVerdict("Your own problem", "neutral", "Type each row’s probability in the table, and the formulas in the Problem card."); $("qs").innerHTML = ""; $("feedback").innerHTML = ""; editSum(); writeHash(); return; }
     renderQs();
     if (state.mode === "step") {
       const S = steps(); state.step = Math.max(0, Math.min(state.step, S.length - 1));
@@ -1334,11 +1396,13 @@ window.initTable = () => {
   function renderPracticeVerdict() {
     const m = work.marks;
     $("feedback").innerHTML = "";
-    if (!m) return setVerdict(null, null, "Fill in the column under each connective, then calculate the probabilities.");
+    const nextBtn = (on) => { $("next").hidden = !on; $("next").classList.toggle("primary", on); $("check").classList.toggle("primary", !on); };
+    if (!m) { nextBtn(false); return setVerdict(null, null, "Fill in the column under each connective, then calculate the probabilities."); }
     const total = m.cols.length + m.fs.length + 1 + (prob.phi ? 1 : 0);
     const right = m.cols.filter((x) => x === true).length + m.fs.filter((x) => x === true).length + (m.colOk ? 1 : 0) + (prob.phi && m.cond ? 1 : 0);
-    if (right === total) setVerdict("All correct", "good", "");
-    else setVerdict(`${right} of ${total} right`, "bad", m.blank ? "Some answers are still blank." : "Wrong answers are marked; fix them and check again.");
+    nextBtn(right === total);
+    if (right === total) setVerdict("Correct", "good", "Every column and every probability.");
+    else setVerdict("Not quite", "bad", `${right} of ${total} right. ` + (m.blank ? "Some answers are still blank." : "Wrong answers are marked; fix them and check again."));
   }
 
   // ---------- checking ----------
@@ -1512,6 +1576,7 @@ window.initTable = () => {
   $("fmtSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.fmt = b.dataset.v; store.set("pl-fmt", state.fmt); render(); });
   $("check").onclick = check;
   $("clear").onclick = () => { work = fresh(); render(); };
+  $("next").onclick = () => { newProblem(); render(); };
   const stepTo = (n) => { state.step = Math.max(0, Math.min(n, steps().length - 1)); render(); };
   $("stFirst").onclick = () => stepTo(0);
   $("stPrev").onclick = () => stepTo(state.step - 1);
@@ -1600,7 +1665,7 @@ window.initBayes = () => {
   const rsub = (a, b) => Rq(a.n * b.d - b.n * a.d, a.d * b.d);
   const R = (s) => parseR(s);
 
-  const DATA = {"scenarios": [{"id": "S01", "title": "Medical test", "H": "You have the disease", "E": "Your test comes back positive", "notE": "Your test comes back negative", "templates": {"easy": [{"text": "{prior%} of people in your town have a certain disease. A test for it comes back positive for {p%} of people who have the disease and for {q%} of people who don't. Your test comes back positive. How confident should you be that you have the disease?", "obs": "B"}], "medium": [{"text": "About {prior1in} people in your town have a certain disease. A test for it misses {np%} of people who have the disease (it comes back negative for them), and it comes back positive for {q%} of people who don't. Your test comes back positive. How confident should you be that you have the disease?", "obs": "B"}], "hard": [{"text": "{prior%} of people in your town have a certain disease. A test for it comes back positive for {p%} of people who have the disease and correctly comes back negative for {nq%} of people who don't. Your test comes back negative. How confident should you be that you have the disease anyway?", "obs": "notB"}]}, "priors": ["1/100", "1/50", "3/100", "1/25", "1/20", "2/25", "1/10", "3/20", "1/5", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S02", "title": "Spam filter", "H": "The email is spam", "E": "The filter flags the email", "notE": "The filter doesn't flag the email", "templates": {"easy": [{"text": "{prior%} of the emails you receive are spam. Your spam filter flags {p%} of spam emails and {q%} of genuine ones. The filter flags an email. How confident should you be that it is spam?", "obs": "B"}], "medium": [{"text": "{prior%} of the emails you receive are spam. Your spam filter lets {np%} of spam emails through without flagging them, and it flags {q%} of genuine ones. The filter flags an email. How confident should you be that it is spam?", "obs": "B"}], "hard": [{"text": "{prior%} of the emails you receive are spam. Your spam filter flags {p%} of spam emails, and it leaves {nq%} of genuine emails unflagged. An email arrives and the filter does not flag it. How confident should you be that it is spam anyway?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "1/2", "3/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S03", "title": "Smoke alarm", "H": "There is a fire in the building", "E": "The smoke alarm goes off", "notE": "The smoke alarm doesn't go off", "templates": {"easy": [{"text": "On any given night, the chance of a fire in your building is {prior%}. The smoke alarm goes off on {p%} of nights with a fire and on {q%} of nights without one (burnt toast, steam from the shower). Tonight the alarm goes off. How confident should you be that there is a fire?", "obs": "B"}], "medium": [{"text": "On any given night, the chance of a fire in your building is about {prior1in}. The smoke alarm fails to go off during {np%} of fires, and it goes off on {q%} of nights without a fire. Tonight the alarm goes off. How confident should you be that there is a fire?", "obs": "B"}]}, "priors": ["1/100", "1/50", "1/25", "1/20"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/50", "1/25", "1/20", "1/10"]}, {"id": "S04", "title": "Leona's coat", "H": "Leona is a Maine Coon", "E": "Leona has a shaggy coat, a bushy tail and tufted ears", "notE": "Leona doesn't have a shaggy coat, a bushy tail and tufted ears", "templates": {"easy": [{"text": "{prior%} of the cats at the shelter are Maine Coons. {p%} of Maine Coons have a heavy, shaggy coat, a long bushy tail and large tufted ears, and so do {q%} of the other cats. Leona, a cat from the shelter, has all three. How confident should you be that Leona is a Maine Coon?", "obs": "B"}], "medium": [{"text": "About {prior1in} cats at the shelter is a Maine Coon. Only {np%} of Maine Coons are missing at least one of three features (a heavy, shaggy coat, a long bushy tail and large tufted ears), while {q%} of the other cats have all three. Leona, a cat from the shelter, has all three. How confident should you be that Leona is a Maine Coon?", "obs": "B"}]}, "priors": ["1/10", "1/20", "1/5", "1/4", "1/50"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S05", "title": "Breathalyzer", "H": "The driver is over the limit", "E": "The breathalyzer reads over the limit", "notE": "The breathalyzer reads under the limit", "templates": {"easy": [{"text": "At a late-night checkpoint, {prior%} of drivers are over the legal alcohol limit. The roadside breathalyzer reads \"over\" for {p%} of drivers who are over the limit and for {q%} of drivers who are under it. A driver's breathalyzer reads \"over\". How confident should the officer be that the driver is over the limit?", "obs": "B"}], "hard": [{"text": "At a late-night checkpoint, {prior%} of drivers are over the legal alcohol limit. The roadside breathalyzer misses {np%} of drivers who are over the limit (it reads \"under\" for them) and reads \"under\" for {nq%} of drivers who really are under it. A driver's breathalyzer reads \"under\". How confident should the officer be that the driver is over the limit anyway?", "obs": "notB"}]}, "priors": ["1/20", "1/10", "3/20", "1/5", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S06", "title": "Birdwatcher", "H": "The bird is a cerulean warbler", "E": "The birdwatcher says it is a cerulean warbler", "notE": "The birdwatcher says it is not a cerulean warbler", "templates": {"medium": [{"text": "Cerulean warblers are uncommon here: only {prior%} of the small blue birds seen in this park are cerulean warblers. A birdwatcher is right {r%} of the time when she says whether a small blue bird is a cerulean warbler, whichever kind of bird it is. She says the bird she just saw is a cerulean warbler. How confident should you be that it is?", "obs": "B"}], "hard": [{"text": "Cerulean warblers are uncommon here: about {prior1in} small blue birds seen in this park is a cerulean warbler. A birdwatcher is right {r%} of the time when she says whether a small blue bird is a cerulean warbler, whichever kind of bird it is. She says the bird she just saw is a cerulean warbler. How confident should you be that it is?", "obs": "B"}]}, "priors": ["1/5", "1/10", "1/20", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": []}, {"id": "S07", "title": "Weather forecast", "H": "It will rain tomorrow", "E": "The forecast says rain", "notE": "The forecast doesn't say rain", "templates": {"easy": [{"text": "In your city it rains on {prior%} of days. On days before it rains, the forecast says rain {p%} of the time; on days before it stays dry, the forecast says rain {q%} of the time. Tonight the forecast says rain for tomorrow. How confident should you be that it will rain?", "obs": "B"}], "hard": [{"text": "In your city it rains on {prior%} of days. On days before it rains, the forecast fails to predict the rain {np%} of the time; on days before it stays dry, the forecast correctly says no rain {nq%} of the time. Tonight the forecast does not say rain for tomorrow. How confident should you be that it will rain anyway?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "3/10", "2/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S08", "title": "Airport scanner", "H": "The bag contains a prohibited item", "E": "The scanner raises an alarm", "notE": "The scanner doesn't raise an alarm", "templates": {"easy": [{"text": "{prior%} of the bags going through an airport scanner contain a prohibited item. The scanner raises an alarm for {p%} of bags with a prohibited item and for {q%} of bags without one. The scanner raises an alarm for your bag. How confident should the agent be that it contains a prohibited item?", "obs": "B"}], "medium": [{"text": "About {prior1in} bags going through an airport scanner contains a prohibited item. The scanner raises an alarm for {p%} of bags with a prohibited item, and it stays quiet for {nq%} of bags without one. The scanner raises an alarm for your bag. How confident should the agent be that it contains a prohibited item?", "obs": "B"}]}, "priors": ["1/20", "1/25", "1/50", "1/10"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S09", "title": "Plagiarism checker", "H": "The essay is plagiarized", "E": "The checker flags the essay", "notE": "The checker doesn't flag the essay", "templates": {"easy": [{"text": "{prior%} of the essays submitted in a large course are plagiarized. A plagiarism checker flags {p%} of plagiarized essays and {q%} of original ones. The checker flags an essay. How confident should the instructor be that it is plagiarized?", "obs": "B"}], "medium": [{"text": "{prior%} of the essays submitted in a large course are plagiarized. A plagiarism checker misses {np%} of plagiarized essays, and it wrongly flags {q%} of original ones. The checker flags an essay. How confident should the instructor be that it is plagiarized?", "obs": "B"}]}, "priors": ["1/20", "1/10", "3/20", "1/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S10", "title": "Factory machines", "H": "The widget was made by Machine A", "E": "The widget is defective", "notE": "The widget is not defective", "templates": {"medium": [{"text": "A factory has two machines. Machine A makes {prior%} of the widgets and Machine B makes the rest. {p%} of Machine A's widgets are defective, and {q%} of Machine B's are. A widget picked at random turns out to be defective. How confident should you be that Machine A made it?", "obs": "B"}], "hard": [{"text": "A factory has two machines. Machine A makes {prior%} of the widgets and Machine B makes the rest. {p%} of Machine A's widgets are defective, and {q%} of Machine B's are. A widget picked at random turns out to work fine. How confident should you be that Machine A made it?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "3/5", "7/10"], "ps": ["1/20", "2/25", "1/10", "3/20", "1/5"], "qs": ["1/100", "1/50", "3/100", "1/25"]}, {"id": "S11", "title": "Lie detector", "H": "The suspect is lying", "E": "The lie detector says the suspect is lying", "notE": "The lie detector says the suspect is telling the truth", "templates": {"easy": [{"text": "In a certain kind of investigation, {prior%} of the people questioned are lying. A lie detector says \"lying\" for {p%} of people who are lying and for {q%} of people who are telling the truth. The lie detector says a suspect is lying. How confident should the investigator be that the suspect is lying?", "obs": "B"}], "medium": [{"text": "In a certain kind of investigation, {prior%} of the people questioned are lying. A lie detector is right {r%} of the time, whether the person is lying or telling the truth. The lie detector says a suspect is lying. How confident should the investigator be that the suspect is lying?", "obs": "B"}]}, "priors": ["1/10", "1/5", "3/10"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S12", "title": "The car won't start", "H": "The battery is weak", "E": "The car starts", "notE": "The car doesn't start", "templates": {"medium": [{"text": "On cold mornings, {prior%} of the cars in your neighborhood have a weak battery. A car with a weak battery starts only {p%} of the time, while {q%} of cars without a weak battery start. This morning is cold, and your car doesn't start. How confident should you be that the battery is weak?", "obs": "notB"}], "hard": [{"text": "On cold mornings, about {prior1in} cars in your neighborhood has a weak battery. A car with a weak battery fails to start {np%} of the time, while {q%} of cars without a weak battery start. This morning is cold, and your car doesn't start. How confident should you be that the battery is weak?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "1/4", "1/20"], "ps": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"], "qs": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"]}, {"id": "S13", "title": "Two coins", "H": "You picked the biased coin", "E": "The coin lands heads", "notE": "The coin lands tails", "templates": {"easy": [{"text": "A bag holds coins: {prior%} of them are biased and the rest are fair. A biased coin lands heads {p%} of the time; a fair coin lands heads 50% of the time. You pick a coin from the bag at random, flip it, and it lands heads. How confident should you be that you picked a biased coin?", "obs": "B"}], "hard": [{"text": "A bag holds coins: {prior%} of them are biased and the rest are fair. A biased coin lands heads {p%} of the time; a fair coin lands heads 50% of the time. You pick a coin from the bag at random, flip it, and it lands tails. How confident should you be that you picked a biased coin?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "3/10", "2/5", "1/2"], "ps": ["13/20", "7/10", "3/4", "4/5", "17/20", "9/10"], "qs": ["1/2"]}, {"id": "S14", "title": "Screening test", "H": "The applicant is qualified", "E": "The applicant passes the screening test", "notE": "The applicant fails the screening test", "templates": {"easy": [{"text": "{prior%} of the people applying for a job are qualified for it. {p%} of qualified applicants pass a screening test, and so do {q%} of unqualified ones. An applicant passes the test. How confident should the employer be that the applicant is qualified?", "obs": "B"}], "hard": [{"text": "{prior%} of the people applying for a job are qualified for it. {np%} of qualified applicants fail a screening test, and {nq%} of unqualified ones fail it too. An applicant fails the test. How confident should the employer be that the applicant is qualified anyway?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "1/2"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/10", "3/20", "1/5", "1/4", "3/10", "2/5"]}, {"id": "S15", "title": "Yellow leaves", "H": "The plant has root rot", "E": "The plant's leaves are yellow", "notE": "The plant's leaves are not yellow", "templates": {"easy": [{"text": "At a garden center, {prior%} of the potted plants have root rot. {p%} of plants with root rot have yellow leaves, and so do {q%} of plants without it. A plant you like has yellow leaves. How confident should you be that it has root rot?", "obs": "B"}], "medium": [{"text": "At a garden center, about {prior1in} potted plants has root rot. Only {np%} of plants with root rot keep green leaves, while {q%} of healthy plants have yellow leaves. A plant you like has yellow leaves. How confident should you be that it has root rot?", "obs": "B"}]}, "priors": ["1/10", "1/20", "1/5", "1/8"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}], "problems": [{"id": "W01", "difficulty": "hard", "title": "The forged painting", "text": "An auction house knows that 5% of the old paintings it is offered are forgeries. Titanium white, a pigment invented in the twentieth century, turns up in 40% of forgeries, and in no genuine painting from that period. The lab finds titanium white in a painting. How confident should the auction house be that the painting is a forgery?", "H": "The painting is a forgery", "E": "The lab finds titanium white in the painting", "notE": "The lab doesn't find titanium white in the painting", "prior": "1/20", "p": "2/5", "q": "0/1", "obs": "B"}, {"id": "W02", "difficulty": "hard", "title": "The forged painting, again", "text": "An auction house knows that 5% of the old paintings it is offered are forgeries. Titanium white, a pigment invented in the twentieth century, turns up in 40% of forgeries, and in no genuine painting from that period. The lab finds no titanium white in a painting. How confident should the auction house be that the painting is a forgery?", "H": "The painting is a forgery", "E": "The lab finds titanium white in the painting", "notE": "The lab doesn't find titanium white in the painting", "prior": "1/20", "p": "2/5", "q": "0/1", "obs": "notB"}, {"id": "W03", "difficulty": "medium", "title": "The rare disease", "text": "About 1 in 1,000 people have a rare disease. A test for it comes back positive for 99% of people who have it, and for 5% of people who don't. Your test comes back positive. How confident should you be that you have the disease?", "H": "You have the disease", "E": "Your test comes back positive", "notE": "Your test comes back negative", "prior": "1/1000", "p": "99/100", "q": "1/20", "obs": "B"}, {"id": "W04", "difficulty": "hard", "title": "The weather app", "text": "It rains on 1 day in 10 in your town. Your weather app is right 90% of the time, whether or not it is going to rain. Tonight the app says it will rain tomorrow. How confident should you be that it will rain?", "H": "It will rain tomorrow", "E": "The app says it will rain tomorrow", "notE": "The app says it won't rain tomorrow", "prior": "1/10", "p": "9/10", "q": "1/10", "obs": "B"}, {"id": "W05", "difficulty": "hard", "title": "The left-handed suspect", "text": "A detective knows that one of the ten people at the party stole the necklace, and has no reason to suspect any of them more than the others. The thief left a smudge showing they are left-handed. Ines is left-handed. If Ines is the thief, she is certainly left-handed; if she isn't, there is a 10% chance she is left-handed, as for anyone. How confident should the detective be that Ines is the thief?", "H": "Ines is the thief", "E": "Ines is left-handed", "notE": "Ines is not left-handed", "prior": "1/10", "p": "1/1", "q": "1/10", "obs": "B"}, {"id": "W06", "difficulty": "hard", "title": "The irrelevant clue", "text": "A detective knows that one of the ten people at the party stole the necklace, and has no reason to suspect any of them more than the others. Ines is wearing a red scarf. Exactly 30% of the guests are wearing red scarves, and a thief is no more or less likely than anyone else to wear one: 30% of thieves would be wearing one. How confident should the detective be that Ines is the thief?", "H": "Ines is the thief", "E": "Ines is wearing a red scarf", "notE": "Ines is not wearing a red scarf", "prior": "1/10", "p": "3/10", "q": "3/10", "obs": "B"}, {"id": "W07", "difficulty": "hard", "title": "The flagged email", "text": "30% of the emails you receive are spam. Your filter catches 95% of spam emails, but it also wrongly flags 2% of genuine ones. An email arrives and is not flagged. How confident should you be that it is spam?", "H": "The email is spam", "E": "The filter flags the email", "notE": "The filter doesn't flag the email", "prior": "3/10", "p": "19/20", "q": "1/50", "obs": "notB"}, {"id": "W08", "difficulty": "medium", "title": "The coin toss witness", "text": "Ana tossed a fair coin out of your sight. Ben saw it and tells you it landed heads, but Ben is accurate only 70% of the time, whether the coin landed heads or tails. How confident should you be that it landed heads?", "H": "The coin landed heads", "E": "Ben says the coin landed heads", "notE": "Ben says the coin landed tails", "prior": "1/2", "p": "7/10", "q": "3/10", "obs": "B"}, {"id": "W09", "difficulty": "hard", "title": "Counting cases", "text": "Of 1,000 people screened for a disease, 20 have it. Of those 20, 18 test positive. Of the 980 who don't have it, 49 also test positive. Someone from this group tests positive. How confident should they be that they have the disease?", "H": "The person has the disease", "E": "The person tests positive", "notE": "The person tests negative", "prior": "1/50", "p": "9/10", "q": "1/20", "obs": "B"}, {"id": "W10", "difficulty": "hard", "title": "The ghost", "text": "Your friend Dana says she saw a ghost last night. You are fairly sure ghosts don't exist: before she told you anything, your credence that she would see one last night was 1 in a million. Dana is very honest and careful: if she had really seen a ghost she would certainly tell you, and if she hadn't, there is only a 1 in 100 chance she would mistakenly say she had. How confident should you be that Dana saw a ghost?", "H": "Dana saw a ghost", "E": "Dana says she saw a ghost", "notE": "Dana doesn't say she saw a ghost", "prior": "1/1000000", "p": "1/1", "q": "1/100", "obs": "B"}, {"id": "W11", "difficulty": "medium", "title": "Leona at the vet", "text": "1 in 8 cats brought to a certain vet is a Maine Coon. 9 out of 10 Maine Coons weigh more than 12 pounds, but only 1 in 5 other cats does. Leona, one of the cats brought to this vet, weighs more than 12 pounds. How confident should the vet be that Leona is a Maine Coon?", "H": "Leona is a Maine Coon", "E": "Leona weighs more than 12 pounds", "notE": "Leona weighs 12 pounds or less", "prior": "1/8", "p": "9/10", "q": "1/5", "obs": "B"}, {"id": "W12", "difficulty": "hard", "title": "The quiet alarm", "text": "On any given night, the chance of a break-in at a store is 1 in 200. The alarm goes off during 95% of break-ins, and on 1% of quiet nights. Last night the alarm did not go off. How confident should the owner be that there was a break-in?", "H": "There was a break-in", "E": "The alarm went off", "notE": "The alarm didn't go off", "prior": "1/200", "p": "19/20", "q": "1/100", "obs": "notB"}, {"id": "W13", "difficulty": "hard", "title": "The interview", "text": "A third of the candidates who reach the final interview get the job offer. Candidates who will get the offer are asked to meet the team 80% of the time; those who won't, only 20% of the time. Your friend reached the final interview, and the interviews are now over: she was never asked to meet the team. How confident should she be that she'll get the offer?", "H": "Your friend will get the offer", "E": "Your friend is asked to meet the team", "notE": "Your friend isn't asked to meet the team", "prior": "1/3", "p": "4/5", "q": "1/5", "obs": "notB"}, {"id": "W14", "difficulty": "medium", "title": "The fair coin", "text": "Two coins sit on a table: one is fair, and one is two-headed. You pick one at random and flip it. It lands heads. How confident should you be that you picked the two-headed coin?", "H": "You picked the two-headed coin", "E": "The coin lands heads", "notE": "The coin lands tails", "prior": "1/2", "p": "1/1", "q": "1/2", "obs": "B"}, {"id": "W15", "difficulty": "hard", "title": "The second opinion", "text": "Of the patients a specialist sees, 40% have the condition she treats. Her first test comes back positive for 75% of patients with the condition and for 25% of those without it. A patient's first test comes back negative. How confident should the specialist be that the patient has the condition?", "H": "The patient has the condition", "E": "The patient's first test comes back positive", "notE": "The patient's first test comes back negative", "prior": "2/5", "p": "3/4", "q": "1/4", "obs": "notB"}]};
+  const DATA = {"scenarios": [{"id": "S01", "title": "Medical test", "H": "You have the disease", "E": "Your test comes back positive", "notE": "Your test comes back negative", "templates": {"easy": [{"text": "{prior%} of people in your town have a certain disease. A test for it comes back positive for {p%} of people who have the disease and for {q%} of people who don’t. Your test comes back positive. How confident should you be that you have the disease?", "obs": "B"}], "medium": [{"text": "About {prior1in} people in your town have a certain disease. A test for it misses {np%} of people who have the disease (it comes back negative for them), and it comes back positive for {q%} of people who don’t. Your test comes back positive. How confident should you be that you have the disease?", "obs": "B"}], "hard": [{"text": "{prior%} of people in your town have a certain disease. A test for it comes back positive for {p%} of people who have the disease and correctly comes back negative for {nq%} of people who don’t. Your test comes back negative. How confident should you be that you have the disease anyway?", "obs": "notB"}]}, "priors": ["1/100", "1/50", "3/100", "1/25", "1/20", "2/25", "1/10", "3/20", "1/5", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S02", "title": "Spam filter", "H": "The email is spam", "E": "The filter flags the email", "notE": "The filter doesn’t flag the email", "templates": {"easy": [{"text": "{prior%} of the emails you receive are spam. Your spam filter flags {p%} of spam emails and {q%} of genuine ones. The filter flags an email. How confident should you be that it is spam?", "obs": "B"}], "medium": [{"text": "{prior%} of the emails you receive are spam. Your spam filter lets {np%} of spam emails through without flagging them, and it flags {q%} of genuine ones. The filter flags an email. How confident should you be that it is spam?", "obs": "B"}], "hard": [{"text": "{prior%} of the emails you receive are spam. Your spam filter flags {p%} of spam emails, and it leaves {nq%} of genuine emails unflagged. An email arrives and the filter does not flag it. How confident should you be that it is spam anyway?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "1/2", "3/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S03", "title": "Smoke alarm", "H": "There is a fire in the building", "E": "The smoke alarm goes off", "notE": "The smoke alarm doesn’t go off", "templates": {"easy": [{"text": "On any given night, the chance of a fire in your building is {prior%}. The smoke alarm goes off on {p%} of nights with a fire and on {q%} of nights without one (burnt toast, steam from the shower). Tonight the alarm goes off. How confident should you be that there is a fire?", "obs": "B"}], "medium": [{"text": "On any given night, the chance of a fire in your building is about {prior1in}. The smoke alarm fails to go off during {np%} of fires, and it goes off on {q%} of nights without a fire. Tonight the alarm goes off. How confident should you be that there is a fire?", "obs": "B"}]}, "priors": ["1/100", "1/50", "1/25", "1/20"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/50", "1/25", "1/20", "1/10"]}, {"id": "S04", "title": "Leona’s coat", "H": "Leona is a Maine Coon", "E": "Leona has a shaggy coat, a bushy tail and tufted ears", "notE": "Leona doesn’t have a shaggy coat, a bushy tail and tufted ears", "templates": {"easy": [{"text": "{prior%} of the cats at the shelter are Maine Coons. {p%} of Maine Coons have a heavy, shaggy coat, a long bushy tail and large tufted ears, and so do {q%} of the other cats. Leona, a cat from the shelter, has all three. How confident should you be that Leona is a Maine Coon?", "obs": "B"}], "medium": [{"text": "About {prior1in} cats at the shelter is a Maine Coon. Only {np%} of Maine Coons are missing at least one of three features (a heavy, shaggy coat, a long bushy tail and large tufted ears), while {q%} of the other cats have all three. Leona, a cat from the shelter, has all three. How confident should you be that Leona is a Maine Coon?", "obs": "B"}]}, "priors": ["1/10", "1/20", "1/5", "1/4", "1/50"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S05", "title": "Breathalyzer", "H": "The driver is over the limit", "E": "The breathalyzer reads over the limit", "notE": "The breathalyzer reads under the limit", "templates": {"easy": [{"text": "At a late-night checkpoint, {prior%} of drivers are over the legal alcohol limit. The roadside breathalyzer reads “over” for {p%} of drivers who are over the limit and for {q%} of drivers who are under it. A driver’s breathalyzer reads “over”. How confident should the officer be that the driver is over the limit?", "obs": "B"}], "hard": [{"text": "At a late-night checkpoint, {prior%} of drivers are over the legal alcohol limit. The roadside breathalyzer misses {np%} of drivers who are over the limit (it reads “under” for them) and reads “under” for {nq%} of drivers who really are under it. A driver’s breathalyzer reads “under”. How confident should the officer be that the driver is over the limit anyway?", "obs": "notB"}]}, "priors": ["1/20", "1/10", "3/20", "1/5", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S06", "title": "Birdwatcher", "H": "The bird is a cerulean warbler", "E": "The birdwatcher says it is a cerulean warbler", "notE": "The birdwatcher says it is not a cerulean warbler", "templates": {"medium": [{"text": "Cerulean warblers are uncommon here: only {prior%} of the small blue birds seen in this park are cerulean warblers. A birdwatcher is right {r%} of the time when she says whether a small blue bird is a cerulean warbler, whichever kind of bird it is. She says the bird she just saw is a cerulean warbler. How confident should you be that it is?", "obs": "B"}], "hard": [{"text": "Cerulean warblers are uncommon here: about {prior1in} small blue birds seen in this park is a cerulean warbler. A birdwatcher is right {r%} of the time when she says whether a small blue bird is a cerulean warbler, whichever kind of bird it is. She says the bird she just saw is a cerulean warbler. How confident should you be that it is?", "obs": "B"}]}, "priors": ["1/5", "1/10", "1/20", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": []}, {"id": "S07", "title": "Weather forecast", "H": "It will rain tomorrow", "E": "The forecast says rain", "notE": "The forecast doesn’t say rain", "templates": {"easy": [{"text": "In your city it rains on {prior%} of days. On days before it rains, the forecast says rain {p%} of the time; on days before it stays dry, the forecast says rain {q%} of the time. Tonight the forecast says rain for tomorrow. How confident should you be that it will rain?", "obs": "B"}], "hard": [{"text": "In your city it rains on {prior%} of days. On days before it rains, the forecast fails to predict the rain {np%} of the time; on days before it stays dry, the forecast correctly says no rain {nq%} of the time. Tonight the forecast does not say rain for tomorrow. How confident should you be that it will rain anyway?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "3/10", "2/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S08", "title": "Airport scanner", "H": "The bag contains a prohibited item", "E": "The scanner raises an alarm", "notE": "The scanner doesn’t raise an alarm", "templates": {"easy": [{"text": "{prior%} of the bags going through an airport scanner contain a prohibited item. The scanner raises an alarm for {p%} of bags with a prohibited item and for {q%} of bags without one. The scanner raises an alarm for your bag. How confident should the agent be that it contains a prohibited item?", "obs": "B"}], "medium": [{"text": "About {prior1in} bags going through an airport scanner contains a prohibited item. The scanner raises an alarm for {p%} of bags with a prohibited item, and it stays quiet for {nq%} of bags without one. The scanner raises an alarm for your bag. How confident should the agent be that it contains a prohibited item?", "obs": "B"}]}, "priors": ["1/20", "1/25", "1/50", "1/10"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S09", "title": "Plagiarism checker", "H": "The essay is plagiarized", "E": "The checker flags the essay", "notE": "The checker doesn’t flag the essay", "templates": {"easy": [{"text": "{prior%} of the essays submitted in a large course are plagiarized. A plagiarism checker flags {p%} of plagiarized essays and {q%} of original ones. The checker flags an essay. How confident should the instructor be that it is plagiarized?", "obs": "B"}], "medium": [{"text": "{prior%} of the essays submitted in a large course are plagiarized. A plagiarism checker misses {np%} of plagiarized essays, and it wrongly flags {q%} of original ones. The checker flags an essay. How confident should the instructor be that it is plagiarized?", "obs": "B"}]}, "priors": ["1/20", "1/10", "3/20", "1/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S10", "title": "Factory machines", "H": "The widget was made by Machine A", "E": "The widget is defective", "notE": "The widget is not defective", "templates": {"medium": [{"text": "A factory has two machines. Machine A makes {prior%} of the widgets and Machine B makes the rest. {p%} of Machine A’s widgets are defective, and {q%} of Machine B’s are. A widget picked at random turns out to be defective. How confident should you be that Machine A made it?", "obs": "B"}], "hard": [{"text": "A factory has two machines. Machine A makes {prior%} of the widgets and Machine B makes the rest. {p%} of Machine A’s widgets are defective, and {q%} of Machine B’s are. A widget picked at random turns out to work fine. How confident should you be that Machine A made it?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "3/5", "7/10"], "ps": ["1/20", "2/25", "1/10", "3/20", "1/5"], "qs": ["1/100", "1/50", "3/100", "1/25"]}, {"id": "S11", "title": "Lie detector", "H": "The suspect is lying", "E": "The lie detector says the suspect is lying", "notE": "The lie detector says the suspect is telling the truth", "templates": {"easy": [{"text": "In a certain kind of investigation, {prior%} of the people questioned are lying. A lie detector says “lying” for {p%} of people who are lying and for {q%} of people who are telling the truth. The lie detector says a suspect is lying. How confident should the investigator be that the suspect is lying?", "obs": "B"}], "medium": [{"text": "In a certain kind of investigation, {prior%} of the people questioned are lying. A lie detector is right {r%} of the time, whether the person is lying or telling the truth. The lie detector says a suspect is lying. How confident should the investigator be that the suspect is lying?", "obs": "B"}]}, "priors": ["1/10", "1/5", "3/10"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S12", "title": "The car won’t start", "H": "The battery is weak", "E": "The car starts", "notE": "The car doesn’t start", "templates": {"medium": [{"text": "On cold mornings, {prior%} of the cars in your neighborhood have a weak battery. A car with a weak battery starts only {p%} of the time, while {q%} of cars without a weak battery start. This morning is cold, and your car doesn’t start. How confident should you be that the battery is weak?", "obs": "notB"}], "hard": [{"text": "On cold mornings, about {prior1in} cars in your neighborhood has a weak battery. A car with a weak battery fails to start {np%} of the time, while {q%} of cars without a weak battery start. This morning is cold, and your car doesn’t start. How confident should you be that the battery is weak?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "1/4", "1/20"], "ps": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"], "qs": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"]}, {"id": "S13", "title": "Two coins", "H": "You picked the biased coin", "E": "The coin lands heads", "notE": "The coin lands tails", "templates": {"easy": [{"text": "A bag holds coins: {prior%} of them are biased and the rest are fair. A biased coin lands heads {p%} of the time; a fair coin lands heads 50% of the time. You pick a coin from the bag at random, flip it, and it lands heads. How confident should you be that you picked a biased coin?", "obs": "B"}], "hard": [{"text": "A bag holds coins: {prior%} of them are biased and the rest are fair. A biased coin lands heads {p%} of the time; a fair coin lands heads 50% of the time. You pick a coin from the bag at random, flip it, and it lands tails. How confident should you be that you picked a biased coin?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "3/10", "2/5", "1/2"], "ps": ["13/20", "7/10", "3/4", "4/5", "17/20", "9/10"], "qs": ["1/2"]}, {"id": "S14", "title": "Screening test", "H": "The applicant is qualified", "E": "The applicant passes the screening test", "notE": "The applicant fails the screening test", "templates": {"easy": [{"text": "{prior%} of the people applying for a job are qualified for it. {p%} of qualified applicants pass a screening test, and so do {q%} of unqualified ones. An applicant passes the test. How confident should the employer be that the applicant is qualified?", "obs": "B"}], "hard": [{"text": "{prior%} of the people applying for a job are qualified for it. {np%} of qualified applicants fail a screening test, and {nq%} of unqualified ones fail it too. An applicant fails the test. How confident should the employer be that the applicant is qualified anyway?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "1/2"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/10", "3/20", "1/5", "1/4", "3/10", "2/5"]}, {"id": "S15", "title": "Yellow leaves", "H": "The plant has root rot", "E": "The plant’s leaves are yellow", "notE": "The plant’s leaves are not yellow", "templates": {"easy": [{"text": "At a garden center, {prior%} of the potted plants have root rot. {p%} of plants with root rot have yellow leaves, and so do {q%} of plants without it. A plant you like has yellow leaves. How confident should you be that it has root rot?", "obs": "B"}], "medium": [{"text": "At a garden center, about {prior1in} potted plants has root rot. Only {np%} of plants with root rot keep green leaves, while {q%} of healthy plants have yellow leaves. A plant you like has yellow leaves. How confident should you be that it has root rot?", "obs": "B"}]}, "priors": ["1/10", "1/20", "1/5", "1/8"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}], "problems": [{"id": "W01", "difficulty": "hard", "title": "The forged painting", "text": "An auction house knows that 5% of the old paintings it is offered are forgeries. Titanium white, a pigment invented in the twentieth century, turns up in 40% of forgeries, and in no genuine painting from that period. The lab finds titanium white in a painting. How confident should the auction house be that the painting is a forgery?", "H": "The painting is a forgery", "E": "The lab finds titanium white in the painting", "notE": "The lab doesn’t find titanium white in the painting", "prior": "1/20", "p": "2/5", "q": "0/1", "obs": "B"}, {"id": "W02", "difficulty": "hard", "title": "The forged painting, again", "text": "An auction house knows that 5% of the old paintings it is offered are forgeries. Titanium white, a pigment invented in the twentieth century, turns up in 40% of forgeries, and in no genuine painting from that period. The lab finds no titanium white in a painting. How confident should the auction house be that the painting is a forgery?", "H": "The painting is a forgery", "E": "The lab finds titanium white in the painting", "notE": "The lab doesn’t find titanium white in the painting", "prior": "1/20", "p": "2/5", "q": "0/1", "obs": "notB"}, {"id": "W03", "difficulty": "medium", "title": "The rare disease", "text": "About 1 in 1,000 people have a rare disease. A test for it comes back positive for 99% of people who have it, and for 5% of people who don’t. Your test comes back positive. How confident should you be that you have the disease?", "H": "You have the disease", "E": "Your test comes back positive", "notE": "Your test comes back negative", "prior": "1/1000", "p": "99/100", "q": "1/20", "obs": "B"}, {"id": "W04", "difficulty": "hard", "title": "The weather app", "text": "It rains on 1 day in 10 in your town. Your weather app is right 90% of the time, whether or not it is going to rain. Tonight the app says it will rain tomorrow. How confident should you be that it will rain?", "H": "It will rain tomorrow", "E": "The app says it will rain tomorrow", "notE": "The app says it won’t rain tomorrow", "prior": "1/10", "p": "9/10", "q": "1/10", "obs": "B"}, {"id": "W05", "difficulty": "hard", "title": "The left-handed suspect", "text": "A detective knows that one of the ten people at the party stole the necklace, and has no reason to suspect any of them more than the others. The thief left a smudge showing they are left-handed. Ines is left-handed. If Ines is the thief, she is certainly left-handed; if she isn’t, there is a 10% chance she is left-handed, as for anyone. How confident should the detective be that Ines is the thief?", "H": "Ines is the thief", "E": "Ines is left-handed", "notE": "Ines is not left-handed", "prior": "1/10", "p": "1/1", "q": "1/10", "obs": "B"}, {"id": "W06", "difficulty": "hard", "title": "The irrelevant clue", "text": "A detective knows that one of the ten people at the party stole the necklace, and has no reason to suspect any of them more than the others. Ines is wearing a red scarf. Exactly 30% of the guests are wearing red scarves, and a thief is no more or less likely than anyone else to wear one: 30% of thieves would be wearing one. How confident should the detective be that Ines is the thief?", "H": "Ines is the thief", "E": "Ines is wearing a red scarf", "notE": "Ines is not wearing a red scarf", "prior": "1/10", "p": "3/10", "q": "3/10", "obs": "B"}, {"id": "W07", "difficulty": "hard", "title": "The flagged email", "text": "30% of the emails you receive are spam. Your filter catches 95% of spam emails, but it also wrongly flags 2% of genuine ones. An email arrives and is not flagged. How confident should you be that it is spam?", "H": "The email is spam", "E": "The filter flags the email", "notE": "The filter doesn’t flag the email", "prior": "3/10", "p": "19/20", "q": "1/50", "obs": "notB"}, {"id": "W08", "difficulty": "medium", "title": "The coin toss witness", "text": "Ana tossed a fair coin out of your sight. Ben saw it and tells you it landed heads, but Ben is accurate only 70% of the time, whether the coin landed heads or tails. How confident should you be that it landed heads?", "H": "The coin landed heads", "E": "Ben says the coin landed heads", "notE": "Ben says the coin landed tails", "prior": "1/2", "p": "7/10", "q": "3/10", "obs": "B"}, {"id": "W09", "difficulty": "hard", "title": "Counting cases", "text": "Of 1,000 people screened for a disease, 20 have it. Of those 20, 18 test positive. Of the 980 who don’t have it, 49 also test positive. Someone from this group tests positive. How confident should they be that they have the disease?", "H": "The person has the disease", "E": "The person tests positive", "notE": "The person tests negative", "prior": "1/50", "p": "9/10", "q": "1/20", "obs": "B"}, {"id": "W10", "difficulty": "hard", "title": "The ghost", "text": "Your friend Dana says she saw a ghost last night. You are fairly sure ghosts don’t exist: before she told you anything, your credence that she would see one last night was 1 in a million. Dana is very honest and careful: if she had really seen a ghost she would certainly tell you, and if she hadn’t, there is only a 1 in 100 chance she would mistakenly say she had. How confident should you be that Dana saw a ghost?", "H": "Dana saw a ghost", "E": "Dana says she saw a ghost", "notE": "Dana doesn’t say she saw a ghost", "prior": "1/1000000", "p": "1/1", "q": "1/100", "obs": "B"}, {"id": "W11", "difficulty": "medium", "title": "Leona at the vet", "text": "1 in 8 cats brought to a certain vet is a Maine Coon. 9 out of 10 Maine Coons weigh more than 12 pounds, but only 1 in 5 other cats does. Leona, one of the cats brought to this vet, weighs more than 12 pounds. How confident should the vet be that Leona is a Maine Coon?", "H": "Leona is a Maine Coon", "E": "Leona weighs more than 12 pounds", "notE": "Leona weighs 12 pounds or less", "prior": "1/8", "p": "9/10", "q": "1/5", "obs": "B"}, {"id": "W12", "difficulty": "hard", "title": "The quiet alarm", "text": "On any given night, the chance of a break-in at a store is 1 in 200. The alarm goes off during 95% of break-ins, and on 1% of quiet nights. Last night the alarm did not go off. How confident should the owner be that there was a break-in?", "H": "There was a break-in", "E": "The alarm went off", "notE": "The alarm didn’t go off", "prior": "1/200", "p": "19/20", "q": "1/100", "obs": "notB"}, {"id": "W13", "difficulty": "hard", "title": "The interview", "text": "A third of the candidates who reach the final interview get the job offer. Candidates who will get the offer are asked to meet the team 80% of the time; those who won’t, only 20% of the time. Your friend reached the final interview, and the interviews are now over: she was never asked to meet the team. How confident should she be that she’ll get the offer?", "H": "Your friend will get the offer", "E": "Your friend is asked to meet the team", "notE": "Your friend isn’t asked to meet the team", "prior": "1/3", "p": "4/5", "q": "1/5", "obs": "notB"}, {"id": "W14", "difficulty": "medium", "title": "The fair coin", "text": "Two coins sit on a table: one is fair, and one is two-headed. You pick one at random and flip it. It lands heads. How confident should you be that you picked the two-headed coin?", "H": "You picked the two-headed coin", "E": "The coin lands heads", "notE": "The coin lands tails", "prior": "1/2", "p": "1/1", "q": "1/2", "obs": "B"}, {"id": "W15", "difficulty": "hard", "title": "The second opinion", "text": "Of the patients a specialist sees, 40% have the condition she treats. Her first test comes back positive for 75% of patients with the condition and for 25% of those without it. A patient’s first test comes back negative. How confident should the specialist be that the patient has the condition?", "H": "The patient has the condition", "E": "The patient’s first test comes back positive", "notE": "The patient’s first test comes back negative", "prior": "2/5", "p": "3/4", "q": "1/4", "obs": "notB"}]};
   const DIFFS = ["easy", "medium", "hard"];
 
   // ---------- numbers ----------
@@ -1700,7 +1765,7 @@ window.initBayes = () => {
     $("practice").hidden = state.mode !== "practice"; $("view").hidden = state.mode === "practice";
     $("stepper").hidden = $("stepcap").hidden = state.mode !== "step";
     $("modeNote").textContent = { practice: "Work through the three steps, then click Check.", answers: "The worked solution, the book’s way.", step: "The method one step at a time. Use ▶ or the arrow keys." }[state.mode];
-    $("tally").textContent = tally.n ? `All right on the first check: ${tally.ok} of ${tally.n} problems` : "";
+    $("tally").textContent = tally.n ? `Right on the first check: ${tally.ok} of ${tally.n} problems` : "";
     $("story").innerHTML = prob.html;
     $("story").querySelectorAll("mark").forEach((m) => m.classList.remove("on"));
     $("dict").innerHTML = `<span class="dk">Dictionary</span> <b>H</b> = ${esc(prob.H)} · <b>E</b> = ${esc(prob.E)}`;
@@ -1726,6 +1791,8 @@ window.initBayes = () => {
     $("evSeg").classList.toggle("bad", work.marks.ev === false); $("evSeg").classList.toggle("ok", work.marks.ev === true);
     $("check").disabled = work.shown; $("show").disabled = work.shown;
     $("next").hidden = !(work.done || work.shown);
+    $("next").classList.toggle("primary", !$("next").hidden);
+    $("check").classList.toggle("primary", $("next").hidden);
     updateEikBtn();
     if (work.shown) {
       setVerdict("Answer shown", "muted", "Try another, or step through this one.");
@@ -1734,7 +1801,7 @@ window.initBayes = () => {
     } else {
       $("practice").querySelector(".worked")?.remove();
       if (work.done) setVerdict("Correct", "good", `P(H | ${evLbl(T.ev)}) = ${showA(T.post)}`);
-      else if (work.checks) setVerdict("Not yet", "bad", "Fix the marked answers and check again.");
+      else if (work.checks) setVerdict("Not quite", "bad", "Fix the marked answers and check again.");
       else setVerdict(null, null, "Follow the book’s method: what you learned, the prior and likelihoods, then the posterior.");
     }
   }
@@ -1883,7 +1950,9 @@ window.initBayes = () => {
   function toEik() {
     const mine = state.mode === "practice" && !work.shown ? studentVals() : null;
     const [pA, pBgA, pBgNotA] = mine || [prob.prior, prob.p, prob.q];
-    LL.go("eik", { t: `H = ${prob.H}; E = ${prob.E}`, a: "H", na: "¬H", b: "E", nb: "¬E", bg: 0, post: 1, pA: rstr(pA), pBgA: rstr(pBgA), pBgNotA: rstr(pBgNotA), n: fmt() });
+    // condition on what was learned: the student's choice in Practice, otherwise what the story reports
+    const ev = mine && work.ev ? work.ev : truth().ev;
+    LL.go("eik", { t: `H = ${prob.H}; E = ${prob.E}`, a: "H", na: "¬H", b: "E", nb: "¬E", bg: 0, post: 1, g: ev === "notE" ? "nb" : "b", pA: rstr(pA), pBgA: rstr(pBgA), pBgNotA: rstr(pBgNotA), n: fmt() });
   }
   function updateEikBtn() { $("eikBtn").hidden = !(work.shown || studentVals()); }
 
@@ -1949,7 +2018,7 @@ window.initEik = () => {
   const MIN = 0, MAX = 1;
   const FONT = "IBM Plex Sans, Helvetica Neue, Helvetica, Arial, sans-serif";
   const MONO = "IBM Plex Mono, SF Mono, Menlo, Consolas, monospace";
-  const DEFAULTS = { title: "Probability Eikosogram", a: "H", notA: "not H", b: "E", notB: "not E", transparentBg: false, posterior: false, pA: 0.5, pBgA: 0.5, pBgNotA: 0.5 };
+  const DEFAULTS = { title: "Probability Eikosogram", a: "H", notA: "¬H", b: "E", notB: "¬E", transparentBg: false, posterior: false, given: "b", pA: 0.5, pBgA: 0.5, pBgNotA: 0.5 };
   const LIGHT = { bg: "#ffffff", ink: "#14202e", muted: "#5a6778", hStrong: "#6e9bf2", hSoft: "#d9e5fc", nStrong: "#f0a848", nSoft: "#fbe8cc", onStrong: "#14202e", onSoft: "#14202e", divider: "#14202e", handle: "#ffffff", accent: "#2c5cc9", focus: "#2c5cc9" };
 
   const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
@@ -2106,7 +2175,7 @@ window.initEik = () => {
       ];
       const vals = [m.tl, m.bl, m.tr, m.br];
       rects.forEach(([x, y, rw, rh, fill, top], i) => {
-        const dim = s.posterior && !top;
+        const dim = s.posterior && (s.given === "nb" ? top : !top);
         setA(this.cells[i], { x, y, width: Math.max(0, rw), height: Math.max(0, rh), fill, "fill-opacity": dim ? 0.35 : 1 });
         if (this.interactive) this.cells[i].style.cursor = "move";
         this.placeCellLabel(this.cellLab[i], x, y, rw, rh, top ? s.b : s.notB, pct(vals[i]), base, nameSize, top ? pal.onStrong : pal.onSoft, dim);
@@ -2159,13 +2228,14 @@ window.initEik = () => {
       if (s.posterior) {
         this.post.style.display = "";
         const by = y0 + h + postH * 0.52, bh = Math.max(20, postH * 0.36);
-        const undef = !Number.isFinite(m.pAgB);
-        const wH = undef ? 0 : w * m.pAgB;
+        const gb = s.given === "nb" ? s.notB : s.b, gv = s.given === "nb" ? m.pAgNB : m.pAgB;
+        const undef = !Number.isFinite(gv);
+        const wH = undef ? 0 : w * gv;
         const capSize = nameSize;
         setA(this.postCap, { x: x0, y: by - capSize * 0.55, "font-size": capSize, fill: pal.ink });
-        const capText = undef ? `P(${s.b}) = 0, so P(${s.a}|${s.b}) is ` : `Within ${s.b}: P(${s.a}|${s.b}) = `;
+        const capText = undef ? `P(${gb}) = 0, so P(${s.a}|${gb}) is ` : `Within ${gb}: P(${s.a}|${gb}) = `;
         this.postCap.firstChild && this.postCap.firstChild.nodeType === 3 ? (this.postCap.firstChild.nodeValue = capText) : this.postCap.insertBefore(document.createTextNode(capText), this.postCapV);
-        this.postCapV.textContent = pct(m.pAgB);
+        this.postCapV.textContent = pct(gv);
         setA(this.postCapV, { fill: pal.accent });
         setA(this.postH, { x: x0, y: by, width: Math.max(0, wH), height: bh, fill: pal.hStrong });
         setA(this.postN, { x: x0 + wH, y: by, width: Math.max(0, w - wH), height: bh, fill: pal.nStrong });
@@ -2176,8 +2246,8 @@ window.initEik = () => {
           t.textContent = str;
           t.style.display = textW(str, vs, true) + 8 <= cw ? "" : "none";
         };
-        put(this.postHt, x0, wH, `${s.a} ${pct(m.pAgB)}`, pal.onStrong);
-        put(this.postNt, x0 + wH, w - wH, `${s.notA} ${pct(1 - m.pAgB)}`, pal.onStrong);
+        put(this.postHt, x0, wH, `${s.a} ${pct(gv)}`, pal.onStrong);
+        put(this.postNt, x0 + wH, w - wH, `${s.notA} ${pct(1 - gv)}`, pal.onStrong);
         if (undef) this.postHt.style.display = this.postNt.style.display = "none";
       } else this.post.style.display = "none";
     }
@@ -2256,31 +2326,39 @@ window.initEik = () => {
       const k = n.dataset.l;
       n.textContent = lab[k] ?? state[k] ?? n.textContent;
     });
-    $("k-pA").textContent = lab.pA; $("k-pB").textContent = lab.pB; $("k-pAgB").textContent = lab.pAgB;
+    const neg = state.given === "nb";
+    const gName = neg ? state.notB : state.b, oName = neg ? state.b : state.notB;
+    const gLab = neg ? lab.pAgNB : lab.pAgB, oLab = neg ? lab.pAgB : lab.pAgNB;
+    const gVal = neg ? m.pAgNB : m.pAgB, oVal = neg ? m.pAgB : m.pAgNB;
+    const pG = neg ? m.pNB : m.pB;
+    $("k-pA").textContent = lab.pA; $("k-pB").textContent = lab.pB; $("k-pAgB").textContent = gLab;
     const readout = (id, v) => {
       const el = $(id); el.textContent = pct(v);
       if (fmtMode === "f" && Number.isFinite(v) && v > 0 && v < 1) {
         const a = document.createElement("span"); a.className = "approx"; a.textContent = `≈ ${pctStr(v)}`; el.append(a);
       }
     };
-    readout("r-pA", m.pA); readout("r-pB", m.pB); readout("r-pAgB", m.pAgB);
-    $("t-pAgNB").textContent = `If ${state.notB}`;
-    readout("r-pAgNB", m.pAgNB); $("k-pAgNB").textContent = lab.pAgNB;
-    $("postLabel").textContent = lab.pAgB;
+    readout("r-pA", m.pA); readout("r-pB", m.pB); readout("r-pAgB", gVal);
+    $("t-pAgNB").textContent = `If ${oName}`;
+    readout("r-pAgNB", oVal); $("k-pAgNB").textContent = oLab;
+    $("postLabel").textContent = gLab;
+    const gs = $("givenSeg").querySelectorAll("button");
+    gs[0].textContent = state.b; gs[1].textContent = state.notB;
+    gs.forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.v === state.given)));
     $("titleOut").textContent = state.title || " ";
 
 
     const S = $("sentence");
     S.innerHTML = "";
     const b = (t) => { const e = document.createElement("b"); e.textContent = t; return e; };
-    if (!Number.isFinite(m.pAgB)) {
-      S.append(b(state.b), ` has probability 0, so ${lab.pAgB} is undefined: there is no way to conditionalize on it.`);
+    if (!Number.isFinite(gVal)) {
+      S.append(b(gName), ` has probability 0, so ${gLab} is undefined: there is no way to conditionalize on it.`);
       renderDiagram(); scheduleHash(); return;
     }
-    const d = m.pAgB - m.pA;
+    const d = gVal - m.pA;
     const verb = Math.abs(d) < 0.0005 ? "leaves" : d > 0 ? "raises" : "lowers";
-    S.append("Learning ", b(state.b), ` ${verb} ${lab.pA} `, verb === "leaves" ? "unchanged at " : "from ", b(pct(m.pA)));
-    if (verb !== "leaves") S.append(" to ", b(pct(m.pAgB)));
+    S.append("Learning ", b(gName), ` ${verb} ${lab.pA} `, verb === "leaves" ? "unchanged at " : "from ", b(pct(m.pA)));
+    if (verb !== "leaves") S.append(" to ", b(pct(gVal)));
     S.append(".");
 
     renderDiagram();
@@ -2300,8 +2378,11 @@ window.initEik = () => {
   for (const [k, node] of Object.entries(fields)) {
     node.addEventListener("input", () => { state[k] = k === "title" ? node.value : (node.value.trim() || DEFAULTS[k]); render(); });
   }
-  $("f-bg").addEventListener("change", (e) => { state.transparentBg = e.target.checked; writeHash(); });
   $("f-post").addEventListener("change", (e) => { state.posterior = e.target.checked; render(); });
+  $("givenSeg").addEventListener("click", (e) => {
+    const x = e.target.closest("button"); if (!x) return;
+    state.given = x.dataset.v; state.posterior = true; $("f-post").checked = true; render();
+  });
   window.addEventListener("keydown", (e) => {
     if (window.LL && LL.active === "eik" && (e.key === "p" || e.key === "P") && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) {
       state.posterior = !state.posterior; $("f-post").checked = state.posterior; render();
@@ -2310,7 +2391,6 @@ window.initEik = () => {
 
   function syncFields() {
     for (const [k, node] of Object.entries(fields)) node.value = state[k];
-    $("f-bg").checked = state.transparentBg;
     $("f-post").checked = state.posterior;
   }
 
@@ -2413,35 +2493,10 @@ window.initEik = () => {
     statusNode.textContent = msg;
     clearTimeout(say.t); say.t = setTimeout(() => (statusNode.textContent = ""), 3000);
   }
-  $("svgBtn").addEventListener("click", () => { download(fileBase() + ".svg", new Blob([exportSvgString()], { type: "image/svg+xml" })); say("SVG downloaded."); });
-  $("pngBtn").addEventListener("click", async () => {
-    try { download(fileBase() + ".png", await pngBlob()); say("PNG downloaded."); } catch { say("Couldn’t make the PNG in this browser. Try SVG."); }
-  });
-  $("copyImgBtn").addEventListener("click", async () => {
-    try {
-      if (!window.ClipboardItem) throw new Error();
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob() })]);
-      say("Image copied. Paste it into your slide.");
-    } catch { say("This browser won’t copy images. Use Download PNG instead."); }
-  });
-  $("copySvgBtn").addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(exportSvgString()); say("SVG code copied."); }
-    catch { say("Couldn’t reach the clipboard here."); }
-  });
-  $("linkBtn").addEventListener("click", async () => {
-    writeHash();
-    try { await navigator.clipboard.writeText(location.href); say("Link copied. It opens with this exact diagram."); }
-    catch { say("Couldn’t reach the clipboard here."); }
-  });
   $("resetBtn").addEventListener("click", () => {
-    Object.assign(state, DEFAULTS); syncFields(); render(); say("Reset to 50 / 50 / 50.");
+    Object.assign(state, DEFAULTS); syncFields(); render(); say("Reset.");
   });
 
-  if (framed) {
-    // Downloads and URL state don't work inside the hosted viewer.
-    $("svgBtn").hidden = true; $("pngBtn").hidden = true; $("linkBtn").hidden = true;
-    $("copyImgBtn").classList.add("primary");
-  }
 
   // ---------- URL state (local file only) ----------
   // Browsers limit how often a page may rewrite its URL (Safari throws after ~100 calls in 30 s),
@@ -2454,7 +2509,7 @@ window.initEik = () => {
     if (framed || !window.LL || LL.active !== "eik") return;
     const p = new URLSearchParams({
       tab: "eik", t: state.title, a: state.a, na: state.notA, b: state.b, nb: state.notB,
-      bg: state.transparentBg ? 1 : 0, post: state.posterior ? 1 : 0,
+      bg: state.transparentBg ? 1 : 0, post: state.posterior ? 1 : 0, g: state.given,
       pA: linkVal(state.pA), pBgA: linkVal(state.pBgA), pBgNotA: linkVal(state.pBgNotA), n: fmtMode
     });
     try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
@@ -2465,7 +2520,7 @@ window.initEik = () => {
     state.title = p.get("t") ?? state.title;
     state.a = p.get("a") || state.a; state.notA = p.get("na") || state.notA;
     state.b = p.get("b") || state.b; state.notB = p.get("nb") || state.notB;
-    state.transparentBg = p.get("bg") === "1"; state.posterior = p.get("post") === "1";
+    state.transparentBg = p.get("bg") === "1"; state.posterior = p.get("post") === "1"; state.given = p.get("g") === "nb" ? "nb" : "b";
     for (const k of probKeys) state[k] = cleanProb(p.get(k), state[k]);
     if (["f", "d"].includes(p.get("n"))) fmtMode = p.get("n");
   }
@@ -2616,6 +2671,54 @@ window.LL = (() => {
 })();
 
 LL.start();
+</script>
+<script>
+// Shared lab shell: Present mode (hide the header, tabs and sidebar; XL size; Esc returns).
+// Also marks scrollable areas (.scrollfade > .scrollx) so a fade shows when more is off to the right.
+(() => {
+  "use strict";
+  const root = document.documentElement;
+  const sizeSeg = document.getElementById("ll-sizeSeg");
+  const btn = document.getElementById("ll-presentBtn");
+  const ex = document.getElementById("ll-presentExit");
+  let prev = null;
+  const curSize = () => { const b = sizeSeg.querySelector('button[aria-pressed="true"]'); return b ? b.dataset.v : "1"; };
+  const setSize = (v) => { const b = sizeSeg.querySelector(`button[data-v="${v}"]`); if (b) b.click(); };
+  const on = () => root.classList.contains("presenting");
+  function enter() {
+    if (on()) return;
+    prev = curSize();
+    root.classList.add("presenting");
+    setSize("3");
+    ex.hidden = false;
+    window.scrollTo({ top: 0 });
+    window.dispatchEvent(new Event("resize"));
+  }
+  function exit() {
+    if (!on()) return;
+    root.classList.remove("presenting");
+    if (prev != null) setSize(prev);
+    ex.hidden = true;
+    btn.focus({ preventScroll: true });
+    window.dispatchEvent(new Event("resize"));
+  }
+  btn.addEventListener("click", enter);
+  ex.addEventListener("click", exit);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && on()) { e.preventDefault(); e.stopPropagation(); exit(); } }, true);
+
+  // edge fade for horizontally scrolling areas
+  function fade(sc) {
+    const w = sc.closest(".scrollfade"); if (!w) return;
+    w.classList.toggle("more", sc.scrollLeft + sc.clientWidth < sc.scrollWidth - 2);
+  }
+  const refresh = () => document.querySelectorAll(".scrollfade .scrollx").forEach(fade);
+  document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("scrollx")) fade(e.target); }, true);
+  window.addEventListener("resize", refresh);
+  let pend = false;
+  new MutationObserver(() => { if (pend) return; pend = true; requestAnimationFrame(() => { pend = false; refresh(); }); }).observe(document.body, { childList: true, subtree: true });
+  window.LLPresent = { enter, exit, refresh };
+})();
+
 </script>
 </body>
 </html>

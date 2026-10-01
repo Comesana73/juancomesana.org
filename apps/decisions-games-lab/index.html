@@ -1,0 +1,2886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Decisions &amp; Games Lab</title>
+<link rel="preload" href="../fonts/plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts/plex.css">
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --ink: #14202e;
+    --muted: #5a6778;
+    --faint: #9aa5b4;
+    --line: #dbe1e9;
+    --line-strong: #14202e;
+    --accent: #2c5cc9;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3ebfb;
+    --accent-softer: #f0f4fd;
+    --good: #1d7f53;
+    --good-soft: #e1f3e9;
+    --bad: #b93a32;
+    --bad-soft: #fbe3e0;
+    --focus: #2c5cc9;
+    --radius: 10px;
+    --tsize: 18px;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --logic: "IBM Plex Sans", "Cambria Math", "STIX Two Math", "Segoe UI Symbol", "Apple Symbols", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+      --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+      --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+      --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+    --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+    --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+    --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+  }
+
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 14px 16px 0; max-width: 1600px; margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark { width: 28px; height: 28px; flex: none; }
+  .brand-mark svg { display: block; width: 100%; height: 100%; }
+  .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+  .brand p { font-size: 0.8rem; color: var(--muted); }
+  .top-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .top-controls .lbl { font-size: 0.78rem; color: var(--muted); }
+
+  .seg {
+    display: inline-flex; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 2px; gap: 2px;
+  }
+  .seg button {
+    border: 0; background: transparent; padding: 5px 10px; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap;
+  }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+  .seg.full { display: flex; }
+  .seg.full button { flex: 1; }
+
+  /* ---------- layout ---------- */
+  .app {
+    display: grid; grid-template-columns: 1fr; gap: 16px;
+    padding: 14px 16px 24px; max-width: 1600px; margin: 0 auto;
+  }
+  .panel, .stage { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  @media (min-width: 980px) {
+    .app { grid-template-columns: 350px minmax(0, 1fr); gap: 20px; padding: 16px 20px 28px; }
+    .topbar { padding: 16px 20px 0; }
+    .panel { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 2px; }
+  }
+  @media (max-width: 979px) {
+    .app { display: flex; flex-direction: column; }
+    .panel { display: contents; }
+    /* the matrix and the work come first; setup and mode follow */
+    .stage { order: 1; } .setup-card { order: 2; } .mode-card { order: 3; } .help { order: 4; }
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0;
+  }
+  details.card { display: block; }
+  .card h2 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .opt { display: flex; flex-direction: column; gap: 6px; }
+  .opt > .lbl { font-size: 0.78rem; color: var(--muted); }
+  .note { font-size: 0.82rem; color: var(--muted); }
+  .genopt { padding-top: 12px; border-top: 1px solid var(--line); }
+  .genopt .btn { align-self: flex-start; }
+
+  details.help summary { cursor: pointer; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  details.help[open] summary { margin-bottom: 10px; }
+  .help p { font-size: 0.85rem; color: var(--muted); }
+  .help p + p { margin-top: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--ink);
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 7px;
+    padding: 7px 12px; font-size: 0.88rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--muted); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.small { padding: 4px 10px; font-size: 0.82rem; }
+  .linkbtn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 0.85rem; font-weight: 500; }
+
+  /* ---------- matrix editor ---------- */
+  .ed-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .ed-wrap { overflow-x: auto; }
+  table.ed { border-collapse: separate; border-spacing: 4px; }
+  .ed th, .ed td { padding: 0; vertical-align: middle; }
+  .ed input {
+    width: 5.2em; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--surface-2); font-family: var(--mono); font-size: 0.95rem; text-align: center;
+  }
+  .ed input.name { font-family: var(--logic); font-weight: 600; background: var(--surface); }
+  .ed input.prob { font-size: 0.8rem; width: 5.2em; padding: 3px 6px; color: var(--accent); }
+  .ed input.err { border-color: var(--bad); background: var(--bad-soft); }
+  .ed .cellbox { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+  .ed .rm { border: 0; background: transparent; color: var(--faint); cursor: pointer; font-size: 1rem; width: 24px; height: 24px; border-radius: 5px; }
+  .ed .rm:hover { background: var(--surface-2); color: var(--ink); }
+  .ed .corner { font-size: 0.72rem; color: var(--muted); text-align: left; padding-right: 4px; }
+  .ed .plabel { font-size: 0.72rem; color: var(--muted); text-align: right; padding-right: 4px; white-space: nowrap; }
+  .ed-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ed-actions .hint { font-size: 0.8rem; color: var(--muted); }
+  .ed-actions .hint::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
+  .errmsg { font-size: 0.85rem; color: var(--bad); }
+  .errmsg b { font-weight: 600; }
+
+  /* ---------- summary strip ---------- */
+  .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  .sum { padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .sum + .sum { border-left: 1px solid var(--line); }
+  .sum .k { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+  .sum .v { font-family: var(--logic); font-weight: 600; font-size: 1.02rem; }
+  .sum .v.off { font-family: var(--sans); font-weight: 400; font-size: 0.85rem; color: var(--faint); }
+  .sum.solved { background: color-mix(in srgb, var(--good) 8%, transparent); }
+  @media (max-width: 720px) {
+    .summary { grid-template-columns: 1fr 1fr; }
+    .sum:nth-child(3) { border-left: 0; }
+    .sum:nth-child(n+3) { border-top: 1px solid var(--line); }
+  }
+
+  /* ---------- work area ---------- */
+  .work { padding: 0; gap: 0; }
+  .work .tabs { display: flex; gap: 2px; padding: 8px 10px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .work .tabs button {
+    border: 0; background: none; padding: 9px 12px 10px; font-size: 0.9rem; font-weight: 500; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+  }
+  .work .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .work .tabs button.unavail { color: var(--faint); }
+  .work-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .work-head .what { font-size: 0.9rem; color: var(--muted); }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stepper { display: inline-flex; align-items: center; gap: 4px; }
+  .stepper .count { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); min-width: 4.5em; text-align: center; }
+  .hintbar { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.92rem; background: var(--accent-softer); }
+  .hintbar.bad { background: var(--bad-soft); color: var(--bad); }
+  .hintbar.good { background: var(--good-soft); color: var(--good); }
+  .hintbar .f { font-family: var(--logic); font-weight: 600; }
+  .work-body { padding: 16px; display: flex; flex-direction: column; gap: 18px; font-size: var(--tsize); }
+  .work-body.stale { opacity: 0.35; }
+  .unavail-note { font-size: 0.95rem; color: var(--muted); max-width: 60ch; }
+  .unavail-note b { color: var(--ink); }
+  .block { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .block > h3 { font-size: 0.7em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-family: var(--sans); }
+  .scroll { overflow-x: auto; }
+
+  /* full grid, like the textbook's matrices */
+  table.mx { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .mx th, .mx td { padding: 0.32em 0.7em; text-align: center; white-space: nowrap; border: 1px solid var(--line-strong); }
+  .mx thead th { font-family: var(--logic); font-weight: 500; vertical-align: bottom; }
+  .mx thead th .pr { display: block; font-family: var(--mono); font-size: 0.72em; color: var(--accent); font-weight: 500; }
+  .mx th.rowh { font-family: var(--logic); font-weight: 600; text-align: left; padding-right: 0.9em; }
+  .mx td { font-family: var(--mono); position: relative; }
+  .mx td .pc { display: block; font-size: 0.66em; color: var(--accent); text-align: right; margin-top: -0.1em; }
+  .mx td .uv { display: block; text-align: left; }
+  .mx td.cellp { min-width: 4.6em; }
+  .mx sup.st { color: var(--accent); font-weight: 700; font-family: var(--sans); margin-left: 1px; }
+  .mx th.rowh sup.st { color: var(--good); }
+  .mx td.star { background: var(--accent-soft); }
+  .mx tr.pick > * { background: var(--good-soft); }
+  .mx tr.pick td.star { background: color-mix(in srgb, var(--accent-soft) 60%, var(--good-soft)); }
+  .mx tr.crossed > * { color: var(--faint); }
+  .mx tr.crossed td, .mx tr.crossed th.rowh { text-decoration: line-through; text-decoration-color: var(--bad); text-decoration-thickness: 2px; }
+  .mx .extra { border-left: 3px double var(--line-strong); font-family: var(--mono); }
+  .mx th.extra { font-family: var(--sans); font-size: 0.72em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .mx tr.maxrow th, .mx tr.maxrow td { font-size: 0.8em; color: var(--muted); }
+  .mx .hid { color: transparent !important; }
+  .mx .cur { background: var(--accent-soft) !important; }
+  .mx .curcol { background: var(--accent-softer); }
+
+  /* practice affordances */
+  .mx td.clickable { cursor: pointer; }
+  .mx td.clickable:hover { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .mx input.crossbox { width: 1.1em; height: 1.1em; accent-color: var(--bad); cursor: pointer; vertical-align: middle; }
+  .mx th.rowh button.rowbtn {
+    border: 1px dashed var(--line); background: transparent; border-radius: 6px; padding: 0.05em 0.45em; cursor: pointer;
+    font: inherit; color: inherit; text-decoration: inherit;
+  }
+  .mx th.rowh button.rowbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .mx input.ans {
+    width: 4.6em; padding: 0.15em 0.35em; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface-2); font-family: var(--mono); font-size: 0.9em; text-align: center;
+  }
+  .wrong { box-shadow: inset 0 0 0 2px var(--bad) !important; background-color: var(--bad-soft) !important; }
+  input.ans.wrong, select.wrong { color: var(--bad); }
+  .right-mark { box-shadow: inset 0 0 0 1.5px var(--good) !important; }
+
+  .pairs { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; align-items: center; font-size: 0.85em; }
+  .pairs .pn { font-family: var(--logic); font-weight: 600; white-space: nowrap; }
+  .pairs .pv { font-family: var(--sans); }
+  .pairs .pv .why { color: var(--muted); font-size: 0.9em; }
+  .pairs select { font-size: 0.95em; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); max-width: 100%; }
+  .pairs .hid { visibility: hidden; }
+
+  .lex { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; }
+  .lex .row { display: flex; align-items: center; gap: 10px; font-family: var(--mono); }
+  .lex .row b { font-family: var(--logic); min-width: 2.5em; }
+  .lex label { display: inline-flex; gap: 6px; align-items: center; font-family: var(--sans); font-size: 0.9em; cursor: pointer; }
+  .lex .keep { color: var(--good); font-family: var(--sans); font-weight: 600; font-size: 0.9em; }
+
+  ol.worked { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; font-size: 0.82em; max-width: 75ch; }
+  ol.worked li::marker { color: var(--muted); font-family: var(--mono); }
+  ol.worked .f { font-family: var(--logic); font-weight: 600; }
+  .arith { font-family: var(--mono); font-size: 0.85em; display: flex; flex-direction: column; gap: 4px; }
+  .arith .hid { visibility: hidden; }
+  .caution { font-size: 0.82em; color: var(--muted); border-left: 3px solid var(--line-strong); padding-left: 10px; max-width: 70ch; }
+
+  @media (max-width: 640px) {
+    .work-body { padding: 12px; }
+    .work-head, .hintbar { padding-left: 12px; padding-right: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  /* ================= Lab shell ================= */
+  #ll-tabs {
+    display: flex; gap: 2px; max-width: 1600px; margin: 10px auto 0; padding: 0 16px;
+    border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none;
+  }
+  #ll-tabs::-webkit-scrollbar { display: none; }
+  #ll-tabs button {
+    border: 0; background: none; padding: 9px 14px 10px; font-size: 0.92rem; font-weight: 500; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+  }
+  #ll-tabs button:hover { color: var(--ink); }
+  #ll-tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  @media (min-width: 980px) { #ll-tabs { padding: 0 20px; } }
+  .tally { font-size: 0.82rem; color: var(--muted); }
+  .tally:empty { display: none; }
+  /* ================= Games tab ================= */
+  :root { --colp: #b0521a; --colp-soft: #fbeadf; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --colp: #f0a46a; --colp-soft: #3a2618; } }
+  :root[data-theme="dark"] { --colp: #f0a46a; --colp-soft: #3a2618; }
+
+  #gmApp .ed input.pay { width: 3.4em; padding: 6px 4px; }
+  #gmApp .ed .pairin { display: grid; grid-template-columns: auto auto; gap: 2px; }
+  #gmApp .ed .pairin input[data-k="b"] { grid-column: 2; grid-row: 1; color: var(--colp); }
+  #gmApp .ed .pairin input[data-k="a"] { grid-column: 1; grid-row: 2; color: var(--accent); }
+  #gmApp .ed input.name.rp { color: var(--accent); }
+  #gmApp .ed input.name.cp { color: var(--colp); }
+  #gmApp .ed .corner { white-space: nowrap; }
+  #gmApp .ed .corner .r { color: var(--accent); font-weight: 600; }
+  #gmApp .ed .corner .c { color: var(--colp); font-weight: 600; }
+
+  #gmApp .legend { font-size: 0.72em; color: var(--muted); font-family: var(--sans); }
+  #gmApp .legend .r { color: var(--accent); font-weight: 600; }
+  #gmApp .legend .c { color: var(--colp); font-weight: 600; }
+  #gmApp .mx th.rowh { color: var(--accent); }
+  #gmApp .mx thead th.colh { color: var(--colp); font-weight: 600; }
+  #gmApp .mx td.gc { min-width: 4.4em; }
+  #gmApp .mx .gp { display: grid; grid-template-columns: auto auto; justify-content: space-between; column-gap: 0.9em; row-gap: 0.05em; line-height: 1.15; }
+  #gmApp .mx .gp .pb { grid-column: 2; grid-row: 1; justify-self: end; }
+  #gmApp .mx .gp .pa { grid-column: 1; grid-row: 2; justify-self: start; }
+  #gmApp .mx td.gc:has(.gp) { padding-top: 0.25em; padding-bottom: 0.25em; }
+  #gmApp .mx sup.st { font-family: var(--sans); font-weight: 700; margin-left: 1px; }
+  #gmApp .mx sup.st.r { color: var(--accent); }
+  #gmApp .mx sup.st.c { color: var(--colp); }
+  #gmApp .mx th.colh sup.st { color: var(--colp); }
+  #gmApp .mx th.rowh sup.st { color: var(--accent); }
+  #gmApp .mx td.ne { box-shadow: inset 0 0 0 2.5px var(--good); }
+  #gmApp .mx td.sel { background: var(--good-soft); }
+  #gmApp .mx td.sel.ne { background: var(--good-soft); }
+  #gmApp .mx td.dimmed { color: var(--faint); }
+  #gmApp .mx td.dom, #gmApp .mx td.dom .pb { background: var(--surface-2); color: var(--faint); }
+  /* crossed off: one line through the whole row (horizontal) or column (vertical) */
+  #gmApp .mx th { position: relative; }
+  #gmApp .mx .xrow, #gmApp .mx .xcol, #gmApp .mx .xrow .pb, #gmApp .mx .xcol .pb, #gmApp .mx .xrow sup, #gmApp .mx .xcol sup { color: var(--faint) !important; }
+  #gmApp .mx .xrow::after { content: ""; position: absolute; left: -1px; right: -1px; top: 50%; height: 2px; margin-top: -1px; background: var(--bad); pointer-events: none; }
+  #gmApp .mx .xcol::before { content: ""; position: absolute; top: -1px; bottom: -1px; left: 50%; width: 2px; margin-left: -1px; background: var(--bad); pointer-events: none; }
+  #gmApp .mx td.curv { background: var(--bad-soft) !important; }
+  #gmApp .mx td.curd { background: var(--accent-soft) !important; }
+  #gmApp .mx th.curv { background: var(--bad-soft); }
+  #gmApp .mx th.curd { background: var(--accent-soft); }
+  #gmApp .mx button.pay {
+    border: 1px dashed transparent; background: transparent; border-radius: 5px; padding: 0 0.15em; cursor: pointer;
+    font: inherit; color: inherit;
+  }
+  #gmApp .mx button.pay:hover { border-color: var(--accent); }
+  #gmApp .mx button.pay.c:hover { border-color: var(--colp); }
+  #gmApp .mx button.pay.wrong { border-radius: 5px; }
+  #gmApp .mx thead th.colh button.colbtn {
+    border: 1px dashed var(--line); background: transparent; border-radius: 6px; padding: 0.05em 0.45em; cursor: pointer; font: inherit; color: inherit;
+  }
+  #gmApp .mx thead th.colh button.colbtn:hover { border-color: var(--colp); }
+  #gmApp .mx tr.maxrow th, #gmApp .mx tr.maxrow td { font-size: 0.8em; color: var(--muted); }
+  #gmApp .mx tr.maxrow td { border-top: 3px double var(--line-strong); }
+  #gmApp .mx input.ans { width: 3.6em; }
+
+  #gmApp .delbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 0.85em; font-family: var(--sans); }
+  #gmApp ol.dels { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 4px; font-size: 0.82em; max-width: 75ch; }
+  #gmApp ol.dels li::marker { color: var(--muted); font-family: var(--mono); }
+  #gmApp ol.dels .hid { visibility: hidden; }
+  #gmApp .f { font-family: var(--logic); font-weight: 600; }
+  #gmApp .verdictrow { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 0.85em; font-family: var(--sans); }
+  #gmApp .verdictrow label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  #gmApp .verdictrow input.ans { width: 4em; padding: 0.15em 0.35em; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-2); font-family: var(--mono); text-align: center; }
+  #gmApp .summary .v { font-size: 0.95rem; }
+  @media (max-width: 640px) {
+    #gmApp .mx th, #gmApp .mx td { padding: 0.28em 0.4em; }
+    #gmApp .mx td.gc { min-width: 0; }
+    #gmApp .mx th.extra { white-space: normal; line-height: 1.1; }
+    #gmApp .mx input.ans { width: 2.8em; }
+  }
+  #gmApp .mx sup.st.r + sup.st.c { margin-left: 0.25em; }
+  #gmApp .gm-select { width: 100%; }
+  /* two payoffs per cell: a thin line between cells keeps each pair together */
+  #gmApp .mx td.gc:has(.gp) { border-left: 1px solid var(--line); }
+
+  /* ================= design review, Oct 1 2026 ================= */
+  /* review 9c: the squares logo, as in the other labs */
+  .ll-top .brand-mark {
+    width: 28px; height: 28px; flex: none; border-radius: 6px; overflow: hidden;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+    background: var(--surface); border: 1px solid var(--line); padding: 3px;
+  }
+  .ll-top .brand-mark span { border-radius: 2px; background: var(--accent-soft); }
+  .ll-top .brand-mark span:nth-child(1), .ll-top .brand-mark span:nth-child(4) { background: var(--accent); }
+  /* Random problem / Your own problem rows, as in Logic Lab and Probability Lab */
+  .genrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--line); }
+  .genrow .lbl { font-size: 0.78rem; color: var(--muted); width: 100%; }
+  .genrow .note { width: 100%; }
+  .genrow .seg.full { width: 100%; }
+  .dg-checkbar { padding: 4px 16px 14px; }
+  .dg-checkbar[hidden] { display: none; }
+  .work .scrollfade .tabs { scrollbar-width: none; }
+  .work .scrollfade .tabs::-webkit-scrollbar { display: none; }
+  /* matrices like the other labs' tables: thin row lines, open columns */
+  .mx th, .mx td { border: 0; border-bottom: 1px solid var(--line); }
+  .mx thead tr:last-child th { border-bottom: 2px solid var(--line-strong); }
+  .mx th.rowh { border-right: 2px solid var(--line-strong); }
+  .mx tbody tr:last-child > * { border-bottom: 2px solid var(--line-strong); }
+  .mx .extra { border-left: 2px solid var(--line-strong); }
+  .mx td { padding-left: 0.9em; padding-right: 0.9em; }
+  /* dropdowns styled like the lab's inputs */
+  #decApp select, #gmApp select {
+    -webkit-appearance: none; appearance: none; font: inherit; font-size: 0.92rem; color: var(--ink);
+    padding: 5px 30px 5px 10px; border: 1px solid var(--line); border-radius: 8px; background-color: var(--surface-2);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237b8797' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; max-width: 100%;
+  }
+  #decApp select:hover, #gmApp select:hover { border-color: var(--accent); }
+  #decApp select:focus-visible, #gmApp select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  #decApp select:disabled, #gmApp select:disabled { opacity: 0.5; cursor: default; }
+  #decApp select.wrong, #gmApp select.wrong { border-color: var(--bad); background-color: var(--bad-soft); color: var(--bad); }
+
+  /* ================= shared lab shell: Present mode ================= */
+  .ll-present { margin-left: 4px; }
+  #ll-presentExit { display: none; }
+  #ll-presentExit kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+  html.presenting #ll-presentExit { display: inline-flex; align-items: center; position: fixed; top: 10px; right: 12px; z-index: 60; opacity: 0.5; }
+  html.presenting #ll-presentExit:hover, html.presenting #ll-presentExit:focus-visible { opacity: 1; }
+  html.presenting .ll-top, html.presenting #ll-tabs, html.presenting .app > .panel, html.presenting [data-nopresent] { display: none !important; }
+  html.presenting .app { display: block !important; max-width: none !important; height: auto !important; min-height: 0 !important; padding: 50px 24px 28px !important; }
+  html.presenting .stage { width: 100%; }
+  @media (max-width: 640px) { .ll-present { display: none; } }
+
+  /* ================= shared: Check bar at the end of the task, sticky on phones ================= */
+  .checkbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  @media (max-width: 640px) {
+    .checkbar.sticky, .sticky-phone {
+      position: sticky; bottom: 0; z-index: 5; background: var(--surface);
+      box-shadow: 0 -1px 0 var(--line), 0 -6px 12px -8px rgb(0 0 0 / 0.25);
+    }
+  }
+
+  /* ================= shared: wide content scrolls with a visible edge fade ================= */
+  .scrollx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scrollfade { position: relative; }
+  .scrollfade::after {
+    content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 40px; pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--surface)); opacity: 0; transition: opacity 0.15s;
+  }
+  .scrollfade.more::after { opacity: 1; }
+</style>
+</head>
+<body>
+<header class="topbar ll-top">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div>
+      <h1>Decisions &amp; Games Lab</h1>
+      <p>Choosing under ignorance and risk; games</p>
+    </div>
+  </div>
+  <div class="top-controls">
+    <span class="lbl" id="ll-sizeLbl">Size</span>
+    <div class="seg" role="group" aria-labelledby="ll-sizeLbl" id="ll-sizeSeg">
+      <button type="button" data-v="0">S</button><button type="button" data-v="1">M</button><button type="button" data-v="2">L</button><button type="button" data-v="3">XL</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme" id="ll-themeSeg">
+      <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+    </div>
+    <button type="button" class="btn small ll-present" id="ll-presentBtn" title="Full-width view for the projector (Esc to exit)">Present</button>
+  </div>
+</header>
+<button type="button" class="btn small" id="ll-presentExit" hidden>Exit <kbd>Esc</kbd></button>
+<nav class="tabs" role="tablist" aria-label="Decisions &amp; Games Lab tools" id="ll-tabs">
+  <button type="button" role="tab" data-tab="decisions" id="ll-tab-decisions" aria-controls="decApp">Decisions</button>
+  <button type="button" role="tab" data-tab="games" id="ll-tab-games" aria-controls="gmApp">Games</button>
+</nav>
+
+<div id="decApp" hidden>
+<header class="topbar" hidden>
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 28 28"><rect x="0.5" y="0.5" width="27" height="27" rx="6" fill="var(--surface)" stroke="var(--line)"/><rect x="5" y="6" width="18" height="4" rx="1" fill="var(--accent-soft)"/><rect x="5" y="12" width="18" height="4" rx="1" fill="var(--accent)"/><rect x="5" y="18" width="18" height="4" rx="1" fill="var(--accent-soft)"/></svg>
+    </div>
+    <div>
+      <h1>Decision Lab</h1>
+      <p>Choosing under ignorance and under risk</p>
+    </div>
+  </div>
+  <div class="top-controls">
+    <span class="lbl" id="sizeLbl">Text size</span>
+    <div class="seg" role="group" aria-labelledby="sizeLbl" id="sizeSeg">
+      <button type="button" data-v="15">S</button><button type="button" data-v="18">M</button><button type="button" data-v="23">L</button><button type="button" data-v="30">XL</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme" id="themeSeg">
+      <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="panel" aria-label="Setup">
+    <section class="card setup-card" aria-labelledby="setupHead">
+      <h2 id="setupHead">Setup</h2>
+      <div class="opt">
+        <span class="lbl" id="probLbl">Probabilities</span>
+        <div class="seg full" role="group" aria-labelledby="probLbl" id="probSeg">
+          <button type="button" data-v="none">None</button><button type="button" data-v="states">On states</button><button type="button" data-v="cells">Depend on choice</button>
+        </div>
+        <p class="note" id="probNote"></p>
+        <div class="seg full" role="group" aria-label="Show probabilities as" id="pfSeg">
+          <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
+        </div>
+      </div>
+      <div class="opt">
+        <span class="lbl" id="kindLbl">Utilities</span>
+        <div class="seg full" role="group" aria-labelledby="kindLbl" id="kindSeg">
+          <button type="button" data-v="ordinal">Ordinal</button><button type="button" data-v="cardinal">Cardinal</button>
+        </div>
+        <p class="note" id="kindNote"></p>
+      </div>
+      <div class="genrow">
+        <span class="lbl" id="levelLbl">Random problem</span>
+        <div class="seg" role="group" aria-labelledby="levelLbl" id="levelSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="newBtn">New problem</button>
+        <p class="note" id="levelNote"></p>
+      </div>
+      <div class="genrow">
+        <span class="lbl">Your own problem</span>
+        <button type="button" class="btn" id="ownBtn">Enter your own</button>
+      </div>
+    </section>
+
+    <section class="card mode-card" aria-labelledby="modeHead">
+      <h2 id="modeHead">Mode</h2>
+      <div class="seg full" role="group" aria-label="Mode" id="modeSeg">
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="step">Step through</button><button type="button" data-v="answers">Show answers</button>
+      </div>
+      <p class="note" id="modeNote"></p>
+    </section>
+
+    <details class="card help">
+      <summary>Entering numbers</summary>
+      <p>Utilities can be whole numbers, decimals or fractions: 3, −1, 1.5, 7/10. Probabilities can be decimals or fractions: 0.7 or 7/10. Answers you type in Practice can be fractions, or decimals rounded to two places.</p>
+      <p>Click an option or state name in the matrix to rename it (P, M, R, ¬R…). Type ~ for ¬. Press Enter or click Done to use it.</p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card" id="editCard" aria-labelledby="edHead">
+      <div class="ed-head">
+        <h2 id="edHead">Your own problem</h2>
+        <div class="ed-actions">
+          <button type="button" class="linkbtn" id="addOpt">+ Option</button>
+          <button type="button" class="linkbtn" id="addState">+ State</button>
+        </div>
+      </div>
+      <div class="ed-wrap"><table class="ed" id="editor"></table></div>
+      <div class="ed-actions">
+        <button type="button" class="btn primary" id="buildBtn">Done</button>
+        <button type="button" class="btn" id="cancelBtn" hidden>Cancel</button>
+        <span class="hint" id="dirtyHint" hidden>Changed. Press Enter or click Done to use it.</span>
+      </div>
+      <div class="errmsg" id="edErr" hidden></div>
+    </section>
+
+    <section class="summary" id="summary" aria-live="polite"></section>
+
+    <section class="card work" id="workCard">
+      <div class="scrollfade"><div class="tabs scrollx" role="tablist" id="tabs">
+        <button type="button" role="tab" data-v="dominance">Dominance</button>
+        <button type="button" role="tab" data-v="maximin">Maximin</button>
+        <button type="button" role="tab" data-v="regret">Minimax regret</button>
+        <button type="button" role="tab" data-v="eu" id="euTab">Expected utility</button>
+      </div></div>
+      <div class="work-head">
+        <span class="what" id="what"></span>
+        <div class="actions">
+          <div class="stepper" id="stepper" hidden>
+            <button class="btn small" type="button" id="stFirst" aria-label="Back to start">⏮</button>
+            <button class="btn small" type="button" id="stPrev" aria-label="Previous step">◀</button>
+            <span class="count" id="stCount">0 / 0</span>
+            <button class="btn small primary" type="button" id="stNext" aria-label="Next step">▶</button>
+            <button class="btn small" type="button" id="stLast" aria-label="Show all steps">⏭</button>
+          </div>
+        </div>
+      </div>
+      <div class="hintbar" id="hintbar" aria-live="polite"></div>
+      <div class="work-body" id="workBody"></div>
+      <div class="checkbar sticky-phone dg-checkbar" id="practiceBtns" hidden>
+        <button class="btn primary" type="button" id="checkBtn">Check</button>
+        <button class="btn" type="button" id="clearBtn">Clear</button>
+      </div>
+    </section>
+  </main>
+</div>
+</div>
+<div id="gmApp" hidden>
+<div hidden><div class="seg" id="gm-sizeSeg"><button type="button" data-v="15">S</button><button type="button" data-v="18">M</button><button type="button" data-v="23">L</button><button type="button" data-v="30">XL</button></div></div>
+<div class="app">
+  <aside class="panel" aria-label="Setup">
+    <section class="card setup-card" aria-labelledby="gm-setupHead">
+      <h2 id="gm-setupHead">Setup</h2>
+      <div class="opt">
+        <span class="lbl" id="gm-kindLbl">Game</span>
+        <div class="seg full" role="group" aria-labelledby="gm-kindLbl" id="gm-kindSeg">
+          <button type="button" data-v="general">General</button><button type="button" data-v="zero">Zero-sum</button>
+        </div>
+        <p class="note" id="gm-kindNote"></p>
+      </div>
+      <div class="opt">
+        <label class="lbl" for="gm-classic">Classic games</label>
+        <select id="gm-classic" class="gm-select"></select>
+      </div>
+      <div class="genrow">
+        <span class="lbl" id="gm-levelLbl">Random problem</span>
+        <div class="seg" role="group" aria-labelledby="gm-levelLbl" id="gm-levelSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="gm-newBtn">New problem</button>
+        <div class="seg full" role="group" aria-label="Kind of random game" id="gm-rkindSeg">
+          <button type="button" data-v="general">General</button><button type="button" data-v="zero">Zero-sum</button><button type="button" data-v="either">Either</button>
+        </div>
+        <p class="note" id="gm-levelNote"></p>
+      </div>
+      <div class="genrow">
+        <span class="lbl">Your own problem</span>
+        <button type="button" class="btn" id="gm-ownBtn">Enter your own</button>
+      </div>
+    </section>
+
+    <section class="card mode-card" aria-labelledby="gm-modeHead">
+      <h2 id="gm-modeHead">Mode</h2>
+      <div class="seg full" role="group" aria-label="Mode" id="gm-modeSeg">
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="step">Step through</button><button type="button" data-v="answers">Show answers</button>
+      </div>
+      <p class="note" id="gm-modeNote"></p>
+      <p class="tally" id="gm-tally"></p>
+    </section>
+
+    <details class="card help">
+      <summary>Reading the matrix</summary>
+      <p>Row chooses a row and Column chooses a column. In a general game each cell shows two payoffs: Row’s first, Column’s second.</p>
+      <p>In a zero-sum game each cell shows only Row’s payoff. Column gets the negative of it, so Row wants the numbers high and Column wants them low.</p>
+      <p>Click a strategy name in the matrix editor to rename it (C, D, Stag, Hare…). Payoffs can be whole numbers, decimals or fractions. Press Enter or click Done to use it.</p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card" id="gm-editCard" aria-labelledby="gm-edHead">
+      <div class="ed-head">
+        <h2 id="gm-edHead">Your own game</h2>
+        <div class="ed-actions">
+          <button type="button" class="linkbtn" id="gm-addRow">+ Row strategy</button>
+          <button type="button" class="linkbtn" id="gm-addCol">+ Column strategy</button>
+        </div>
+      </div>
+      <div class="ed-wrap"><table class="ed" id="gm-editor"></table></div>
+      <div class="ed-actions">
+        <button type="button" class="btn primary" id="gm-buildBtn">Done</button>
+        <button type="button" class="btn" id="gm-cancelBtn" hidden>Cancel</button>
+        <span class="hint" id="gm-dirtyHint" hidden>Changed. Press Enter or click Done to use it.</span>
+      </div>
+      <div class="errmsg" id="gm-edErr" hidden></div>
+    </section>
+
+    <section class="summary" id="gm-summary" aria-live="polite"></section>
+
+    <section class="card work" id="gm-workCard">
+      <div class="scrollfade"><div class="tabs scrollx" role="tablist" id="gm-tabs">
+        <button type="button" role="tab" data-v="dominance">Dominance</button>
+        <button type="button" role="tab" data-v="nash">Nash equilibrium</button>
+        <button type="button" role="tab" data-v="pareto">Pareto</button>
+        <button type="button" role="tab" data-v="saddle">Saddle point</button>
+      </div></div>
+      <div class="work-head">
+        <span class="what" id="gm-what"></span>
+        <div class="actions">
+          <div class="stepper" id="gm-stepper" hidden>
+            <button class="btn small" type="button" id="gm-stFirst" aria-label="Back to start">⏮</button>
+            <button class="btn small" type="button" id="gm-stPrev" aria-label="Previous step">◀</button>
+            <span class="count" id="gm-stCount">0 / 0</span>
+            <button class="btn small primary" type="button" id="gm-stNext" aria-label="Next step">▶</button>
+            <button class="btn small" type="button" id="gm-stLast" aria-label="Show all steps">⏭</button>
+          </div>
+        </div>
+      </div>
+      <div class="hintbar" id="gm-hintbar" aria-live="polite"></div>
+      <div class="work-body" id="gm-workBody"></div>
+      <div class="checkbar sticky-phone dg-checkbar" id="gm-practiceBtns" hidden>
+        <button class="btn primary" type="button" id="gm-checkBtn">Check</button>
+        <button class="btn" type="button" id="gm-clearBtn">Clear</button>
+      </div>
+    </section>
+  </main>
+</div>
+</div>
+<script>
+
+window.initDec = () => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ================= Exact fractions =================
+  const gcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) [a, b] = [b, a % b]; return a; };
+  class Q {
+    constructor(n, d = 1n) {
+      if (d < 0n) { n = -n; d = -d; }
+      const g = gcd(n, d) || 1n;
+      this.n = n / g; this.d = d / g;
+    }
+    add(o) { return new Q(this.n * o.d + o.n * this.d, this.d * o.d); }
+    sub(o) { return new Q(this.n * o.d - o.n * this.d, this.d * o.d); }
+    mul(o) { return new Q(this.n * o.n, this.d * o.d); }
+    cmp(o) { const x = this.n * o.d - o.n * this.d; return x > 0n ? 1 : x < 0n ? -1 : 0; }
+    eq(o) { return this.cmp(o) === 0; }
+    num() { return Number(this.n) / Number(this.d); }
+  }
+  const ZERO = new Q(0n), ONE = new Q(1n);
+  // Parse "3", "-1", "1.5", "7/10". Returns {q, dec} or null.
+  function parseQ(raw) {
+    const s = String(raw).trim().replace(/[−–]/g, "-").replace(/^\+/, "");
+    let m;
+    if ((m = s.match(/^(-?)(\d+)$/))) return { q: new Q(BigInt(m[1] + m[2])), dec: false };
+    if ((m = s.match(/^(-?)(\d*)\.(\d+)$/))) {
+      const whole = m[2] || "0", frac = m[3];
+      return { q: new Q(BigInt(m[1] + whole + frac), 10n ** BigInt(frac.length)), dec: true };
+    }
+    if ((m = s.match(/^(-?\d+)\s*\/\s*(\d+)$/))) {
+      if (BigInt(m[2]) === 0n) return null;
+      return { q: new Q(BigInt(m[1]), BigInt(m[2])), dec: false };
+    }
+    return null;
+  }
+  const terminating = (d) => { while (d % 2n === 0n) d /= 2n; while (d % 5n === 0n) d /= 5n; return d === 1n; };
+  const minus = (s) => s.replace(/^-/, "−");
+  function decStr(q) {
+    // exact decimal for terminating fractions
+    let x = q.num().toFixed(8).replace(/0+$/, "").replace(/\.$/, "");
+    return minus(x);
+  }
+  // Compact display: integers as integers, terminating as decimals, others as fractions.
+  function fmt(q) {
+    if (q.d === 1n) return minus(q.n.toString());
+    if (terminating(q.d)) return decStr(q);
+    return minus(`${q.n}/${q.d}`);
+  }
+  // Probabilities are shown as fractions by default (7/10), or as decimals (0.7), whatever was typed.
+  let probFmt = "f";
+  const pText = (p) => (probFmt === "f" ? fracStr(p.q) : terminating(p.q.d) ? decStr(p.q) : `≈${p.q.num().toFixed(3)}`);
+  const fracStr = (q) => q.d === 1n ? minus(q.n.toString()) : minus(`${q.n}/${q.d}`);
+  // "19/10 = 1.9" or "1/3 ≈ 0.333" or "2"
+  function exactAndDec(q) {
+    if (q.d === 1n) return fracStr(q);
+    if (terminating(q.d)) return `${fracStr(q)} = ${decStr(q)}`;
+    return `${fracStr(q)} ≈ ${minus(q.num().toFixed(3))}`;
+  }
+  // Accept a typed answer: exact fractions/integers, or decimals within rounding to 2 places.
+  function accepts(raw, q) {
+    const p = parseQ(raw);
+    if (!p) return false;
+    if (p.q.eq(q)) return true;
+    return p.dec && Math.abs(p.q.num() - q.num()) <= 0.005 + 1e-12;
+  }
+
+  // ================= State =================
+  const SUB = "₀₁₂₃₄₅₆₇₈₉";
+  const sub = (n) => String(n).split("").map((d) => SUB[+d]).join("");
+  const MAX_N = 6;
+  const draft = {
+    opts: ["P", "M"],
+    states: ["R", "¬R"],
+    u: [["1", "4"], ["3", "2"]],
+    pState: ["7/10", "3/10"],
+    pCell: [["7/10", "3/10"], ["7/10", "3/10"]],
+    probMode: "none"
+  };
+  const state = {
+    mode: "practice", tab: "dominance", kind: "cardinal",
+    problem: null, built: null, // built = JSON of the draft that produced problem
+    step: { dominance: 0, maximin: 0, regret: 0, eu: 0 },
+    solved: {}, work: null, hint: null
+  };
+  const freshWork = () => ({
+    dominance: { pairs: {}, crossed: new Set(), marks: null },
+    maximin: { stars: new Set(), picks: new Set(), lex: new Set(), stage: 1, marks: null },
+    regret: { cells: {}, maxr: {}, picks: new Set(), marks: null },
+    eu: { vals: {}, picks: new Set(), marks: null }
+  });
+
+  // ================= Build / validate =================
+  function snapshot() { return JSON.stringify(draft); }
+  function build() {
+    const fromEditor = !!state.editing;
+    const errs = [];
+    const bad = new Set();
+    const R = draft.opts.length, C = draft.states.length;
+    const opts = draft.opts.map((n, r) => n.trim() || `A${sub(r + 1)}`);
+    const states = draft.states.map((n, c) => n.trim() || `S${sub(c + 1)}`);
+    const u = draft.u.map((row, r) => row.map((v, c) => {
+      const p = parseQ(v);
+      if (!p) { bad.add(`u${r},${c}`); errs.push(`<b>${esc(opts[r])}, ${esc(states[c])}:</b> “${esc(v.trim() || "blank")}” isn’t a number.`); return null; }
+      return { q: p.q, text: v.trim().replace(/^-/, "−") };
+    }));
+    const probOK = (v, key, where) => {
+      const p = parseQ(v);
+      if (!p || p.q.cmp(ZERO) < 0 || p.q.cmp(ONE) > 0) {
+        bad.add(key); errs.push(`<b>${where}:</b> “${esc(v.trim() || "blank")}” isn’t a probability between 0 and 1.`); return null;
+      }
+      return { q: p.q, text: v.trim() };
+    };
+    let pState = null, pCell = null;
+    if (draft.probMode === "states") {
+      pState = draft.pState.map((v, c) => probOK(v, `ps${c}`, `P(${states[c]})`));
+      if (pState.every(Boolean)) {
+        const s = pState.reduce((a, p) => a.add(p.q), ZERO);
+        if (!s.eq(ONE)) { errs.push(`<b>The state probabilities add up to ${fracStr(s)}</b>, not 1. The states form a partition, so they must add up to 1.`); draft.pState.forEach((_, c) => bad.add(`ps${c}`)); }
+      }
+    } else if (draft.probMode === "cells") {
+      pCell = draft.pCell.map((row, r) => row.map((v, c) => probOK(v, `pc${r},${c}`, `P(${states[c]} | ${opts[r]})`)));
+      pCell.forEach((row, r) => {
+        if (!row.every(Boolean)) return;
+        const s = row.reduce((a, p) => a.add(p.q), ZERO);
+        if (!s.eq(ONE)) { errs.push(`<b>Row ${esc(opts[r])}: the probabilities add up to ${fracStr(s)}</b>, not 1. Given each choice, exactly one state obtains.`); row.forEach((_, c) => bad.add(`pc${r},${c}`)); }
+      });
+    }
+    renderEditor(bad);
+    const box = $("edErr");
+    if (errs.length) {
+      box.innerHTML = errs.slice(0, 4).join("<br>") + (errs.length > 4 ? `<br>…and ${errs.length - 4} more.` : "");
+      box.hidden = false;
+      state.buildError = true;
+      setEditing(true);
+      updateDirty();
+      return;
+    }
+    box.hidden = true; state.buildError = false;
+    setEditing(false);
+    state.own = fromEditor || !!state.fromLink; state.fromLink = false;
+    state.problem = { opts, states, u: u.map((row) => row.map((x) => x.q)), uText: u.map((row) => row.map((x) => x.text)), probMode: draft.probMode, pState, pCell };
+    state.built = snapshot();
+    state.results = analyze(state.problem);
+    state.work = freshWork();
+    state.solved = {};
+    state.step = { dominance: 0, maximin: 0, regret: 0, eu: 0 };
+    state.hint = null;
+    render();
+    writeHash();
+  }
+
+  // ================= Analysis =================
+  function analyze(pb) {
+    const R = pb.opts.length, C = pb.states.length, u = pb.u;
+    // --- dominance
+    const pairs = [];
+    for (let i = 0; i < R; i++) for (let j = i + 1; j < R; j++) {
+      const cmp = u[i].map((x, c) => x.cmp(u[j][c]));
+      const gt = cmp.filter((x) => x > 0).length, lt = cmp.filter((x) => x < 0).length;
+      let rel;
+      if (gt === C) rel = "i-strong";
+      else if (lt === C) rel = "j-strong";
+      else if (lt === 0 && gt > 0) rel = "i-weak";
+      else if (gt === 0 && lt > 0) rel = "j-weak";
+      else if (gt === 0 && lt === 0) rel = "equiv";
+      else rel = "intrans";
+      pairs.push({ i, j, rel, cmp });
+    }
+    const dominated = new Set();
+    pairs.forEach((p) => {
+      if (p.rel === "i-strong" || p.rel === "i-weak") dominated.add(p.j);
+      if (p.rel === "j-strong" || p.rel === "j-weak") dominated.add(p.i);
+    });
+    const remaining = [...Array(R).keys()].filter((r) => !dominated.has(r));
+
+    // --- maximin / leximin
+    const mins = u.map((row) => row.reduce((m, x) => (x.cmp(m) < 0 ? x : m)));
+    const minCells = u.map((row, r) => new Set(row.map((x, c) => (x.eq(mins[r]) ? c : -1)).filter((c) => c >= 0)));
+    const best = mins.reduce((m, x) => (x.cmp(m) > 0 ? x : m));
+    const tied = mins.map((m, r) => (m.eq(best) ? r : -1)).filter((r) => r >= 0);
+    const sorted = u.map((row) => [...row].sort((a, b) => a.cmp(b)));
+    let lexWin = [...tied];
+    if (tied.length > 1) {
+      for (let k = 0; k < C && lexWin.length > 1; k++) {
+        const top = lexWin.map((r) => sorted[r][k]).reduce((m, x) => (x.cmp(m) > 0 ? x : m));
+        lexWin = lexWin.filter((r) => sorted[r][k].eq(top));
+      }
+    }
+    // --- minimax regret
+    const colMax = pb.states.map((_, c) => u.map((row) => row[c]).reduce((m, x) => (x.cmp(m) > 0 ? x : m)));
+    const regret = u.map((row) => row.map((x, c) => colMax[c].sub(x)));
+    const maxReg = regret.map((row) => row.reduce((m, x) => (x.cmp(m) > 0 ? x : m)));
+    const minMax = maxReg.reduce((m, x) => (x.cmp(m) < 0 ? x : m));
+    const regWin = maxReg.map((m, r) => (m.eq(minMax) ? r : -1)).filter((r) => r >= 0);
+    // --- expected utility
+    let eu = null, euWin = null;
+    if (pb.probMode !== "none") {
+      eu = u.map((row, r) => row.reduce((a, x, c) => a.add(x.mul(pb.probMode === "states" ? pb.pState[c].q : pb.pCell[r][c].q)), ZERO));
+      const top = eu.reduce((m, x) => (x.cmp(m) > 0 ? x : m));
+      euWin = eu.map((x, r) => (x.eq(top) ? r : -1)).filter((r) => r >= 0);
+    }
+    return { R, C, pairs, dominated, remaining, mins, minCells, best, tied, sorted, lexWin, colMax, regret, maxReg, minMax, regWin, eu, euWin };
+  }
+
+  // ================= Wording =================
+  const O = (r) => state.problem.opts[r];
+  const S = (c) => state.problem.states[c];
+  const list = (rs) => {
+    const names = rs.map(O);
+    return names.length <= 1 ? (names[0] || "") : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+  };
+  function relText(p) {
+    const a = O(p.i), b = O(p.j);
+    return {
+      "i-strong": `${a} strongly dominates ${b}`, "i-weak": `${a} weakly dominates ${b}`,
+      "j-strong": `${b} strongly dominates ${a}`, "j-weak": `${b} weakly dominates ${a}`,
+      equiv: `${a} and ${b} are equivalent`, intrans: `${a} and ${b} are intransitive`
+    }[p.rel];
+  }
+  function pairWhy(p) {
+    const u = state.problem.u;
+    return p.cmp.map((x, c) => `${S(c)}: ${fmt(u[p.i][c])} ${x > 0 ? ">" : x < 0 ? "<" : "="} ${fmt(u[p.j][c])}`).join(", ");
+  }
+  const vecStr = (v) => "(" + v.map(fmt).join(", ") + ")";
+  function euLine(r) {
+    const pb = state.problem, res = state.results;
+    const terms = pb.u[r].map((x, c) => {
+      const p = pb.probMode === "states" ? pb.pState[c] : pb.pCell[r][c];
+      const us = x.cmp(ZERO) < 0 ? `(${fmt(x)})` : fmt(x);
+      return `${us} × ${pText(p)}`;
+    });
+    return `${euName()}(${O(r)}) = ${terms.join(" + ")} = ${exactAndDec(res.eu[r])}`;
+  }
+  const euName = () => (state.problem && state.problem.probMode === "cells" ? "CEU" : "EU");
+
+  // Steps for Step through / Show answers: an array of captions (HTML).
+  function stepsFor(tab) {
+    const res = state.results, pb = state.problem;
+    const f = (s) => `<span class="f">${esc(s)}</span>`;
+    if (tab === "dominance") {
+      const out = res.pairs.map((p) => `${f(O(p.i))} vs ${f(O(p.j))}: ${esc(pairWhy(p))}. So ${esc(relText(p))}.`);
+      const dom = [...res.dominated].sort((a, b) => a - b);
+      out.push(dom.length
+        ? `Cross off ${esc(list(dom))}: ${dom.length > 1 ? "each is" : "it is"} dominated by another option. Dominance leaves ${esc(list(res.remaining))}.`
+        : `No option is dominated, so dominance rules nothing out.`);
+      return out;
+    }
+    if (tab === "maximin") {
+      const out = pb.opts.map((_, r) => {
+        const cs = [...res.minCells[r]].map(S);
+        return `${f(O(r))}’s worst outcome is ${esc(fmt(res.mins[r]))} (in ${esc(cs.join(" and "))}).`;
+      });
+      out.push(`The largest of the minima is ${esc(fmt(res.best))}. ${esc(list(res.tied))} ${res.tied.length > 1 ? "are tied as maximin-rational" : "is the maximin choice"}.`);
+      if (res.tied.length > 1) {
+        out.push(`Leximin breaks the tie by comparing the utilities sorted from worst to best: ${res.tied.map((r) => `${esc(O(r))} ${esc(vecStr(res.sorted[r]))}`).join(", ")}. ${res.lexWin.length > 1 ? `${esc(list(res.lexWin))} agree at every position, so leximin can’t choose between them.` : `Leximin picks ${esc(O(res.lexWin[0]))}.`}`);
+      }
+      return out;
+    }
+    if (tab === "regret") {
+      const out = pb.states.map((_, c) => {
+        const who = pb.u.map((row, r) => (row[c].eq(res.colMax[c]) ? r : -1)).filter((r) => r >= 0);
+        return `In ${f(S(c))}, the best any option does is ${esc(fmt(res.colMax[c]))} (${esc(list(who))}). Each regret in that column is ${esc(fmt(res.colMax[c]))} minus the utility.`;
+      });
+      pb.opts.forEach((_, r) => out.push(`${f(O(r))}’s largest regret is ${esc(fmt(res.maxReg[r]))}.`));
+      out.push(`The smallest of those maxima is ${esc(fmt(res.minMax))}, so minimax regret recommends ${esc(list(res.regWin))}.`);
+      return out;
+    }
+    if (tab === "eu") {
+      const out = pb.opts.map((_, r) => esc(euLine(r)));
+      out.push(`${esc(list(res.euWin))} ${res.euWin.length > 1 ? "tie for" : "has"} the highest ${euName() === "CEU" ? "conditional expected utility" : "expected utility"}, ${esc(fmt(res.eu[res.euWin[0]]))}.`);
+      return out;
+    }
+    return [];
+  }
+
+  function availability(tab) {
+    const pb = state.problem;
+    if ((tab === "regret" || tab === "eu") && state.kind === "ordinal")
+      return `<b>${tab === "regret" ? "Minimax regret" : "Expected utility"} needs cardinal utilities.</b> It ${tab === "regret" ? "subtracts utilities" : "multiplies utilities by probabilities and adds them up"}, and with ordinal utilities only the order means anything, so the result could change under an order-preserving relabeling. Switch Utilities to Cardinal to use it.`;
+    if (tab === "eu" && pb && pb.probMode === "none")
+      return `<b>Expected utility needs probabilities.</b> This is set up as a decision under ignorance. Choose “On states” (or “Depend on choice”) under Probabilities.`;
+    return null;
+  }
+
+  // ================= Verdicts =================
+  function verdictText(tab) {
+    const res = state.results;
+    if (tab === "dominance") return res.dominated.size ? `Leaves ${list(res.remaining)}` : "Rules out nothing";
+    if (tab === "maximin") return res.tied.length > 1 ? `${list(res.lexWin)} (leximin)` : list(res.tied);
+    if (tab === "regret") return list(res.regWin);
+    if (tab === "eu") return list(res.euWin);
+    return "";
+  }
+
+  // ================= Rendering =================
+  const TABS = ["dominance", "maximin", "regret", "eu"];
+  const TAB_LABEL = { dominance: "Dominance", maximin: "Maximin", regret: "Minimax regret", eu: "Expected utility" };
+
+  function render() {
+    syncControls();
+    renderSummary();
+    renderWork();
+    updateDirty();
+  }
+
+  function renderSummary() {
+    const el = $("summary");
+    if (!state.problem) { el.innerHTML = ""; return; }
+    el.innerHTML = TABS.map((t) => {
+      const label = t === "eu" ? (euName() === "CEU" ? "Cond. exp. utility" : "Expected utility") : TAB_LABEL[t];
+      const un = availability(t);
+      let v, cls = "v", solved = "";
+      if (un) { v = t === "eu" && state.kind !== "ordinal" ? "Needs probabilities" : "Needs cardinal utilities"; cls += " off"; }
+      else if (state.mode === "practice" && !state.solved[t]) { v = "Solve it to reveal"; cls += " off"; }
+      else { v = verdictText(t); if (state.mode === "practice") solved = " solved"; }
+      return `<div class="sum${solved}"><span class="k">${esc(label)}</span><span class="${cls}">${esc(v)}</span></div>`;
+    }).join("");
+  }
+
+  function header(extraHeads = [], { probs = true } = {}) {
+    const pb = state.problem;
+    const ths = pb.states.map((s, c) => {
+      const pr = probs && pb.probMode === "states" ? `<span class="pr">${esc(pText(pb.pState[c]))}</span>` : "";
+      return `<th scope="col" data-c="${c}">${esc(s)}${pr}</th>`;
+    }).join("");
+    return `<thead><tr><th></th>${ths}${extraHeads.map((h) => `<th class="extra">${h}</th>`).join("")}</tr></thead>`;
+  }
+  function utilCell(r, c, { cls = "", star = false, showProb = true } = {}) {
+    const pb = state.problem;
+    const pc = showProb && pb.probMode === "cells" ? `<span class="pc">${esc(pText(pb.pCell[r][c]))}</span>` : "";
+    const inner = pb.probMode === "cells" && showProb ? `<span class="uv">${esc(pb.uText[r][c])}${star ? '<sup class="st">*</sup>' : ""}</span>${pc}` : `${esc(pb.uText[r][c])}${star ? '<sup class="st">*</sup>' : ""}`;
+    return `<td class="${cls}${pb.probMode === "cells" && showProb ? " cellp" : ""}${star ? " star" : ""}" data-r="${r}" data-c="${c}">${inner}</td>`;
+  }
+  function rowHead(r, { pick = false, button = false } = {}) {
+    const name = esc(O(r)) + (pick ? '<sup class="st">**</sup>' : "");
+    return button
+      ? `<th class="rowh" scope="row"><button type="button" class="rowbtn" data-row="${r}" aria-pressed="${pick}">${name}</button></th>`
+      : `<th class="rowh" scope="row">${name}</th>`;
+  }
+
+  function renderWork() {
+    const tabsEl = $("tabs");
+    tabsEl.querySelectorAll("button").forEach((b) => {
+      b.setAttribute("aria-selected", String(b.dataset.v === state.tab));
+      b.classList.toggle("unavail", !!(state.problem && availability(b.dataset.v)));
+    });
+    $("euTab").textContent = state.problem && state.problem.probMode === "cells" ? "Conditional EU" : "Expected utility";
+    const body = $("workBody");
+    const pb = state.problem;
+    $("stepper").hidden = true; $("practiceBtns").hidden = true;
+    if (!pb) { body.innerHTML = `<p class="unavail-note">Fill in the matrix and press Build.</p>`; setHint("", ""); $("what").textContent = ""; return; }
+    const un = availability(state.tab);
+    if (un) { body.innerHTML = `<p class="unavail-note">${un}</p>`; setHint("", ""); $("what").textContent = ""; return; }
+
+    const steps = stepsFor(state.tab);
+    const N = steps.length;
+    const k = state.mode === "answers" ? N : state.mode === "step" ? state.step[state.tab] : 0;
+    if (state.mode === "step") {
+      $("stepper").hidden = false;
+      $("stCount").textContent = `${k} / ${N}`;
+      $("stFirst").disabled = $("stPrev").disabled = k === 0;
+      $("stNext").disabled = $("stLast").disabled = k >= N;
+    }
+    if (state.mode === "practice") $("practiceBtns").hidden = false;
+
+    const fn = { dominance: workDominance, maximin: workMaximin, regret: workRegret, eu: workEU }[state.tab];
+    body.innerHTML = fn(k, N);
+    if (state.mode === "answers") {
+      body.insertAdjacentHTML("beforeend", `<div class="block"><h3>Worked analysis</h3><ol class="worked">${steps.map((s) => `<li>${s}</li>`).join("")}</ol></div>`);
+    }
+    if (state.problem.probMode === "cells" && state.tab === "dominance") {
+      body.insertAdjacentHTML("beforeend", `<p class="caution">Careful: here the probabilities of the states depend on the choice (as with the lazy student in ch. 8), so an option can be dominated and still be the better choice. Compare with the Conditional EU tab.</p>`);
+    }
+
+    // hint / caption
+    if (state.mode === "step") {
+      setHint(k === 0 ? introStep(state.tab) : `<b>Step ${k}.</b> ${steps[k - 1]}`, "");
+    } else if (state.mode === "answers") {
+      setHint(`<b>${esc(TAB_LABEL[state.tab] === "Expected utility" ? (euName() === "CEU" ? "Conditional expected utility" : "Expected utility") : TAB_LABEL[state.tab])}:</b> ${esc(verdictText(state.tab))}.`, "");
+    } else {
+      if (state.hint && state.hint.tab === state.tab) setHint(state.hint.html, state.hint.cls);
+      else setHint(practiceIntro(state.tab), "");
+    }
+    $("what").textContent = whatText(state.tab);
+  }
+
+  function whatText(tab) {
+    return {
+      dominance: "Which options are dominated?",
+      maximin: "Maximize the minimum utility",
+      regret: "Minimize the maximum regret",
+      eu: euName() === "CEU" ? "Maximize conditional expected utility" : "Maximize expected utility"
+    }[tab];
+  }
+  function introStep(tab) {
+    return {
+      dominance: "Compare the options two at a time, state by state. Press ▶ (or →) to begin.",
+      maximin: "Find each option’s worst outcome, then choose the option whose worst is best. Press ▶ (or →).",
+      regret: "Build the regret table one state (column) at a time. Press ▶ (or →).",
+      eu: `Weigh each utility by the probability of its state${euName() === "CEU" ? " given the choice" : ""}, and add them up. Press ▶ (or →).`
+    }[tab];
+  }
+  function practiceIntro(tab) {
+    const w = state.work.maximin;
+    return {
+      dominance: "Classify each pair of options, tick “Dominated?” for every option that is dominated by some other option (ticking crosses it off), and press Check.",
+      maximin: w.stage === 2
+        ? "There’s a tie for maximin. Apply leximin: tick the option(s) leximin keeps, and press Check."
+        : "Click each option’s worst outcome to star it (star every cell that ties for worst). Then click the name(s) of the maximin choice to mark them ** and press Check.",
+      regret: "Fill in the regret table and each option’s largest regret. Then click the name(s) of the minimax-regret choice and press Check.",
+      eu: `Type each option’s ${euName() === "CEU" ? "conditional " : ""}expected utility (a fraction, or a decimal to two places). Then click the name(s) of the best option and press Check.`
+    }[tab];
+  }
+  function setHint(html, cls) { const h = $("hintbar"); h.innerHTML = html; h.className = "hintbar" + (cls ? " " + cls : ""); h.hidden = !html; }
+
+  // ---------- Dominance ----------
+  const REL_OPTS = (p) => [
+    ["", "— choose —"],
+    ["i-strong", `${O(p.i)} strongly dominates ${O(p.j)}`],
+    ["i-weak", `${O(p.i)} weakly dominates ${O(p.j)}`],
+    ["j-strong", `${O(p.j)} strongly dominates ${O(p.i)}`],
+    ["j-weak", `${O(p.j)} weakly dominates ${O(p.i)}`],
+    ["equiv", "Equivalent"],
+    ["intrans", "Intransitive"]
+  ];
+  function workDominance(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.dominance, practice = state.mode === "practice";
+    const P = res.pairs.length;
+    const showCross = !practice && k > P;
+    const cur = !practice && k >= 1 && k <= P ? res.pairs[k - 1] : null;
+    let rows = "";
+    pb.opts.forEach((_, r) => {
+      const crossed = practice ? w.crossed.has(r) : showCross && res.dominated.has(r);
+      const wrong = practice && w.marks && w.marks.rows.has(r);
+      const curRow = cur && (cur.i === r || cur.j === r);
+      const box = practice
+        ? `<td class="extra${wrong ? " wrong" : ""}"><input type="checkbox" class="crossbox" data-cross="${r}"${w.crossed.has(r) ? " checked" : ""} aria-label="${esc(O(r))} is dominated"></td>`
+        : "";
+      rows += `<tr class="${crossed ? "crossed" : ""}">${rowHead(r).replace('class="rowh"', `class="rowh${curRow ? " cur" : ""}"`)}${pb.states.map((_, c) => utilCell(r, c, { cls: curRow ? "curcol" : "" })).join("")}${box}</tr>`;
+    });
+    const table = `<div class="scroll"><table class="mx">${header(practice ? ["Dominated?"] : [])}<tbody>${rows}</tbody></table></div>`;
+    const pairsHtml = res.pairs.map((p, idx) => {
+      let v;
+      if (practice) {
+        const val = w.pairs[`${p.i},${p.j}`] || "";
+        const wrong = w.marks && w.marks.pairs.has(idx);
+        v = `<select data-pair="${p.i},${p.j}" class="${wrong ? "wrong" : ""}" aria-label="${esc(O(p.i))} versus ${esc(O(p.j))}">${REL_OPTS(p).map(([k2, t]) => `<option value="${k2}"${k2 === val ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+      } else {
+        const shown = idx < k;
+        v = `<span class="${shown ? "" : "hid"}">${esc(relText(p))} <span class="why">(${esc(pairWhy(p))})</span></span>`;
+      }
+      return `<span class="pn">${esc(O(p.i))}, ${esc(O(p.j))}</span><span class="pv">${v}</span>`;
+    }).join("");
+    return `<div class="block"><h3>Matrix</h3>${table}</div><div class="block"><h3>Pairs</h3><div class="pairs">${pairsHtml}</div></div>`;
+  }
+
+  // ---------- Maximin ----------
+  function workMaximin(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.maximin, practice = state.mode === "practice";
+    const R = res.R;
+    const tie = res.tied.length > 1;
+    let rows = "";
+    pb.opts.forEach((_, r) => {
+      const starRow = practice ? null : r < k;
+      const pick = practice ? w.picks.has(r) : k > R && res.tied.includes(r);
+      const curRow = !practice && k === r + 1;
+      const wrongRow = practice && w.marks && w.marks.rows.has(r);
+      const wrongPick = practice && w.marks && w.marks.picks.has(r);
+      const cells = pb.states.map((_, c) => {
+        const star = practice ? w.stars.has(`${r},${c}`) : starRow && res.minCells[r].has(c);
+        return utilCell(r, c, { cls: (practice ? "clickable" : "") + (curRow ? " curcol" : "") + (wrongRow ? " wrong" : ""), star });
+      }).join("");
+      const minCell = practice ? "" : `<td class="extra${r < k ? "" : " hid"}">${esc(fmt(res.mins[r]))}</td>`;
+      rows += `<tr class="${pick ? "pick" : ""}">${rowHead(r, { pick, button: practice }).replace('class="rowh"', `class="rowh${wrongPick ? " wrong" : ""}${curRow ? " cur" : ""}"`)}${cells}${minCell}</tr>`;
+    });
+    const table = `<div class="scroll"><table class="mx">${header(practice ? [] : ["min"])}<tbody>${rows}</tbody></table></div>`;
+    let lex = "";
+    const showLex = tie && (practice ? w.stage === 2 : k > R + 1);
+    if (showLex) {
+      const lines = res.tied.map((r) => {
+        const keep = practice
+          ? `<label><input type="checkbox" data-lex="${r}"${w.lex.has(r) ? " checked" : ""}${w.marks && w.marks.lex && w.marks.lex.has(r) ? ' class="wrong"' : ""}> keep</label>`
+          : (res.lexWin.includes(r) ? `<span class="keep">kept</span>` : "");
+        return `<div class="row"><b>${esc(O(r))}</b><span>${esc(vecStr(res.sorted[r]))}</span>${keep}</div>`;
+      }).join("");
+      lex = `<div class="block"><h3>Leximin: utilities sorted from worst to best</h3><div class="lex">${lines}</div></div>`;
+    }
+    return `<div class="block"><h3>Matrix</h3>${table}</div>${lex}`;
+  }
+
+  // ---------- Minimax regret ----------
+  function workRegret(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.regret, practice = state.mode === "practice";
+    const R = res.R, C = res.C;
+    const colsShown = practice ? C : Math.min(k, C);
+    const rowsShown = practice ? R : Math.max(0, Math.min(k - C, R));
+    const pickShown = !practice && k > C + R;
+    const curCol = !practice && k >= 1 && k <= C ? k - 1 : -1;
+    const curRow = !practice && k > C && k <= C + R ? k - C - 1 : -1;
+    // utility table (plain, with the column max highlighted when that column is revealed)
+    let urows = "";
+    pb.opts.forEach((_, r) => {
+      urows += `<tr>${rowHead(r)}${pb.states.map((_, c) => {
+        const isMax = !practice && c < colsShown && pb.u[r][c].eq(res.colMax[c]);
+        return utilCell(r, c, { cls: (isMax ? "star" : "") + (c === curCol ? " curcol" : ""), showProb: false });
+      }).join("")}</tr>`;
+    });
+    const utable = `<div class="scroll"><table class="mx">${header([], { probs: false })}<tbody>${urows}</tbody></table></div>`;
+    // regret table
+    const maxRow = `<tr class="maxrow"><th class="rowh">MAX</th>${pb.states.map((_, c) => `<td class="${practice || c < colsShown ? "" : "hid"}${c === curCol ? " cur" : ""}">${esc(fmt(res.colMax[c]))}</td>`).join("")}<td class="extra"></td></tr>`;
+    let rrows = "";
+    pb.opts.forEach((_, r) => {
+      const pick = practice ? w.picks.has(r) : pickShown && res.regWin.includes(r);
+      const wrongPick = practice && w.marks && w.marks.picks.has(r);
+      const cells = pb.states.map((_, c) => {
+        if (practice) {
+          const key = `${r},${c}`;
+          const wrong = w.marks && w.marks.cells.has(key);
+          return `<td><input class="ans${wrong ? " wrong" : ""}" data-rc="${key}" value="${esc(w.cells[key] || "")}" inputmode="decimal" aria-label="Regret of ${esc(O(r))} in ${esc(S(c))}"></td>`;
+        }
+        const star = r < rowsShown && res.regret[r][c].eq(res.maxReg[r]);
+        return `<td class="${c < colsShown ? "" : "hid"}${c === curCol ? " curcol" : ""}${star ? " star" : ""}">${esc(fmt(res.regret[r][c]))}${star ? '<sup class="st">*</sup>' : ""}</td>`;
+      }).join("");
+      let mx;
+      if (practice) {
+        const wrong = w.marks && w.marks.maxr.has(r);
+        mx = `<td class="extra"><input class="ans${wrong ? " wrong" : ""}" data-maxr="${r}" value="${esc(w.maxr[r] || "")}" inputmode="decimal" aria-label="Largest regret of ${esc(O(r))}"></td>`;
+      } else mx = `<td class="extra${r < rowsShown ? "" : " hid"}${r === curRow ? " cur" : ""}">${esc(fmt(res.maxReg[r]))}</td>`;
+      rrows += `<tr class="${pick ? "pick" : ""}">${rowHead(r, { pick, button: practice }).replace('class="rowh"', `class="rowh${wrongPick ? " wrong" : ""}"`)}${cells}${mx}</tr>`;
+    });
+    const rtable = `<div class="scroll"><table class="mx">${header(["max regret"], { probs: false })}<tbody>${maxRow}${rrows}</tbody></table></div>`;
+    return `<div class="block"><h3>Utilities</h3>${utable}</div><div class="block"><h3>Regrets (MAX of the column minus the utility)</h3>${rtable}</div>`;
+  }
+
+  // ---------- Expected utility ----------
+  function workEU(k, N) {
+    const res = state.results, pb = state.problem, w = state.work.eu, practice = state.mode === "practice";
+    const R = res.R;
+    const pickShown = !practice && k > R;
+    let rows = "";
+    pb.opts.forEach((_, r) => {
+      const pick = practice ? w.picks.has(r) : pickShown && res.euWin.includes(r);
+      const wrongPick = practice && w.marks && w.marks.picks.has(r);
+      const curRow = !practice && k === r + 1;
+      let ev;
+      if (practice) {
+        const wrong = w.marks && w.marks.vals.has(r);
+        ev = `<td class="extra"><input class="ans${wrong ? " wrong" : ""}" data-eu="${r}" value="${esc(w.vals[r] || "")}" inputmode="decimal" aria-label="${euName()} of ${esc(O(r))}"></td>`;
+      } else ev = `<td class="extra${r < k ? "" : " hid"}${curRow ? " cur" : ""}">${esc(fmt(res.eu[r]))}</td>`;
+      rows += `<tr class="${pick ? "pick" : ""}">${rowHead(r, { pick, button: practice }).replace('class="rowh"', `class="rowh${wrongPick ? " wrong" : ""}${curRow ? " cur" : ""}"`)}${pb.states.map((_, c) => utilCell(r, c, { cls: curRow ? "curcol" : "" })).join("")}${ev}</tr>`;
+    });
+    const table = `<div class="scroll"><table class="mx">${header([euName()])}<tbody>${rows}</tbody></table></div>`;
+    const arith = practice ? "" : `<div class="block"><h3>Arithmetic</h3><div class="arith scroll">${pb.opts.map((_, r) => `<span class="${r < k ? "" : "hid"}">${esc(euLine(r))}</span>`).join("")}</div></div>`;
+    return `<div class="block"><h3>Matrix</h3>${table}</div>${arith}`;
+  }
+
+  // ================= Practice: input + checking =================
+  const body = $("workBody");
+  body.addEventListener("click", (e) => {
+    if (state.mode !== "practice" || !state.problem) return;
+    const w = state.work;
+    const rb = e.target.closest("button.rowbtn");
+    if (rb) {
+      const r = +rb.dataset.row;
+      const set = state.tab === "dominance" ? w.dominance.crossed : w[state.tab].picks;
+      set.has(r) ? set.delete(r) : set.add(r);
+      clearMarks(); renderWork(); focusRow(r); return;
+    }
+    const td = e.target.closest("td.clickable");
+    if (td && state.tab === "maximin" && w.maximin.stage === 1) {
+      const key = `${td.dataset.r},${td.dataset.c}`;
+      w.maximin.stars.has(key) ? w.maximin.stars.delete(key) : w.maximin.stars.add(key);
+      clearMarks(); renderWork();
+    }
+  });
+  const focusRow = (r) => { const b = body.querySelector(`button.rowbtn[data-row="${r}"]`); if (b) b.focus(); };
+  body.addEventListener("change", (e) => {
+    if (state.mode !== "practice") return;
+    const t = e.target;
+    if (t.dataset.pair !== undefined) { state.work.dominance.pairs[t.dataset.pair] = t.value; t.classList.remove("wrong"); }
+    if (t.dataset.cross !== undefined) {
+      const s = state.work.dominance.crossed, r = +t.dataset.cross;
+      t.checked ? s.add(r) : s.delete(r);
+      state.work.dominance.marks = null; state.hint = null; renderWork();
+      const again = body.querySelector(`input[data-cross="${r}"]`); if (again) again.focus();
+      return;
+    }
+    if (t.dataset.lex !== undefined) { const s = state.work.maximin.lex; t.checked ? s.add(+t.dataset.lex) : s.delete(+t.dataset.lex); t.classList.remove("wrong"); }
+  });
+  body.addEventListener("input", (e) => {
+    const t = e.target;
+    if (t.dataset.rc !== undefined) state.work.regret.cells[t.dataset.rc] = t.value;
+    else if (t.dataset.maxr !== undefined) state.work.regret.maxr[t.dataset.maxr] = t.value;
+    else if (t.dataset.eu !== undefined) state.work.eu.vals[t.dataset.eu] = t.value;
+    else return;
+    t.classList.remove("wrong");
+  });
+  body.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.classList.contains("ans")) { e.preventDefault(); check(); }
+  });
+  function clearMarks() { const w = state.work[state.tab]; w.marks = null; state.hint = null; }
+
+  const setEq = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
+  function check() {
+    const res = state.results, w = state.work, tab = state.tab;
+    let right = 0, total = 0, done = false;
+    const issues = [];
+    if (tab === "dominance") {
+      const d = w.dominance, marks = { pairs: new Set(), rows: new Set() };
+      res.pairs.forEach((p, idx) => { total++; if (d.pairs[`${p.i},${p.j}`] === p.rel) right++; else { marks.pairs.add(idx); issues.push(`the classification of ${O(p.i)}, ${O(p.j)}`); } });
+      state.problem.opts.forEach((_, r) => { total++; if (d.crossed.has(r) === res.dominated.has(r)) right++; else { marks.rows.add(r); issues.push(`whether ${O(r)} is dominated`); } });
+      d.marks = marks; done = right === total;
+    } else if (tab === "maximin") {
+      const m = w.maximin, marks = { rows: new Set(), picks: new Set(), lex: new Set() };
+      if (m.stage === 1) {
+        state.problem.opts.forEach((_, r) => {
+          total++;
+          const mine = new Set([...m.stars].filter((k) => k.startsWith(r + ",")).map((k) => +k.split(",")[1]));
+          if (setEq(mine, res.minCells[r])) right++; else { marks.rows.add(r); issues.push(`the starred worst outcome(s) of ${O(r)}`); }
+        });
+        total++;
+        const pk = new Set(res.tied);
+        if (setEq(m.picks, pk)) right++; else { issues.push("the ** mark(s) on the chosen option(s)"); state.problem.opts.forEach((_, r) => { if (m.picks.has(r) !== pk.has(r)) marks.picks.add(r); }); }
+        m.marks = marks;
+        if (right === total && res.tied.length > 1) { m.stage = 2; m.marks = null; state.hint = { tab, cls: "good", html: `<b>Correct:</b> ${esc(list(res.tied))} tie at ${esc(fmt(res.best))}. Now apply leximin: compare the sorted utilities below, tick the option(s) leximin keeps, and press Check.` }; renderWork(); return; }
+        done = right === total;
+      } else {
+        const want = new Set(res.lexWin);
+        res.tied.forEach((r) => { total++; if (m.lex.has(r) === want.has(r)) right++; else { marks.lex.add(r); issues.push(`whether leximin keeps ${O(r)}`); } });
+        m.marks = marks; done = right === total;
+      }
+    } else if (tab === "regret") {
+      const g = w.regret, marks = { cells: new Set(), maxr: new Set(), picks: new Set() };
+      res.regret.forEach((row, r) => row.forEach((q, c) => { total++; const key = `${r},${c}`; if (accepts(g.cells[key] || "", q)) right++; else { marks.cells.add(key); issues.push(`the regret for ${O(r)} in ${S(c)}`); } }));
+      res.maxReg.forEach((q, r) => { total++; if (accepts(g.maxr[r] || "", q)) right++; else { marks.maxr.add(r); issues.push(`the largest regret of ${O(r)}`); } });
+      total++;
+      const pk = new Set(res.regWin);
+      if (setEq(g.picks, pk)) right++; else { issues.push("the ** mark(s) on the chosen option(s)"); state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); }); }
+      g.marks = marks; done = right === total;
+    } else if (tab === "eu") {
+      const g = w.eu, marks = { vals: new Set(), picks: new Set() };
+      res.eu.forEach((q, r) => { total++; if (accepts(g.vals[r] || "", q)) right++; else { marks.vals.add(r); issues.push(`the ${euName()} of ${O(r)}`); } });
+      total++;
+      const pk = new Set(res.euWin);
+      if (setEq(g.picks, pk)) right++; else { issues.push("the ** mark(s) on the chosen option(s)"); state.problem.opts.forEach((_, r) => { if (g.picks.has(r) !== pk.has(r)) marks.picks.add(r); }); }
+      g.marks = marks; done = right === total;
+    }
+    if (done) {
+      state.solved[tab] = true;
+      let verdict;
+      if (tab === "dominance") {
+        const dom = [...res.dominated].sort((a, b) => a - b);
+        verdict = dom.length ? `dominance rules out ${list(dom)} and leaves ${list(res.remaining)}` : "no option is dominated, so dominance rules nothing out";
+      } else if (tab === "maximin") {
+        verdict = res.tied.length > 1 ? `${list(res.tied)} tie for maximin, and leximin keeps ${list(res.lexWin)}` : `maximin recommends ${list(res.tied)}`;
+      } else if (tab === "regret") verdict = `minimax regret recommends ${list(res.regWin)}`;
+      else verdict = `${euName() === "CEU" ? "conditional expected utility" : "expected utility"} recommends ${list(res.euWin)}`;
+      state.hint = { tab, cls: "good", html: `<b>Correct:</b> ${esc(verdict)}.` };
+    } else {
+      const shown = issues.slice(0, 4).join("; ") + (issues.length > 4 ? `; and ${issues.length - 4} more` : "");
+      state.hint = { tab, cls: "bad", html: `<b>Not quite</b> (marked in red): ${esc(shown)}.` };
+    }
+    render();
+  }
+  $("checkBtn").onclick = check;
+  $("clearBtn").onclick = () => {
+    if (!state.work) return;
+    const fresh = freshWork();
+    state.work[state.tab] = fresh[state.tab];
+    state.solved[state.tab] = false; state.hint = null;
+    render();
+  };
+
+  // ================= Step through =================
+  const go = (s) => {
+    if (!state.problem || availability(state.tab)) return;
+    const N = stepsFor(state.tab).length;
+    state.step[state.tab] = Math.max(0, Math.min(N, s));
+    renderWork();
+  };
+  $("stFirst").onclick = () => go(0);
+  $("stPrev").onclick = () => go(state.step[state.tab] - 1);
+  $("stNext").onclick = () => go(state.step[state.tab] + 1);
+  $("stLast").onclick = () => go(Infinity);
+  window.addEventListener("keydown", (e) => {
+    if (!window.LL || LL.active !== "decisions" || state.mode !== "step" || e.metaKey || e.ctrlKey || e.altKey) return;
+    const a = document.activeElement;
+    if (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)) return;
+    const s = state.step[state.tab];
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); go(s + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(s - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); go(Infinity); }
+  });
+
+  // ================= Editor =================
+  function renderEditor(bad = new Set()) {
+    const R = draft.opts.length, C = draft.states.length, pm = draft.probMode;
+    const cls = (k) => (bad.has(k) ? " err" : "");
+    let h = `<thead><tr><th class="corner"></th>`;
+    draft.states.forEach((s, c) => {
+      h += `<th><div class="cellbox"><input class="name" data-k="s" data-c="${c}" value="${esc(s)}" aria-label="Name of state ${c + 1}" placeholder="S${sub(c + 1)}">${C > 1 ? `<button type="button" class="rm" data-rmstate="${c}" aria-label="Remove state ${esc(s)}">×</button>` : ""}</div></th>`;
+    });
+    h += `<th></th></tr>`;
+    if (pm === "states") {
+      h += `<tr><th class="plabel">P(state)</th>${draft.pState.map((p, c) => `<th><input class="prob${cls(`ps${c}`)}" data-k="ps" data-c="${c}" value="${esc(p)}" aria-label="Probability of ${esc(draft.states[c])}" inputmode="decimal"></th>`).join("")}<th></th></tr>`;
+    }
+    h += `</thead><tbody>`;
+    draft.opts.forEach((o, r) => {
+      h += `<tr><th><input class="name" data-k="o" data-r="${r}" value="${esc(o)}" aria-label="Name of option ${r + 1}" placeholder="A${sub(r + 1)}"></th>`;
+      draft.states.forEach((_, c) => {
+        const uIn = `<input class="${cls(`u${r},${c}`).trim()}" data-k="u" data-r="${r}" data-c="${c}" value="${esc(draft.u[r][c])}" aria-label="Utility of ${esc(o)} in ${esc(draft.states[c])}" inputmode="decimal">`;
+        const pIn = pm === "cells" ? `<input class="prob${cls(`pc${r},${c}`)}" data-k="pc" data-r="${r}" data-c="${c}" value="${esc(draft.pCell[r][c])}" aria-label="Probability of ${esc(draft.states[c])} given ${esc(o)}" inputmode="decimal">` : "";
+        h += `<td><div class="cellbox">${uIn}${pIn}</div></td>`;
+      });
+      h += `<td>${R > 2 ? `<button type="button" class="rm" data-rmopt="${r}" aria-label="Remove option ${esc(o)}">×</button>` : ""}</td></tr>`;
+    });
+    h += `</tbody>`;
+    $("editor").innerHTML = h;
+    $("addOpt").disabled = R >= MAX_N; $("addState").disabled = C >= MAX_N;
+  }
+  const ed = $("editor");
+  ed.addEventListener("input", (e) => {
+    const t = e.target, k = t.dataset.k; if (!k) return;
+    if (k === "s" || k === "o") {
+      const v = t.value.replace(/~/g, "¬");
+      if (v !== t.value) { const p = t.selectionStart; t.value = v; t.setSelectionRange(p, p); }
+    }
+    const r = +t.dataset.r, c = +t.dataset.c;
+    if (k === "s") draft.states[c] = t.value;
+    else if (k === "o") draft.opts[r] = t.value;
+    else if (k === "u") draft.u[r][c] = t.value;
+    else if (k === "ps") draft.pState[c] = t.value;
+    else if (k === "pc") draft.pCell[r][c] = t.value;
+    t.classList.remove("err");
+    updateDirty();
+  });
+  ed.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); build(); } });
+  ed.addEventListener("click", (e) => {
+    const b = e.target.closest("button.rm"); if (!b) return;
+    if (b.dataset.rmopt !== undefined) {
+      const r = +b.dataset.rmopt;
+      draft.opts.splice(r, 1); draft.u.splice(r, 1); draft.pCell.splice(r, 1);
+    } else {
+      const c = +b.dataset.rmstate;
+      draft.states.splice(c, 1); draft.pState.splice(c, 1);
+      draft.u.forEach((row) => row.splice(c, 1)); draft.pCell.forEach((row) => row.splice(c, 1));
+    }
+    renderEditor(); updateDirty();
+  });
+  $("addOpt").onclick = () => {
+    if (draft.opts.length >= MAX_N) return;
+    const n = draft.opts.length + 1;
+    draft.opts.push(`A${sub(n)}`);
+    draft.u.push(draft.states.map(() => ""));
+    draft.pCell.push(draft.states.map(() => ""));
+    renderEditor(); updateDirty();
+    const inp = ed.querySelector(`input[data-k="u"][data-r="${n - 1}"][data-c="0"]`); if (inp) inp.focus();
+  };
+  $("addState").onclick = () => {
+    if (draft.states.length >= MAX_N) return;
+    const n = draft.states.length + 1;
+    draft.states.push(`S${sub(n)}`);
+    draft.pState.push("");
+    draft.u.forEach((row) => row.push(""));
+    draft.pCell.forEach((row) => row.push(""));
+    renderEditor(); updateDirty();
+    const inp = ed.querySelector(`input[data-k="u"][data-r="0"][data-c="${n - 1}"]`); if (inp) inp.focus();
+  };
+  $("buildBtn").onclick = build;
+
+  // On narrow screens the setup controls sit below the matrix, so bring the matrix into view
+  // when one of them changes it.
+  const narrow = window.matchMedia("(max-width: 979px)");
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  function showStage() {
+    if (narrow.matches) document.querySelector(".stage").scrollIntoView({ behavior: calm.matches ? "auto" : "smooth", block: "start" });
+  }
+
+  // One matrix on screen at a time: the entry grid while editing, the working matrix otherwise.
+  function setEditing(on) {
+    state.editing = on;
+    $("editCard").hidden = !on;
+    $("workCard").hidden = on;
+    $("summary").hidden = on;
+    $("cancelBtn").hidden = !state.problem;
+  }
+  $("ownBtn").onclick = () => {
+    setEditing(true);
+    const first = ed.querySelector('input[data-k="u"]'); if (first) first.focus();
+  };
+  $("cancelBtn").onclick = () => {
+    if (!state.built) return;
+    Object.assign(draft, JSON.parse(state.built));
+    $("edErr").hidden = true; state.buildError = false;
+    renderEditor(); setEditing(false); render();
+  };
+
+  function updateDirty() {
+    const dirty = state.built !== snapshot();
+    $("dirtyHint").hidden = !dirty;
+    const stale = dirty || state.buildError;
+    $("workBody").classList.toggle("stale", !!stale);
+    $("summary").style.opacity = stale ? "0.35" : "";
+  }
+
+  // ================= Setup + mode controls =================
+  function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
+  function syncControls() {
+    segSync("probSeg", draft.probMode); segSync("kindSeg", state.kind); segSync("modeSeg", state.mode);
+    segSync("pfSeg", probFmt); $("pfSeg").hidden = draft.probMode === "none";
+    $("probNote").textContent = {
+      none: "Decision under ignorance: no probabilities for the states.",
+      states: "Decision under risk: each state has a probability, the same whatever you choose.",
+      cells: "The states’ probabilities depend on the choice: each cell gets P(state | choice), and each row adds up to 1."
+    }[draft.probMode];
+    $("kindNote").textContent = state.kind === "ordinal"
+      ? "Only the order of the numbers matters. Dominance and maximin work; minimax regret and expected utility don’t."
+      : "Differences between utilities are meaningful (an interval scale), so every rule applies.";
+    $("modeNote").textContent = {
+      practice: "Work through each rule yourself and press Check. Each rule’s verdict appears in the summary once you get it right.",
+      answers: "The full worked analysis for the selected rule.",
+      step: "Reveal the procedure one step at a time with ▶ or the arrow keys."
+    }[state.mode];
+  }
+  $("probSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    draft.probMode = b.dataset.v;
+    if (draft.probMode === "cells") draft.pCell = draft.pCell.map((row) => row.map((v, c) => (v.trim() ? v : draft.pState[c] || "")));
+    syncControls(); syncLevel();
+    if (!state.own && !state.editing) { newProblem(); return; }
+    renderEditor(); updateDirty();
+    if (draft.probMode !== "none" || state.built !== snapshot()) { setEditing(true); showStage(); }
+  });
+  $("pfSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    probFmt = b.dataset.v; store.set("dl-pf", probFmt); render(); writeHash();
+  });
+  $("kindSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.kind = b.dataset.v; render(); writeHash(); });
+  $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.v; state.hint = null; render(); writeHash(); });
+  $("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.tab = b.dataset.v; renderWork(); writeHash(); });
+
+  // size + theme
+  function applySize(v) { document.documentElement.style.setProperty("--tsize", v + "px"); segSync("sizeSeg", v); store.set("dl-size", v); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  applySize(store.get("dl-size") || "18");
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", v);
+    segSync("themeSeg", v); store.set("ttb-theme2", v);
+  }
+  $("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  const savedTheme = store.get("ttb-theme2");
+  if (savedTheme && savedTheme !== "auto") applyTheme(savedTheme); else segSync("themeSeg", "auto");
+
+  // ================= Random problems =================
+  // Easy: 2–3 options × 2–3 states, no probabilities. Medium: 3 × 2–3, probabilities on the states (tenths).
+  // Hard: 3–4 × 3–4, negative utilities, probabilities as fractions, sometimes depending on the choice.
+  // Medium and hard problems usually make the rules disagree, and often include a dominated option;
+  // hard ones often need leximin to break a maximin tie.
+  const LEVEL_NOTE = {
+    easy: "2–3 options and states, no probabilities.",
+    medium: "3 options, probabilities on the states; the rules often disagree.",
+    hard: "3–4 options and states, negative utilities, fractions, sometimes probabilities that depend on the choice."
+  };
+  const ri = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = ri(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  // n positive integers adding up to total
+  function composition(total, n) {
+    const cuts = shuffle([...Array(total - 1).keys()].map((k) => k + 1)).slice(0, n - 1).sort((a, b) => a - b);
+    return [...cuts, total].map((c, i) => c - (i ? cuts[i - 1] : 0));
+  }
+  const gcdN = (a, b) => (b ? gcdN(b, a % b) : a);
+  const fracText = (k, d) => { const g = gcdN(k, d); return d / g === 1 ? String(k / g) : `${k / g}/${d / g}`; };
+  function probRow(C, level) {
+    if (level !== "hard") return composition(10, C).map((k) => (probFmt === "f" ? fracText(k, 10) : String(k / 10)));
+    const d = C === 4 ? [4, 5, 10][ri(0, 2)] : [4, 5, 10][ri(0, 2)];
+    if (d < C) return composition(10, C).map((k) => fracText(k, 10));
+    return composition(d, C).map((k) => fracText(k, d));
+  }
+  function randomProblem(level, probMode) {
+    const R = level === "easy" ? ri(2, 3) : level === "medium" ? 3 : ri(3, 4);
+    const C = level === "easy" ? ri(2, 3) : level === "medium" ? ri(2, 3) : ri(3, 4);
+    const [lo, hi] = level === "easy" ? [0, 9] : level === "medium" ? [0, 10] : [-5, 12];
+    const wantDominated = level !== "easy" && Math.random() < 0.5;
+    const wantDisagree = level !== "easy" && Math.random() < 0.7;
+    const wantTie = level === "hard" && Math.random() < 0.5;
+    let fallback = null;
+    for (let tries = 0; tries < 3000; tries++) {
+      const u = Array.from({ length: R }, () => Array.from({ length: C }, () => ri(lo, hi)));
+      if (wantDominated) {
+        // make one option (weakly) dominated by another
+        const [i, j] = shuffle([...Array(R).keys()]);
+        u[j] = u[i].map((x) => Math.max(lo, x - ri(0, 3)));
+      }
+      if (new Set(u.map((r) => r.join())).size < R) continue;           // no two identical options
+      const pState = probMode === "states" ? probRow(C, level) : Array(C).fill("");
+      const pCell = probMode === "cells" ? u.map(() => probRow(C, level)) : u.map(() => [...pState]);
+      const pb = {
+        opts: u.map((_, r) => r), states: Array(C).fill(0), probMode,
+        u: u.map((row) => row.map((x) => new Q(BigInt(x)))),
+        pState: probMode === "states" ? pState.map((t) => ({ q: parseQ(t).q, text: t })) : null,
+        pCell: probMode === "cells" ? pCell.map((row) => row.map((t) => ({ q: parseQ(t).q, text: t }))) : null
+      };
+      const res = analyze(pb);
+      const cand = { u, pState, pCell, probMode };
+      if (!fallback) fallback = cand;
+      if (wantDominated !== (res.dominated.size > 0)) continue;
+      if (wantTie !== (res.tied.length > 1)) continue;
+      if (res.tied.length > 1 && res.lexWin.length > 1) continue;         // leximin should settle a tie
+      const winners = [res.tied.length > 1 ? res.lexWin : res.tied, res.regWin, res.euWin].filter(Boolean).map((w) => w.join());
+      if (wantDisagree && new Set(winners).size < 2) continue;
+      return cand;
+    }
+    return fallback;
+  }
+  let level = ["easy", "medium", "hard"].includes(store.get("dl-level")) ? store.get("dl-level") : "medium";
+  // what New problem will make, given the level and the Setup choices
+  function preview() {
+    const size = { easy: "2–3 options and 2–3 states", medium: "3 options and 2–3 states", hard: "3–4 options and 3–4 states, negative utilities" }[level];
+    const pm = draft.probMode;
+    const pr = pm === "none" ? "no probabilities" : (pm === "states" ? "probabilities on the states" : "probabilities that depend on the choice") + (level === "hard" ? ", as fractions" : "");
+    return `New problem: ${size}, ${pr}${level === "easy" ? "" : "; the rules often disagree"}.`;
+  }
+  function syncLevel() { segSync("levelSeg", level); $("levelNote").textContent = preview(); }
+  $("levelSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    level = b.dataset.v; store.set("dl-level", level); syncLevel();
+  });
+  $("newBtn").onclick = () => newProblem();
+  function newProblem() {
+    const p = randomProblem(level, draft.probMode);
+    const R = p.u.length, C = p.u[0].length;
+    Object.assign(draft, {
+      opts: Array.from({ length: R }, (_, r) => `A${sub(r + 1)}`),
+      states: Array.from({ length: C }, (_, c) => `S${sub(c + 1)}`),
+      u: p.u.map((row) => row.map(String)),
+      pState: p.pState, pCell: p.pCell, probMode: p.probMode
+    });
+    renderEditor(); build(); showStage();
+  }
+  syncLevel();
+
+  // ================= URL state =================
+  // The address bar always holds the built problem, so a link (or a reload) reopens it exactly:
+  // #o=P&o=M&s=R&s=¬R&u=1,4&u=3,2&pm=states&p=7/10,3/10&k=cardinal&m=practice&t=eu
+  function writeHash() {
+    if (!state.problem || !state.built || !window.LL || LL.active !== "decisions") return;
+    const d = JSON.parse(state.built);
+    const p = new URLSearchParams();
+    p.set("tab", "decisions");
+    d.opts.forEach((o) => p.append("o", o));
+    d.states.forEach((x) => p.append("s", x));
+    d.u.forEach((row) => p.append("u", row.map((v) => v.trim()).join(",")));
+    p.set("pm", d.probMode);
+    if (d.probMode === "states") p.set("p", d.pState.map((v) => v.trim()).join(","));
+    if (d.probMode === "cells") d.pCell.forEach((row) => p.append("pc", row.map((v) => v.trim()).join(",")));
+    p.set("k", state.kind); p.set("m", state.mode); p.set("t", state.tab);
+    if (probFmt === "d") p.set("pf", "d");
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (!location.hash.includes("=") || !window.LL || LL.tabOfHash() !== "decisions") return false;
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (["cardinal", "ordinal"].includes(p.get("k"))) state.kind = p.get("k");
+    if (p.get("pf") === "d") probFmt = "d";
+    if (["practice", "answers", "step"].includes(p.get("m"))) state.mode = p.get("m");
+    if (TABS.includes(p.get("t"))) state.tab = p.get("t");
+    const opts = p.getAll("o"), states = p.getAll("s");
+    const R = opts.length, C = states.length;
+    if (R < 2 || C < 1 || R > MAX_N || C > MAX_N) return false;
+    const grid = (rows) => rows.length === R && rows.every((r) => r.length === C);
+    const u = p.getAll("u").map((row) => row.split(","));
+    if (!grid(u)) return false;
+    const pm = ["none", "states", "cells"].includes(p.get("pm")) ? p.get("pm") : "none";
+    let pState = (p.get("p") || "").split(",");
+    if (pState.length !== C) pState = states.map(() => "");
+    let pCell = p.getAll("pc").map((row) => row.split(","));
+    if (!grid(pCell)) pCell = opts.map(() => [...pState]);
+    Object.assign(draft, { opts, states, u, pState, pCell, probMode: pm });
+    state.fromLink = true; // a problem from a link counts as the student's own: Setup changes don't replace it
+    return true;
+  }
+  window.addEventListener("hashchange", () => { if (readHash()) { renderEditor(); build(); } });
+
+  probFmt = store.get("dl-pf") === "d" ? "d" : "f";
+  window.LL_hooks.decisions = { writeHash };
+  readHash();
+  renderEditor();
+  build();
+};
+
+
+</script>
+<script>
+window.initGames = () => {
+  "use strict";
+  const $ = (id) => document.getElementById("gm-" + id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ================= Exact numbers =================
+  const gcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) [a, b] = [b, a % b]; return a; };
+  class Q {
+    constructor(n, d = 1n) {
+      if (d < 0n) { n = -n; d = -d; }
+      const g = gcd(n, d) || 1n;
+      this.n = n / g; this.d = d / g;
+    }
+    neg() { return new Q(-this.n, this.d); }
+    cmp(o) { const x = this.n * o.d - o.n * this.d; return x > 0n ? 1 : x < 0n ? -1 : 0; }
+    eq(o) { return this.cmp(o) === 0; }
+    num() { return Number(this.n) / Number(this.d); }
+  }
+  function parseQ(raw) {
+    const s = String(raw).trim().replace(/[−–]/g, "-").replace(/^\+/, "");
+    let m;
+    if ((m = s.match(/^(-?)(\d+)$/))) return { q: new Q(BigInt(m[1] + m[2])), dec: false };
+    if ((m = s.match(/^(-?)(\d*)\.(\d+)$/))) return { q: new Q(BigInt(m[1] + (m[2] || "0") + m[3]), 10n ** BigInt(m[3].length)), dec: true };
+    if ((m = s.match(/^(-?\d+)\s*\/\s*(\d+)$/))) { if (BigInt(m[2]) === 0n) return null; return { q: new Q(BigInt(m[1]), BigInt(m[2])), dec: false }; }
+    return null;
+  }
+  const terminating = (d) => { while (d % 2n === 0n) d /= 2n; while (d % 5n === 0n) d /= 5n; return d === 1n; };
+  const minus = (s) => s.replace(/^-/, "−");
+  function fmt(q) {
+    if (q.d === 1n) return minus(q.n.toString());
+    if (terminating(q.d)) return minus(q.num().toFixed(8).replace(/0+$/, "").replace(/\.$/, ""));
+    return minus(`${q.n}/${q.d}`);
+  }
+  function accepts(raw, q) {
+    const p = parseQ(raw);
+    if (!p) return false;
+    if (p.q.eq(q)) return true;
+    return p.dec && Math.abs(p.q.num() - q.num()) <= 0.005 + 1e-12;
+  }
+  const maxOf = (xs) => xs.reduce((m, x) => (x.cmp(m) > 0 ? x : m));
+  const minOf = (xs) => xs.reduce((m, x) => (x.cmp(m) < 0 ? x : m));
+  const range = (n) => [...Array(n).keys()];
+
+  // ================= Games =================
+  const SUB = "₀₁₂₃₄₅₆₇₈₉";
+  const sub = (n) => String(n).split("").map((d) => SUB[+d]).join("");
+  const MAX_N = 5;
+  const PRESETS = [
+    { id: "zs", name: "A zero-sum game", kind: "zero", rows: ["R₁", "R₂", "R₃"], cols: ["C₁", "C₂", "C₃"], a: [["4", "2", "5"], ["6", "3", "7"], ["1", "0", "8"]] },
+    { id: "pd", name: "Prisoner’s Dilemma", kind: "general", rows: ["C", "D"], cols: ["C", "D"], a: [["3", "0"], ["5", "1"]], b: [["3", "5"], ["0", "1"]] },
+    { id: "stag", name: "Stag Hunt", kind: "general", rows: ["Stag", "Hare"], cols: ["Stag", "Hare"], a: [["4", "0"], ["3", "3"]], b: [["4", "3"], ["0", "3"]] },
+    { id: "hilo", name: "Hi-Lo", kind: "general", rows: ["Hi", "Lo"], cols: ["Hi", "Lo"], a: [["2", "0"], ["0", "1"]], b: [["2", "0"], ["0", "1"]] },
+    { id: "bos", name: "Battle of the Sexes", kind: "general", rows: ["Opera", "Football"], cols: ["Opera", "Football"], a: [["2", "0"], ["0", "1"]], b: [["1", "0"], ["0", "2"]] },
+    { id: "chicken", name: "Chicken", kind: "general", rows: ["Swerve", "Straight"], cols: ["Swerve", "Straight"], a: [["3", "1"], ["4", "0"]], b: [["3", "4"], ["1", "0"]] },
+    { id: "pennies", name: "Matching Pennies", kind: "zero", rows: ["H", "T"], cols: ["H", "T"], a: [["1", "-1"], ["-1", "1"]] }
+  ];
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  function fromPreset(p) {
+    const d = clone(p);
+    if (!d.b) d.b = d.a.map((row) => row.map((v) => negText(v)));
+    return { name: d.name, preset: d.id, kind: d.kind, rows: d.rows, cols: d.cols, a: d.a, b: d.b };
+  }
+  function negText(v) { const p = parseQ(v); return p ? fmt(p.q.neg()).replace(/^−/, "-") : ""; }
+  let draft = fromPreset(PRESETS[0]);
+
+  const TABS = ["dominance", "nash", "pareto", "saddle"];
+  const TAB_LABEL = { dominance: "Dominance", nash: "Nash equilibrium", pareto: "Pareto", saddle: "Saddle point" };
+  const state = {
+    mode: "practice", tab: "dominance", problem: null, built: null, results: null,
+    step: { dominance: 0, nash: 0, pareto: 0, saddle: 0 }, solved: {}, work: null, hint: null,
+    counted: new Set(), peeked: new Set()
+  };
+  const freshWork = (pb) => ({
+    dominance: { dels: [], rs: new Set(range(pb.rows.length)), cs: new Set(range(pb.cols.length)), vsel: "", dsel: "", marks: null },
+    nash: { rstars: new Set(), cstars: new Set(), picks: new Set(), none: false, stage: 1, who: "r", marks: null },
+    pareto: { picks: new Set(), marks: null },
+    saddle: { rmin: {}, cmax: {}, rpick: new Set(), cpick: new Set(), verdict: "", value: "", marks: null }
+  });
+  let tally = (() => { try { return JSON.parse(store.get("dg-gm-tally")) || { n: 0, ok: 0 }; } catch (e) { return { n: 0, ok: 0 }; } })();
+
+  // ================= Build =================
+  const snapshot = () => JSON.stringify(draft);
+  function build() {
+    const errs = [], bad = new Set();
+    const R = draft.rows.length, C = draft.cols.length;
+    const rows = draft.rows.map((n, i) => n.trim() || `R${sub(i + 1)}`);
+    const cols = draft.cols.map((n, j) => n.trim() || `C${sub(j + 1)}`);
+    const zero = draft.kind === "zero";
+    const read = (grid, key, who) => grid.map((row, i) => row.map((v, j) => {
+      const p = parseQ(v);
+      if (!p) { bad.add(`${key}${i},${j}`); errs.push(`<b>${esc(rows[i])}, ${esc(cols[j])}${who}:</b> “${esc(v.trim() || "blank")}” isn’t a number.`); return null; }
+      return p.q;
+    }));
+    const A = read(draft.a, "a", zero ? "" : " (Row)");
+    const B = zero ? null : read(draft.b, "b", " (Column)");
+    renderEditor(bad);
+    if (errs.length) {
+      $("edErr").innerHTML = errs.slice(0, 4).join("<br>") + (errs.length > 4 ? `<br>…and ${errs.length - 4} more.` : "");
+      $("edErr").hidden = false; state.buildError = true; setEditing(true); updateDirty(); return;
+    }
+    $("edErr").hidden = true; state.buildError = false;
+    setEditing(false);
+    const Bq = zero ? A.map((row) => row.map((q) => q.neg())) : B;
+    state.problem = {
+      name: draft.name || "", kind: draft.kind, rows, cols, A, B: Bq,
+      aText: A.map((row) => row.map(fmt)), bText: Bq.map((row) => row.map(fmt))
+    };
+    const sig = snapshot();
+    if (sig !== state.built) { state.counted = new Set(); state.peeked = new Set(); }
+    state.built = sig;
+    state.results = analyze(state.problem);
+    state.work = freshWork(state.problem);
+    state.solved = {}; state.hint = null;
+    state.step = { dominance: 0, nash: 0, pareto: 0, saddle: 0 };
+    syncClassic();
+    render(); writeHash();
+  }
+
+  // ================= Analysis =================
+  function strongly(pb, p, d, v, rs, cs) {
+    return p === "r" ? cs.every((j) => pb.A[d][j].cmp(pb.A[v][j]) > 0) : rs.every((i) => pb.B[i][d].cmp(pb.B[i][v]) > 0);
+  }
+  function weakly(pb, p, d, v, rs, cs) {
+    const c = p === "r" ? cs.map((j) => pb.A[d][j].cmp(pb.A[v][j])) : rs.map((i) => pb.B[i][d].cmp(pb.B[i][v]));
+    return c.every((x) => x >= 0) && c.some((x) => x > 0) && !c.every((x) => x > 0);
+  }
+  function firstDominated(pb, rs, cs) {
+    for (const v of rs) for (const d of rs) if (d !== v && strongly(pb, "r", d, v, rs, cs)) return { p: "r", v, d };
+    for (const v of cs) for (const d of cs) if (d !== v && strongly(pb, "c", d, v, rs, cs)) return { p: "c", v, d };
+    return null;
+  }
+  function analyze(pb) {
+    const R = pb.rows.length, C = pb.cols.length, A = pb.A, B = pb.B;
+    // iterated deletion of strongly dominated strategies
+    let rs = range(R), cs = range(C);
+    const dels = [];
+    for (;;) {
+      const f = firstDominated(pb, rs, cs);
+      if (!f) break;
+      dels.push({ ...f, rs: [...rs], cs: [...cs] });
+      if (f.p === "r") rs = rs.filter((x) => x !== f.v); else cs = cs.filter((x) => x !== f.v);
+    }
+    // best responses and equilibria
+    const rowBR = range(C).map((j) => { const m = maxOf(range(R).map((i) => A[i][j])); return new Set(range(R).filter((i) => A[i][j].eq(m))); });
+    const colBR = range(R).map((i) => { const m = maxOf(range(C).map((j) => B[i][j])); return new Set(range(C).filter((j) => B[i][j].eq(m))); });
+    const ne = [];
+    range(R).forEach((i) => range(C).forEach((j) => { if (rowBR[j].has(i) && colBR[i].has(j)) ne.push([i, j]); }));
+    // Pareto
+    const better = (k, l, i, j) => A[k][l].cmp(A[i][j]) >= 0 && B[k][l].cmp(B[i][j]) >= 0 && (A[k][l].cmp(A[i][j]) > 0 || B[k][l].cmp(B[i][j]) > 0);
+    const paretoBy = {};
+    const pareto = [];
+    range(R).forEach((i) => range(C).forEach((j) => {
+      let by = null;
+      // prefer an outcome that is better for both, then any
+      for (const k of range(R)) for (const l of range(C)) if (!by && better(k, l, i, j) && A[k][l].cmp(A[i][j]) > 0 && B[k][l].cmp(B[i][j]) > 0) by = [k, l];
+      for (const k of range(R)) for (const l of range(C)) if (!by && better(k, l, i, j)) by = [k, l];
+      paretoBy[`${i},${j}`] = by;
+      if (!by) pareto.push([i, j]);
+    }));
+    // zero-sum: maximin / minimax
+    let zs = null;
+    if (pb.kind === "zero") {
+      const rowMin = range(R).map((i) => minOf(A[i]));
+      const maximin = maxOf(rowMin);
+      const maximinRows = range(R).filter((i) => rowMin[i].eq(maximin));
+      const colMax = range(C).map((j) => maxOf(range(R).map((i) => A[i][j])));
+      const minimax = minOf(colMax);
+      const minimaxCols = range(C).filter((j) => colMax[j].eq(minimax));
+      const saddle = maximin.eq(minimax);
+      const saddleCells = [];
+      if (saddle) maximinRows.forEach((i) => minimaxCols.forEach((j) => saddleCells.push([i, j])));
+      zs = { rowMin, maximin, maximinRows, colMax, minimax, minimaxCols, saddle, saddleCells };
+    }
+    return { R, C, dels, survR: rs, survC: cs, rowBR, colBR, ne, neSet: new Set(ne.map(([i, j]) => `${i},${j}`)), paretoBy, pareto, paretoSet: new Set(pareto.map(([i, j]) => `${i},${j}`)), zs };
+  }
+
+  // ================= Wording =================
+  const pb_ = () => state.problem;
+  const RN = (i) => pb_().rows[i];
+  const CN = (j) => pb_().cols[j];
+  const SN = (p, x) => (p === "r" ? RN(x) : CN(x));
+  const cellName = (i, j) => `(${RN(i)}, ${CN(j)})`;
+  const pay = (i, j) => `(${pb_().aText[i][j]}, ${pb_().bText[i][j]})`;
+  const zero = () => pb_().kind === "zero";
+  const andList = (xs) => (xs.length <= 1 ? (xs[0] || "") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1]);
+  const cellsList = (cells) => andList(cells.map(([i, j]) => cellName(i, j)));
+  const player = (p) => (p === "r" ? "Row" : "Column");
+  const f = (s) => `<span class="f">${esc(s)}</span>`;
+
+  // explanation of one strong-dominance claim, in the game that is left
+  function domWhy(p, d, v, rs, cs) {
+    const pb = pb_();
+    if (p === "r") return cs.map((j) => `against ${CN(j)}, ${pb.aText[d][j]} > ${pb.aText[v][j]}`).join("; ");
+    if (zero()) return rs.map((i) => `against ${RN(i)}, Row gets ${pb.aText[i][d]} < ${pb.aText[i][v]}`).join("; ");
+    return rs.map((i) => `against ${RN(i)}, ${pb.bText[i][d]} > ${pb.bText[i][v]}`).join("; ");
+  }
+  function domStepText(s) {
+    const lead = s.p === "r" ? "For Row" : zero() ? "For Column, who wants Row’s payoff low" : "For Column";
+    return `${lead}, ${f(SN(s.p, s.d))} strongly dominates ${f(SN(s.p, s.v))} (${esc(domWhy(s.p, s.d, s.v, s.rs, s.cs))}). Cross off ${f(SN(s.p, s.v))}.`;
+  }
+  function survivorsText(rs, cs) {
+    if (rs.length === 1 && cs.length === 1) {
+      const [i] = rs, [j] = cs;
+      return `only ${cellName(i, j)} is left, ${zero() ? `where Row gets ${pb_().aText[i][j]}` : `with payoffs ${pay(i, j)}`}`;
+    }
+    return `Row is left with ${andList(rs.map(RN))}, and Column with ${andList(cs.map(CN))}`;
+  }
+  const bestText = (set, name) => { const xs = [...set].map(name); return xs.length > 1 ? `${andList(xs)} (tied)` : xs[0]; };
+
+  function stepsFor(tab) {
+    const res = state.results, pb = pb_();
+    if (tab === "dominance") {
+      const out = res.dels.map(domStepText);
+      out.push(res.dels.length
+        ? `Nothing left is strongly dominated, so the deletion stops: ${esc(survivorsText(res.survR, res.survC))}.`
+        : `No strategy is strongly dominated, so iterated deletion rules nothing out.`);
+      return out;
+    }
+    if (tab === "nash") {
+      const out = range(res.C).map((j) => {
+        const b = res.rowBR[j], i0 = [...b][0];
+        return `If Column plays ${f(CN(j))}, Row’s best response is ${f(bestText(b, RN))}: payoff ${esc(pb.aText[i0][j])}, the highest ${zero() ? "number" : "of Row’s payoffs"} in that column. Star it.`;
+      });
+      range(res.R).forEach((i) => {
+        const b = res.colBR[i], j0 = [...b][0];
+        out.push(zero()
+          ? `If Row plays ${f(RN(i))}, Column’s best response is ${f(bestText(b, CN))}: Row gets ${esc(pb.aText[i][j0])}, the lowest number in that row, so Column loses least. Star it.`
+          : `If Row plays ${f(RN(i))}, Column’s best response is ${f(bestText(b, CN))}: payoff ${esc(pb.bText[i][j0])}, the highest of Column’s payoffs in that row. Star it.`);
+      });
+      out.push(res.ne.length
+        ? `A cell with both stars is a pair of mutual best responses: ${esc(res.ne.length > 1 ? "the Nash equilibria are " : "the Nash equilibrium is ")}${esc(cellsList(res.ne))}.`
+        : `No cell has both stars, so the game has no Nash equilibrium in pure strategies.`);
+      return out;
+    }
+    if (tab === "pareto") {
+      const out = [];
+      range(res.R).forEach((i) => range(res.C).forEach((j) => {
+        const by = res.paretoBy[`${i},${j}`];
+        if (!by) return;
+        const [k, l] = by;
+        const cmpA = pb.A[k][l].cmp(pb.A[i][j]) > 0 ? "better" : "just as good", cmpB = pb.B[k][l].cmp(pb.B[i][j]) > 0 ? "better" : "just as good";
+        const how = cmpA === "better" && cmpB === "better" ? "better for both players" : `${cmpA} for Row and ${cmpB} for Column`;
+        out.push(`${f(cellName(i, j))} ${esc(pay(i, j))} is not Pareto-optimal: ${f(cellName(k, l))} ${esc(pay(k, l))} is ${how}.`);
+      }));
+      out.push(`Nothing is Pareto-better than the rest: ${esc(cellsList(res.pareto))} ${res.pareto.length > 1 ? "are" : "is"} Pareto-optimal.${esc(neParetoNote())}`);
+      return out;
+    }
+    if (tab === "saddle") {
+      const z = res.zs;
+      return [
+        `Row’s worst payoff with each strategy (the minimum of each row): ${esc(range(res.R).map((i) => `${RN(i)} ${fmt(z.rowMin[i])}`).join(", "))}.`,
+        `Row’s maximin strategy is ${f(andList(z.maximinRows.map(RN)))}: it guarantees Row at least ${esc(fmt(z.maximin))}.`,
+        `The most Column can lose with each strategy (the maximum of each column): ${esc(range(res.C).map((j) => `${CN(j)} ${fmt(z.colMax[j])}`).join(", "))}.`,
+        `Column’s minimax strategy is ${f(andList(z.minimaxCols.map(CN)))}: it holds Row to at most ${esc(fmt(z.minimax))}.`,
+        z.saddle
+          ? `Maximin = minimax = ${esc(fmt(z.maximin))}, so ${esc(cellsList(z.saddleCells))} ${z.saddleCells.length > 1 ? "are saddle points" : "is a saddle point"}: the smallest number in its row and the largest in its column. The value of the game is ${esc(fmt(z.maximin))}. A saddle point is a Nash equilibrium: neither player gains by switching.`
+          : `Maximin (${esc(fmt(z.maximin))}) is less than minimax (${esc(fmt(z.minimax))}), so there is no saddle point. Without mixed strategies the game has no solution, and no Nash equilibrium.`
+      ];
+    }
+    return [];
+  }
+  function neParetoNote() {
+    const res = state.results;
+    if (!res.ne.length) return "";
+    const bad = res.ne.filter(([i, j]) => !res.paretoSet.has(`${i},${j}`));
+    if (!bad.length) return ` Every Nash equilibrium is Pareto-optimal here.`;
+    return ` The Nash equilibri${bad.length > 1 ? "a" : "um"} ${cellsList(bad)} ${bad.length > 1 ? "are" : "is"} not Pareto-optimal: ${bad.map(([i, j]) => { const [k, l] = res.paretoBy[`${i},${j}`]; return `${cellName(k, l)} is Pareto-better than ${cellName(i, j)}`; }).join("; ")}.`;
+  }
+
+  function availability(tab) {
+    const pb = pb_();
+    if (tab === "saddle" && pb.kind !== "zero") return `<b>Saddle points are for zero-sum games.</b> In this game the players’ payoffs don’t always add up to zero, so there is no single number in each cell for Row to push up and Column to push down. Use the Nash equilibrium tab, or switch Game to Zero-sum.`;
+    if (tab === "pareto" && pb.kind === "zero") return `<b>In a zero-sum game every outcome is Pareto-optimal.</b> Whatever is better for Row is worse for Column by the same amount, so no outcome can be better for one player without being worse for the other.`;
+    return null;
+  }
+  function verdictText(tab) {
+    const res = state.results;
+    if (tab === "dominance") {
+      if (!res.dels.length) return "Deletes nothing";
+      if (res.survR.length === 1 && res.survC.length === 1) return cellName(res.survR[0], res.survC[0]);
+      return `${res.survR.map(RN).join(", ")} × ${res.survC.map(CN).join(", ")}`;
+    }
+    if (tab === "nash") return res.ne.length ? cellsList(res.ne) : "None (pure)";
+    if (tab === "pareto") return res.pareto.length <= 3 ? cellsList(res.pareto) : `${res.pareto.length} of ${res.R * res.C} outcomes`;
+    if (tab === "saddle") return res.zs.saddle ? `${cellsList(res.zs.saddleCells)}, value ${fmt(res.zs.maximin)}` : "None";
+    return "";
+  }
+  const unavailShort = (tab) => (tab === "saddle" ? "Zero-sum games only" : "Every outcome (zero-sum)");
+
+  // ================= Rendering =================
+  function render() { syncControls(); renderSummary(); renderWork(); updateDirty(); }
+
+  function renderSummary() {
+    const el = $("summary");
+    if (!state.problem) { el.innerHTML = ""; return; }
+    el.innerHTML = TABS.map((t) => {
+      let v, cls = "v", solved = "";
+      if (availability(t)) { v = unavailShort(t); cls += " off"; }
+      else if (state.mode === "practice" && !state.solved[t]) { v = "Solve it to reveal"; cls += " off"; }
+      else { v = verdictText(t); if (state.mode === "practice") solved = " solved"; }
+      return `<div class="sum${solved}"><span class="k">${esc(TAB_LABEL[t])}</span><span class="${cls}">${esc(v)}</span></div>`;
+    }).join("");
+  }
+
+  // a matrix: o.cell(i,j) -> {html, cls}; o.rowHead(i) / o.colHead(j) -> {html, cls}; o.rowExtra / o.extraHead; o.footRow
+  function matrixHTML(o) {
+    const pb = pb_();
+    const legend = o.legend === false ? "" : zero() && !o.pairs
+      ? `<span class="legend">Each cell is <span class="r">Row</span>’s payoff; <span class="c">Column</span> gets its negative.</span>`
+      : `<span class="legend">In each cell, <span class="r">Row</span>’s payoff is at the lower left and <span class="c">Column</span>’s at the upper right.</span>`;
+    let h = `<thead><tr><th></th>${pb.cols.map((_, j) => { const c = o.colHead ? o.colHead(j) : { html: esc(CN(j)), cls: "" }; return `<th scope="col" class="colh ${c.cls || ""}">${c.html}</th>`; }).join("")}${o.extraHead ? `<th class="extra">${o.extraHead}</th>` : ""}</tr></thead><tbody>`;
+    pb.rows.forEach((_, i) => {
+      const rh = o.rowHead ? o.rowHead(i) : { html: esc(RN(i)), cls: "" };
+      h += `<tr><th class="rowh ${rh.cls || ""}" scope="row">${rh.html}</th>${pb.cols.map((_, j) => { const c = o.cell(i, j); return `<td class="gc ${c.cls || ""}" data-r="${i}" data-c="${j}">${c.html}</td>`; }).join("")}${o.rowExtra ? o.rowExtra(i) : ""}</tr>`;
+    });
+    if (o.footRow) h += o.footRow;
+    h += `</tbody>`;
+    return `<div class="block"><h3>${esc(pb.name || "Matrix")}</h3>${legend}<div class="scroll"><table class="mx">${h}</table></div></div>`;
+  }
+  const st = (who) => `<sup class="st ${who}">*</sup>`;
+  function pairHTML(i, j, { rs = false, cs = false, buttons = false, wr = false, wc = false } = {}) {
+    const pb = pb_();
+    if (buttons) {
+      return `<span class="gp"><button type="button" class="pay c pb${wc ? " wrong" : ""}" data-pc="${i},${j}" aria-pressed="${cs}" aria-label="Column’s payoff ${esc(pb.bText[i][j])} in ${esc(cellName(i, j))}">${esc(pb.bText[i][j])}${cs ? st("c") : ""}</button><button type="button" class="pay r pa${wr ? " wrong" : ""}" data-pr="${i},${j}" aria-pressed="${rs}" aria-label="Row’s payoff ${esc(pb.aText[i][j])} in ${esc(cellName(i, j))}">${esc(pb.aText[i][j])}${rs ? st("r") : ""}</button></span>`;
+    }
+    return `<span class="gp" aria-label="Row ${esc(pb.aText[i][j])}, Column ${esc(pb.bText[i][j])}"><span class="pb">${esc(pb.bText[i][j])}${cs ? st("c") : ""}</span><span class="pa">${esc(pb.aText[i][j])}${rs ? st("r") : ""}</span></span>`;
+  }
+  const single = (i, j, extra = "") => `${esc(pb_().aText[i][j])}${extra}`;
+
+  function renderWork() {
+    $("tabs").querySelectorAll("button").forEach((b) => {
+      b.setAttribute("aria-selected", String(b.dataset.v === state.tab));
+      b.classList.toggle("unavail", !!(state.problem && availability(b.dataset.v)));
+    });
+    const body = $("workBody");
+    $("stepper").hidden = true; $("practiceBtns").hidden = true;
+    if (!state.problem) { body.innerHTML = `<p class="unavail-note">Fill in the matrix and press Build.</p>`; setHint("", ""); $("what").textContent = ""; return; }
+    const un = availability(state.tab);
+    $("what").textContent = whatText(state.tab);
+    if (un) { body.innerHTML = `<p class="unavail-note">${un}</p>`; setHint("", ""); return; }
+    if (state.mode !== "practice") state.peeked.add(state.tab);
+    const steps = stepsFor(state.tab), N = steps.length;
+    const k = state.mode === "answers" ? N : state.mode === "step" ? state.step[state.tab] : 0;
+    if (state.mode === "step") {
+      $("stepper").hidden = false;
+      $("stCount").textContent = `${k} / ${N}`;
+      $("stFirst").disabled = $("stPrev").disabled = k === 0;
+      $("stNext").disabled = $("stLast").disabled = k >= N;
+    }
+    if (state.mode === "practice") { $("practiceBtns").hidden = false; $("checkBtn").hidden = state.tab === "dominance"; }
+    body.innerHTML = { dominance: workDominance, nash: workNash, pareto: workPareto, saddle: workSaddle }[state.tab](k, N, steps);
+    if (state.mode === "answers" && state.tab !== "dominance") body.insertAdjacentHTML("beforeend", `<div class="block"><h3>Worked analysis</h3><ol class="worked">${steps.map((s) => `<li>${s}</li>`).join("")}</ol></div>`);
+    if (state.mode === "step") setHint(k === 0 ? introStep(state.tab) : `<b>Step ${k}.</b> ${steps[k - 1]}`, "");
+    else if (state.mode === "answers") setHint(`<b>${esc(TAB_LABEL[state.tab])}:</b> ${esc(verdictText(state.tab))}.`, "");
+    else if (state.hint && state.hint.tab === state.tab) setHint(state.hint.html, state.hint.cls);
+    else setHint(practiceIntro(state.tab), "");
+  }
+  function whatText(tab) {
+    return { dominance: "Iterated deletion of strongly dominated strategies", nash: "Find the pairs of mutual best responses", pareto: "Which outcomes can’t be improved for one player without hurting the other?", saddle: "Compare Row’s maximin with Column’s minimax" }[tab];
+  }
+  function introStep(tab) {
+    return {
+      dominance: "Look for a strategy that is strongly dominated in the game that’s left, cross it off, and repeat. Press ▶ (or →) to begin.",
+      nash: "Star each player’s best responses to each of the other player’s strategies. Press ▶ (or →).",
+      pareto: "Compare outcomes: an outcome is Pareto-optimal if no other outcome is at least as good for both players and better for one. Press ▶ (or →).",
+      saddle: "Find Row’s maximin and Column’s minimax, and compare them. Press ▶ (or →)."
+    }[tab];
+  }
+  function practiceIntro(tab) {
+    const w = state.work;
+    return {
+      dominance: "Choose a strategy that is strongly dominated in the game that’s left, choose the strategy that dominates it, and press Cross off. When nothing more can go, press “Nothing else is dominated”.",
+      nash: w.nash.stage === 2
+        ? "Now click every cell where both payoffs are starred (the Nash equilibria), or tick “No pure-strategy equilibrium”, and press Check."
+        : zero()
+          ? "With “Starring for: Row”, click the highest number in each column (Row’s best responses). With “Starring for: Column”, click the lowest number in each row (Column’s best responses). Star all ties, then press Check."
+          : "Click Row’s payoff in each column that is Row’s best response, and Column’s payoff in each row that is Column’s best response (star all ties). Then press Check.",
+      pareto: "Click every Pareto-optimal outcome, then press Check.",
+      saddle: "Fill in each row’s minimum and each column’s maximum, click Row’s maximin strategy and Column’s minimax strategy, say whether there is a saddle point, and press Check."
+    }[tab];
+  }
+  function setHint(html, cls) { const h = $("hintbar"); h.innerHTML = html; h.className = "hintbar" + (cls ? " " + cls : ""); h.hidden = !html; }
+
+  // ---------- Dominance ----------
+  function workDominance(k, N, steps) {
+    const res = state.results, pb = pb_(), w = state.work.dominance, practice = state.mode === "practice";
+    const D = res.dels.length;
+    let xr, xc, cur = null;
+    if (practice) { xr = new Set(range(res.R).filter((i) => !w.rs.has(i))); xc = new Set(range(res.C).filter((j) => !w.cs.has(j))); }
+    else {
+      xr = new Set(); xc = new Set();
+      res.dels.slice(0, Math.min(k, D)).forEach((s) => (s.p === "r" ? xr : xc).add(s.v));
+      if (k >= 1 && k <= D) cur = res.dels[k - 1];
+    }
+    const cls = (p, x) => (cur && cur.p === p ? (x === cur.v ? " curv" : x === cur.d ? " curd" : "") : "");
+    const table = matrixHTML({
+      pairs: !zero(),
+      rowHead: (i) => ({ html: esc(RN(i)), cls: (xr.has(i) ? "xrow" : "") + cls("r", i) }),
+      colHead: (j) => ({ html: esc(CN(j)), cls: (xc.has(j) ? "xcol" : "") + cls("c", j) }),
+      cell: (i, j) => ({ html: zero() ? single(i, j) : pairHTML(i, j), cls: (xr.has(i) ? " xrow" : "") + (xc.has(j) ? " xcol" : "") + (cur && !xr.has(i) && !xc.has(j) ? (cur.p === "r" ? cls("r", i) : cls("c", j)) : "") })
+    });
+    if (!practice) {
+      const items = steps.map((s, idx) => `<li class="${idx < k ? "" : "hid"}">${s}</li>`).join("");
+      return `${table}<div class="block"><h3>Deletions</h3><ol class="dels">${items}</ol></div>`;
+    }
+    const rs = [...w.rs], cs = [...w.cs];
+    const vopts = [`<option value="">— strategy —</option>`,
+      `<optgroup label="Row">${rs.map((i) => `<option value="r:${i}"${w.vsel === `r:${i}` ? " selected" : ""}>${esc(RN(i))}</option>`).join("")}</optgroup>`,
+      `<optgroup label="Column">${cs.map((j) => `<option value="c:${j}"${w.vsel === `c:${j}` ? " selected" : ""}>${esc(CN(j))}</option>`).join("")}</optgroup>`].join("");
+    let dopts = `<option value="">— strategy —</option>`;
+    if (w.vsel) {
+      const [p, v] = [w.vsel[0], +w.vsel.slice(2)];
+      dopts += (p === "r" ? rs : cs).filter((x) => x !== v).map((x) => `<option value="${p}:${x}"${w.dsel === `${p}:${x}` ? " selected" : ""}>${esc(SN(p, x))}</option>`).join("");
+    }
+    const done = state.solved.dominance;
+    const bar = done ? "" : `<div class="delbar"><span>Cross off</span><select id="gm-vsel" aria-label="Strategy to cross off">${vopts}</select><span>, which is strongly dominated by</span><select id="gm-dsel" aria-label="Strategy that dominates it"${w.vsel ? "" : " disabled"}>${dopts}</select><button type="button" class="btn small primary" id="gm-delBtn">Cross off</button></div>
+      <div class="delbar"><button type="button" class="btn small" id="gm-doneBtn">Nothing else is dominated</button>${w.dels.length ? `<button type="button" class="btn small" id="gm-undoBtn">Undo last</button>` : ""}</div>`;
+    const list = w.dels.length ? `<ol class="dels">${w.dels.map((s) => `<li>${domStepText(s)}</li>`).join("")}</ol>` : `<p class="note">Nothing crossed off yet.</p>`;
+    return `${table}<div class="block"><h3>Your deletions</h3>${bar}${list}</div>`;
+  }
+
+  // ---------- Nash ----------
+  function workNash(k, N) {
+    const res = state.results, w = state.work.nash, practice = state.mode === "practice";
+    const R = res.R, C = res.C;
+    const z = zero();
+    const table = matrixHTML({
+      pairs: !z,
+      legend: true,
+      cell: (i, j) => {
+        const key = `${i},${j}`;
+        if (practice) {
+          const m = w.marks;
+          let html;
+          if (z) {
+            const stars = (w.rstars.has(key) ? st("r") : "") + (w.cstars.has(key) ? st("c") : "");
+            html = w.stage === 1
+              ? `<button type="button" class="pay ${w.who === "r" ? "r" : "c"}${m && (m.r.has(key) || m.c.has(key)) ? " wrong" : ""}" data-pz="${i},${j}" aria-label="Star ${esc(pb_().aText[i][j])} in ${esc(cellName(i, j))} for ${w.who === "r" ? "Row" : "Column"}">${esc(pb_().aText[i][j])}${stars}</button>`
+              : single(i, j, stars);
+          } else html = w.stage === 1
+            ? pairHTML(i, j, { rs: w.rstars.has(key), cs: w.cstars.has(key), buttons: true, wr: m && m.r.has(key), wc: m && m.c.has(key) })
+            : pairHTML(i, j, { rs: w.rstars.has(key), cs: w.cstars.has(key) });
+          return { html, cls: (w.stage === 2 ? "clickable" : "") + (w.picks.has(key) ? " ne" : "") + (m && m.cells && m.cells.has(key) ? " wrong" : "") };
+        }
+        const rs = j < k && res.rowBR[j].has(i);
+        const cs = i < k - C && res.colBR[i].has(j);
+        const curC = k >= 1 && k <= C && j === k - 1, curR = k > C && k <= C + R && i === k - C - 1;
+        const html = z ? single(i, j, (rs ? st("r") : "") + (cs ? st("c") : "")) : pairHTML(i, j, { rs, cs });
+        return { html, cls: (k > C + R && res.neSet.has(key) ? "ne" : "") + (curC || curR ? " curcol" : "") };
+      }
+    });
+    let extra = "", before = "";
+    if (practice && z && w.stage === 1) {
+      before = `<div class="verdictrow"><span id="gm-whoLbl">Starring for</span><div class="seg" role="group" aria-labelledby="gm-whoLbl" id="gm-who"><button type="button" data-v="r" aria-pressed="${w.who === "r"}">Row</button><button type="button" data-v="c" aria-pressed="${w.who === "c"}">Column</button></div><span class="note">${w.who === "r" ? "Row’s best response to a column: the highest number in that column." : "Column’s best response to a row: the lowest number in that row."}</span></div>`;
+    }
+    if (practice && w.stage === 2) {
+      const wrongNone = w.marks && w.marks.none;
+      extra = `<div class="verdictrow"><label class="${wrongNone ? "wrong" : ""}"><input type="checkbox" id="gm-none"${w.none ? " checked" : ""}> No pure-strategy equilibrium</label></div>`;
+    }
+    if (z && !practice) extra += `<p class="note"><span style="color:var(--accent)">*</span> Row’s best response (highest in its column) &nbsp; <span style="color:var(--colp)">*</span> Column’s best response (lowest in its row)</p>`;
+    return before + table + extra;
+  }
+
+  // ---------- Pareto ----------
+  function workPareto(k, N) {
+    const res = state.results, w = state.work.pareto, practice = state.mode === "practice";
+    const dominatedCells = [];
+    range(res.R).forEach((i) => range(res.C).forEach((j) => { if (res.paretoBy[`${i},${j}`]) dominatedCells.push([i, j]); }));
+    const D = dominatedCells.length;
+    const cur = !practice && k >= 1 && k <= D ? dominatedCells[k - 1] : null;
+    const curBy = cur ? res.paretoBy[`${cur[0]},${cur[1]}`] : null;
+    const shownDom = new Set(dominatedCells.slice(0, Math.min(k, D)).map(([i, j]) => `${i},${j}`));
+    const table = matrixHTML({
+      pairs: true,
+      cell: (i, j) => {
+        const key = `${i},${j}`;
+        if (practice) return { html: pairHTML(i, j), cls: "clickable" + (w.picks.has(key) ? " sel" : "") + (w.marks && w.marks.has(key) ? " wrong" : "") };
+        let cls = shownDom.has(key) ? "dom" : "";
+        if (k > D && res.paretoSet.has(key)) cls += " sel";
+        if (k > D && res.neSet.has(key)) cls += " ne";
+        if (cur && cur[0] === i && cur[1] === j) cls += " curv";
+        if (curBy && curBy[0] === i && curBy[1] === j) cls += " curd";
+        return { html: pairHTML(i, j), cls };
+      }
+    });
+    const key = !practice && k > D ? `<p class="note">Shaded green: Pareto-optimal. Outlined: Nash equilibrium.</p>` : "";
+    return table + key;
+  }
+
+  // ---------- Saddle point ----------
+  function workSaddle(k, N) {
+    const res = state.results, z = res.zs, w = state.work.saddle, practice = state.mode === "practice";
+    const m = w.marks;
+    const table = matrixHTML({
+      pairs: false,
+      extraHead: "row min",
+      rowHead: (i) => {
+        const pick = practice ? w.rpick.has(i) : k >= 2 && z.maximinRows.includes(i);
+        const name = esc(RN(i)) + (pick ? '<sup class="st">**</sup>' : "");
+        return practice
+          ? { html: `<button type="button" class="rowbtn" data-row="${i}" aria-pressed="${pick}">${name}</button>`, cls: m && m.rpick.has(i) ? "wrong" : "" }
+          : { html: name, cls: k === 2 && z.maximinRows.includes(i) ? "cur" : "" };
+      },
+      colHead: (j) => {
+        const pick = practice ? w.cpick.has(j) : k >= 4 && z.minimaxCols.includes(j);
+        const name = esc(CN(j)) + (pick ? '<sup class="st">**</sup>' : "");
+        return practice
+          ? { html: `<button type="button" class="colbtn" data-col="${j}" aria-pressed="${pick}">${name}</button>`, cls: m && m.cpick.has(j) ? "wrong" : "" }
+          : { html: name, cls: k === 4 && z.minimaxCols.includes(j) ? "cur" : "" };
+      },
+      cell: (i, j) => {
+        if (practice) return { html: single(i, j), cls: "" };
+        const a = res.zs && pb_().A[i][j];
+        const isMin = a.eq(z.rowMin[i]), isMax = a.eq(z.colMax[j]);
+        const stars = (k >= 1 && isMin ? st("r") : "") + (k >= 3 && isMax ? st("c") : "");
+        const sad = k >= 5 && z.saddle && z.maximinRows.includes(i) && z.minimaxCols.includes(j);
+        return { html: single(i, j, stars), cls: (sad ? "sel ne" : "") + ((k === 1 && isMin) || (k === 3 && isMax) ? " curd" : "") };
+      },
+      rowExtra: (i) => practice
+        ? `<td class="extra"><input class="ans${m && m.rmin.has(i) ? " wrong" : ""}" data-rmin="${i}" value="${esc(w.rmin[i] || "")}" inputmode="decimal" aria-label="Minimum of row ${esc(RN(i))}"></td>`
+        : `<td class="extra${k >= 1 ? "" : " hid"}${k === 2 && z.maximinRows.includes(i) ? " cur" : ""}">${esc(fmt(z.rowMin[i]))}</td>`,
+      footRow: `<tr class="maxrow"><th class="rowh">col max</th>${range(res.C).map((j) => practice
+        ? `<td><input class="ans${m && m.cmax.has(j) ? " wrong" : ""}" data-cmax="${j}" value="${esc(w.cmax[j] || "")}" inputmode="decimal" aria-label="Maximum of column ${esc(CN(j))}"></td>`
+        : `<td class="${k >= 3 ? "" : "hid"}${k === 4 && z.minimaxCols.includes(j) ? " cur" : ""}">${esc(fmt(z.colMax[j]))}</td>`).join("")}<td class="extra"></td></tr>`
+    });
+    if (!practice) return table + `<p class="note"><span style="color:var(--accent)">*</span> row minimum &nbsp; <span style="color:var(--colp)">*</span> column maximum &nbsp; ** maximin / minimax strategy</p>`;
+    const vr = `<div class="verdictrow">
+      <select id="gm-verdict" class="${m && m.verdict ? "wrong" : ""}" aria-label="Is there a saddle point?">
+        <option value="">— saddle point? —</option>
+        <option value="yes"${w.verdict === "yes" ? " selected" : ""}>Maximin = minimax: saddle point</option>
+        <option value="no"${w.verdict === "no" ? " selected" : ""}>Maximin &lt; minimax: no saddle point</option>
+      </select>
+      <label${w.verdict === "yes" ? "" : " hidden"}>Value of the game <input class="ans${m && m.value ? " wrong" : ""}" id="gm-value" value="${esc(w.value)}" inputmode="decimal"></label>
+    </div>`;
+    return table + vr;
+  }
+
+  // ================= Practice: input + checking =================
+  const body = $("workBody");
+  function solvedNow(tab, html) {
+    state.solved[tab] = true;
+    if (!state.counted.has(tab) && !state.peeked.has(tab)) { state.counted.add(tab); tally.n++; tally.ok++; saveTally(); }
+    state.hint = { tab, cls: "good", html };
+  }
+  function mistake(tab) {
+    if (!state.counted.has(tab) && !state.peeked.has(tab)) { state.counted.add(tab); tally.n++; saveTally(); }
+  }
+  function saveTally() { store.set("dg-gm-tally", JSON.stringify(tally)); syncTally(); }
+  function syncTally() { $("tally").textContent = tally.n ? `Right on the first check: ${tally.ok} of ${tally.n} exercises` : ""; }
+  const bad = (tab, html) => { state.hint = { tab, cls: "bad", html }; };
+
+  body.addEventListener("click", (e) => {
+    if (state.mode !== "practice" || !state.problem) return;
+    const w = state.work, t = e.target;
+    if (state.tab === "dominance") {
+      if (t.closest("#gm-delBtn")) { tryDelete(); return; }
+      if (t.closest("#gm-doneBtn")) { tryDone(); return; }
+      if (t.closest("#gm-undoBtn")) {
+        const s = w.dominance.dels.pop();
+        if (s) (s.p === "r" ? w.dominance.rs : w.dominance.cs).add(s.v);
+        state.hint = null; renderWork(); return;
+      }
+      return;
+    }
+    if (state.tab === "nash") {
+      const n = w.nash;
+      const wb = t.closest("#gm-who button");
+      if (wb) { n.who = wb.dataset.v; renderWork(); const b = body.querySelector(`#gm-who button[data-v="${n.who}"]`); if (b) b.focus(); return; }
+      const pz = t.closest("button.pay[data-pz]");
+      if (pz && n.stage === 1) {
+        const key = pz.dataset.pz, set = n.who === "r" ? n.rstars : n.cstars;
+        set.has(key) ? set.delete(key) : set.add(key);
+        n.marks = null; state.hint = null; renderWork();
+        const again = body.querySelector(`button.pay[data-pz="${key}"]`); if (again) again.focus();
+        return;
+      }
+      const pr = t.closest("button.pay");
+      if (pr && n.stage === 1) {
+        const isR = pr.dataset.pr !== undefined, key = isR ? pr.dataset.pr : pr.dataset.pc;
+        const set = isR ? n.rstars : n.cstars;
+        set.has(key) ? set.delete(key) : set.add(key);
+        n.marks = null; state.hint = null; renderWork();
+        const again = body.querySelector(`button.pay[data-${isR ? "pr" : "pc"}="${key}"]`); if (again) again.focus();
+        return;
+      }
+      const td = t.closest("td.clickable");
+      if (td && n.stage === 2) { const key = `${td.dataset.r},${td.dataset.c}`; n.picks.has(key) ? n.picks.delete(key) : n.picks.add(key); n.marks = null; state.hint = null; renderWork(); }
+      return;
+    }
+    if (state.tab === "pareto") {
+      const td = t.closest("td.clickable");
+      if (td) { const key = `${td.dataset.r},${td.dataset.c}`; const s = w.pareto.picks; s.has(key) ? s.delete(key) : s.add(key); w.pareto.marks = null; state.hint = null; renderWork(); }
+      return;
+    }
+    if (state.tab === "saddle") {
+      const rb = t.closest("button.rowbtn"), cb = t.closest("button.colbtn");
+      if (rb) { const s = w.saddle.rpick, i = +rb.dataset.row; s.has(i) ? s.delete(i) : s.add(i); w.saddle.marks = null; state.hint = null; renderWork(); const b = body.querySelector(`button.rowbtn[data-row="${i}"]`); if (b) b.focus(); }
+      if (cb) { const s = w.saddle.cpick, j = +cb.dataset.col; s.has(j) ? s.delete(j) : s.add(j); w.saddle.marks = null; state.hint = null; renderWork(); const b = body.querySelector(`button.colbtn[data-col="${j}"]`); if (b) b.focus(); }
+    }
+  });
+  body.addEventListener("change", (e) => {
+    if (state.mode !== "practice") return;
+    const t = e.target, w = state.work;
+    if (t.id === "gm-vsel") { w.dominance.vsel = t.value; w.dominance.dsel = ""; renderWork(); const s = $("dsel"); if (s && !s.disabled) s.focus(); return; }
+    if (t.id === "gm-dsel") { w.dominance.dsel = t.value; return; }
+    if (t.id === "gm-none") { w.nash.none = t.checked; w.nash.marks = null; return; }
+    if (t.id === "gm-verdict") { w.saddle.verdict = t.value; renderWork(); const v = $("value"); if (v && t.value === "yes") v.focus(); }
+  });
+  body.addEventListener("input", (e) => {
+    const t = e.target, w = state.work && state.work.saddle;
+    if (!w) return;
+    if (t.dataset.rmin !== undefined) w.rmin[t.dataset.rmin] = t.value;
+    else if (t.dataset.cmax !== undefined) w.cmax[t.dataset.cmax] = t.value;
+    else if (t.id === "gm-value") w.value = t.value;
+    else return;
+    t.classList.remove("wrong");
+  });
+  body.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.classList.contains("ans")) { e.preventDefault(); check(); } });
+
+  function tryDelete() {
+    const pb = pb_(), w = state.work.dominance, tab = "dominance";
+    if (!w.vsel) { bad(tab, "Choose the strategy to cross off."); renderWork(); return; }
+    if (!w.dsel) { bad(tab, `Choose the strategy that strongly dominates ${esc(SN(w.vsel[0], +w.vsel.slice(2)))}.`); renderWork(); return; }
+    const p = w.vsel[0], v = +w.vsel.slice(2), d = +w.dsel.slice(2);
+    const rs = [...w.rs], cs = [...w.cs];
+    const V = esc(SN(p, v)), Dn = esc(SN(p, d));
+    if (strongly(pb, p, d, v, rs, cs)) {
+      w.dels.push({ p, v, d, rs, cs });
+      (p === "r" ? w.rs : w.cs).delete(v);
+      w.vsel = ""; w.dsel = "";
+      state.hint = { tab, cls: "good", html: `<b>Correct:</b> ${domStepText({ p, v, d, rs, cs })}` };
+      renderWork(); return;
+    }
+    mistake(tab);
+    let msg;
+    const opp = p === "r" ? cs : rs;
+    if (weakly(pb, p, d, v, rs, cs)) {
+      const eq = opp.filter((x) => (p === "r" ? pb.A[d][x].eq(pb.A[v][x]) : pb.B[x][d].eq(pb.B[x][v]))).map((x) => SN(p === "r" ? "c" : "r", x));
+      msg = `${Dn} only <b>weakly</b> dominates ${V}: they do equally well against ${esc(andList(eq))}. Iterated deletion here uses strong dominance only, so ${V} stays.`;
+    } else if (strongly(pb, p, v, d, rs, cs) && ((p === "r" && !zero() && cs.every((j) => pb.B[d][j].cmp(pb.B[v][j]) > 0)) || (p === "c" && rs.every((i) => pb.A[i][d].cmp(pb.A[i][v]) > 0)))) {
+      msg = `It’s the other way round: ${V} strongly dominates ${Dn}. ${p === "r" ? "Row’s strategies are compared by Row’s payoffs, the first number in each cell." : zero() ? "The numbers are Row’s payoffs, so Column wants them <b>low</b>." : "Column’s strategies are compared by Column’s payoffs, the second number in each cell."}`;
+    } else if (p === "r" && !zero() && cs.every((j) => pb.B[d][j].cmp(pb.B[v][j]) > 0)) {
+      msg = `That compares Column’s payoffs. Whether one of Row’s strategies dominates another depends on Row’s payoffs, the first number in each cell.`;
+    } else if (p === "c" && !zero() && rs.every((i) => pb.A[i][d].cmp(pb.A[i][v]) > 0)) {
+      msg = `That compares Row’s payoffs. Whether one of Column’s strategies dominates another depends on Column’s payoffs, the second number in each cell.`;
+    } else if (p === "c" && zero() && rs.every((i) => pb.A[i][d].cmp(pb.A[i][v]) > 0)) {
+      msg = `In a zero-sum game the numbers are Row’s payoffs, so Column wants them <b>low</b>. Against every row, ${Dn} gives Row more than ${V}, so ${Dn} is worse for Column, not better.`;
+    } else if (strongly(pb, p, v, d, rs, cs)) {
+      msg = `It’s the other way round: ${V} strongly dominates ${Dn}.`;
+    } else {
+      const x = opp.find((y) => (p === "r" ? pb.A[d][y].cmp(pb.A[v][y]) <= 0 : pb.B[y][d].cmp(pb.B[y][v]) <= 0));
+      if (p === "r") msg = `${Dn} doesn’t strongly dominate ${V}: against ${esc(CN(x))}, ${V} gets ${esc(pb.aText[v][x])} and ${Dn} gets ${esc(pb.aText[d][x])}.`;
+      else if (zero()) msg = `${Dn} doesn’t strongly dominate ${V}: against ${esc(RN(x))}, ${V} gives Row ${esc(pb.aText[x][v])} and ${Dn} gives Row ${esc(pb.aText[x][d])}, and Column wants Row’s payoff low.`;
+      else msg = `${Dn} doesn’t strongly dominate ${V}: against ${esc(RN(x))}, Column gets ${esc(pb.bText[x][v])} with ${V} and ${esc(pb.bText[x][d])} with ${Dn}.`;
+      const deleted = p === "r" ? range(state.results.C).filter((j) => !w.cs.has(j)) : range(state.results.R).filter((i) => !w.rs.has(i));
+      if (deleted.length) msg += ` (Only the strategies still in the game count.)`;
+    }
+    bad(tab, `<b>Not quite:</b> ${msg}`);
+    renderWork();
+  }
+  function tryDone() {
+    const pb = pb_(), w = state.work.dominance, tab = "dominance";
+    const left = firstDominated(pb, [...w.rs], [...w.cs]);
+    if (left) {
+      mistake(tab);
+      bad(tab, `<b>Not quite:</b> one of ${player(left.p)}’s remaining strategies is still strongly dominated.`);
+      renderWork(); return;
+    }
+    solvedNow(tab, `<b>Correct:</b> nothing else is strongly dominated, so ${esc(survivorsText([...w.rs].sort((a, b) => a - b), [...w.cs].sort((a, b) => a - b)))}.`);
+    render();
+  }
+
+  const setEq = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
+  function check() {
+    const res = state.results, pb = pb_(), tab = state.tab, w = state.work;
+    if (!pb || availability(tab)) return;
+    const issues = [];
+    let done = false;
+    if (tab === "nash") {
+      const n = w.nash;
+      if (n.stage === 1) {
+        const wantR = new Set(), wantC = new Set();
+        range(res.C).forEach((j) => res.rowBR[j].forEach((i) => wantR.add(`${i},${j}`)));
+        range(res.R).forEach((i) => res.colBR[i].forEach((j) => wantC.add(`${i},${j}`)));
+        const marks = { r: new Set(), c: new Set() };
+        const keys = [];
+        range(res.R).forEach((i) => range(res.C).forEach((j) => keys.push(`${i},${j}`)));
+        keys.forEach((key) => { if (n.rstars.has(key) !== wantR.has(key)) marks.r.add(key); if (n.cstars.has(key) !== wantC.has(key)) marks.c.add(key); });
+        n.marks = marks;
+        if (!marks.r.size && !marks.c.size) {
+          n.stage = 2; n.marks = null;
+          state.hint = { tab, cls: "good", html: `<b>Correct</b> stars. Now click every cell where both payoffs are starred, or tick “No pure-strategy equilibrium”, and press Check.` };
+          renderWork(); return;
+        }
+        mistake(tab);
+        // common confusions
+        const rowWise = new Set(), colByB = new Set(), colWise = new Set(), rowByA = new Set();
+        range(res.R).forEach((i) => { const mA = maxOf(pb.A[i]); range(res.C).forEach((j) => { if (pb.A[i][j].eq(mA)) rowWise.add(`${i},${j}`); }); });
+        range(res.C).forEach((j) => { const mB = maxOf(range(res.R).map((i) => pb.B[i][j])); range(res.R).forEach((i) => { if (pb.B[i][j].eq(mB)) colByB.add(`${i},${j}`); }); });
+        range(res.C).forEach((j) => { const mB = maxOf(range(res.R).map((i) => pb.B[i][j])); range(res.R).forEach((i) => { if (pb.B[i][j].eq(mB)) colWise.add(`${i},${j}`); }); });
+        range(res.R).forEach((i) => { const mA = maxOf(pb.A[i]); range(res.C).forEach((j) => { if (pb.A[i][j].eq(mA)) rowByA.add(`${i},${j}`); }); });
+        const notes = [];
+        if (marks.r.size && setEq(n.rstars, rowWise) && !setEq(rowWise, wantR)) notes.push(zero() ? "For Row’s stars, go down each column: Row’s best response to a Column strategy is the highest number in that column." : "For Row’s stars, go down each column: Row’s best response to a Column strategy is the highest first number in that column.");
+        else if (marks.r.size && setEq(n.rstars, colByB) && !setEq(colByB, wantR)) notes.push("Row’s best responses depend on Row’s payoffs, the first number in each cell.");
+        if (marks.c.size && setEq(n.cstars, colWise) && !setEq(colWise, wantC)) notes.push(zero() ? "For Column’s stars, go along each row: Column’s best response to a Row strategy is the lowest number in that row." : "For Column’s stars, go along each row: Column’s best response to a Row strategy is the highest second number in that row.");
+        else if (marks.c.size && setEq(n.cstars, rowByA) && !setEq(rowByA, wantC)) notes.push(zero() ? "The numbers are Row’s payoffs, so Column’s best response is the lowest number in each row, not the highest." : "Column’s best responses depend on Column’s payoffs, the second number in each cell.");
+        const badCols = range(res.C).filter((j) => range(res.R).some((i) => marks.r.has(`${i},${j}`)));
+        const badRows = range(res.R).filter((i) => range(res.C).some((j) => marks.c.has(`${i},${j}`)));
+        badCols.forEach((j) => issues.push(`Row’s best response to ${CN(j)}`));
+        badRows.forEach((i) => issues.push(`Column’s best response to ${RN(i)}`));
+        const shown = issues.slice(0, 4).join("; ") + (issues.length > 4 ? `; and ${issues.length - 4} more` : "");
+        bad(tab, `<b>Not quite</b> (marked in red): ${esc(shown)}.${notes.length ? " " + esc(notes.join(" ")) : ""}`);
+        renderWork(); return;
+      }
+      const marks = { cells: new Set(), none: false };
+      range(res.R).forEach((i) => range(res.C).forEach((j) => {
+        const key = `${i},${j}`;
+        if (n.picks.has(key) && !res.neSet.has(key)) {
+          marks.cells.add(key);
+          if (!res.rowBR[j].has(i)) { const b = [...res.rowBR[j]][0]; issues.push(`${cellName(i, j)} isn’t an equilibrium: Row would switch to ${RN(b)} (${pb.aText[b][j]} > ${pb.aText[i][j]})`); }
+          else { const b = [...res.colBR[i]][0]; issues.push(zero() ? `${cellName(i, j)} isn’t an equilibrium: Column would switch to ${CN(b)}, where Row gets only ${pb.aText[i][b]} instead of ${pb.aText[i][j]}` : `${cellName(i, j)} isn’t an equilibrium: Column would switch to ${CN(b)} (${pb.bText[i][b]} > ${pb.bText[i][j]})`); }
+        } else if (!n.picks.has(key) && res.neSet.has(key)) { marks.cells.add(key); issues.push(`${cellName(i, j)} has both stars`); }
+      }));
+      if (n.none && res.ne.length) { marks.none = true; issues.push("there is an equilibrium: some cell has both stars"); }
+      if (!n.none && !res.ne.length) { marks.none = true; issues.push("no cell has both stars, so tick “No pure-strategy equilibrium”"); }
+      if (n.none && n.picks.size && !res.ne.length) { issues.push("with no equilibrium, no cell should be selected"); }
+      n.marks = marks;
+      done = !issues.length;
+      if (done) solvedNow(tab, `<b>Correct:</b> ${res.ne.length ? `${res.ne.length > 1 ? "the Nash equilibria are" : "the Nash equilibrium is"} ${esc(cellsList(res.ne))}` : "this game has no Nash equilibrium in pure strategies"}.`);
+    } else if (tab === "pareto") {
+      const p = w.pareto, marks = new Set();
+      range(res.R).forEach((i) => range(res.C).forEach((j) => {
+        const key = `${i},${j}`, by = res.paretoBy[key];
+        if (p.picks.has(key) && by) { marks.add(key); issues.push(`${cellName(i, j)} ${pay(i, j)} is Pareto-dominated by ${cellName(by[0], by[1])} ${pay(by[0], by[1])}`); }
+        else if (!p.picks.has(key) && !by) { marks.add(key); issues.push(`${cellName(i, j)} ${pay(i, j)} is Pareto-optimal: no outcome is at least as good for both players and better for one`); }
+      }));
+      p.marks = marks; done = !issues.length;
+      if (done) solvedNow(tab, `<b>Correct:</b> ${esc(cellsList(res.pareto))} ${res.pareto.length > 1 ? "are" : "is"} Pareto-optimal.${esc(neParetoNote())}`);
+    } else if (tab === "saddle") {
+      const s = w.saddle, z = res.zs, marks = { rmin: new Set(), cmax: new Set(), rpick: new Set(), cpick: new Set(), verdict: false, value: false };
+      const notes = [];
+      range(res.R).forEach((i) => {
+        if (!accepts(s.rmin[i] || "", z.rowMin[i])) {
+          marks.rmin.add(i); issues.push(`the minimum of row ${RN(i)}`);
+          if (accepts(s.rmin[i] || "", maxOf(pb.A[i])) && !notes.includes("r")) notes.push("r");
+        }
+      });
+      range(res.C).forEach((j) => {
+        if (!accepts(s.cmax[j] || "", z.colMax[j])) {
+          marks.cmax.add(j); issues.push(`the maximum of column ${CN(j)}`);
+          if (accepts(s.cmax[j] || "", minOf(range(res.R).map((i) => pb.A[i][j]))) && !notes.includes("c")) notes.push("c");
+        }
+      });
+      const wr = new Set(z.maximinRows), wc = new Set(z.minimaxCols);
+      if (!setEq(s.rpick, wr)) { issues.push("Row’s maximin strategy (**)"); range(res.R).forEach((i) => { if (s.rpick.has(i) !== wr.has(i)) marks.rpick.add(i); }); }
+      if (!setEq(s.cpick, wc)) { issues.push("Column’s minimax strategy (**)"); range(res.C).forEach((j) => { if (s.cpick.has(j) !== wc.has(j)) marks.cpick.add(j); }); }
+      if (s.verdict !== (z.saddle ? "yes" : "no")) { marks.verdict = true; issues.push("whether there is a saddle point"); }
+      else if (z.saddle && !accepts(s.value, z.maximin)) { marks.value = true; issues.push("the value of the game"); }
+      s.marks = marks; done = !issues.length;
+      if (!done) {
+        const extra = (notes.includes("r") ? " Row’s maximin looks at the <b>smallest</b> number in each row (Row’s worst case)." : "") + (notes.includes("c") ? " Column looks at the <b>largest</b> number in each column (the most Column can lose)." : "");
+        mistake(tab);
+        const shown = issues.slice(0, 4).join("; ") + (issues.length > 4 ? `; and ${issues.length - 4} more` : "");
+        bad(tab, `<b>Not quite</b> (marked in red): ${esc(shown)}.${extra}`);
+        render(); return;
+      }
+      solvedNow(tab, z.saddle ? `<b>Correct:</b> ${esc(cellsList(z.saddleCells))} ${z.saddleCells.length > 1 ? "are saddle points" : "is a saddle point"}, and the value of the game is ${esc(fmt(z.maximin))}.` : `<b>Correct:</b> maximin (${esc(fmt(z.maximin))}) is less than minimax (${esc(fmt(z.minimax))}), so there is no saddle point and no solution in pure strategies.`);
+      render(); return;
+    }
+    if (!done) {
+      mistake(tab);
+      const shown = issues.slice(0, 4).join("; ") + (issues.length > 4 ? `; and ${issues.length - 4} more` : "");
+      bad(tab, `<b>Not quite</b> (marked in red): ${esc(shown)}.`);
+    }
+    render();
+  }
+  $("checkBtn").onclick = check;
+  $("clearBtn").onclick = () => {
+    if (!state.work) return;
+    state.work[state.tab] = freshWork(state.problem)[state.tab];
+    state.solved[state.tab] = false; state.hint = null;
+    render();
+  };
+
+  // ================= Step through =================
+  const go = (s) => {
+    if (!state.problem || availability(state.tab)) return;
+    const N = stepsFor(state.tab).length;
+    state.step[state.tab] = Math.max(0, Math.min(N, s));
+    renderWork();
+  };
+  $("stFirst").onclick = () => go(0);
+  $("stPrev").onclick = () => go(state.step[state.tab] - 1);
+  $("stNext").onclick = () => go(state.step[state.tab] + 1);
+  $("stLast").onclick = () => go(Infinity);
+  window.addEventListener("keydown", (e) => {
+    if (!window.LL || LL.active !== "games" || state.mode !== "step" || e.metaKey || e.ctrlKey || e.altKey) return;
+    const a = document.activeElement;
+    if (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)) return;
+    const s = state.step[state.tab];
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); go(s + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(s - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); go(Infinity); }
+  });
+
+  // ================= Editor =================
+  function renderEditor(badSet = new Set()) {
+    const R = draft.rows.length, C = draft.cols.length, z = draft.kind === "zero";
+    const cls = (k) => (badSet.has(k) ? " err" : "");
+    let h = `<thead><tr><th class="corner"><span class="r">Row</span> \\ <span class="c">Column</span></th>`;
+    draft.cols.forEach((s, j) => {
+      h += `<th><div class="cellbox"><input class="name cp" data-k="c" data-c="${j}" value="${esc(s)}" aria-label="Name of Column’s strategy ${j + 1}" placeholder="C${sub(j + 1)}">${C > 2 ? `<button type="button" class="rm" data-rmcol="${j}" aria-label="Remove ${esc(s)}">×</button>` : ""}</div></th>`;
+    });
+    h += `<th></th></tr></thead><tbody>`;
+    draft.rows.forEach((o, i) => {
+      h += `<tr><th><input class="name rp" data-k="r" data-r="${i}" value="${esc(o)}" aria-label="Name of Row’s strategy ${i + 1}" placeholder="R${sub(i + 1)}"></th>`;
+      draft.cols.forEach((cn, j) => {
+        const aIn = `<input class="pay${cls(`a${i},${j}`)}" data-k="a" data-r="${i}" data-c="${j}" value="${esc(draft.a[i][j])}" aria-label="Row’s payoff at ${esc(o)}, ${esc(cn)}" inputmode="decimal">`;
+        const bIn = z ? "" : `,<input class="pay${cls(`b${i},${j}`)}" data-k="b" data-r="${i}" data-c="${j}" value="${esc(draft.b[i][j])}" aria-label="Column’s payoff at ${esc(o)}, ${esc(cn)}" inputmode="decimal">`;
+        h += `<td>${z ? aIn : `<span class="pairin">${bIn.replace(/^,/, "")}${aIn}</span>`}</td>`;
+      });
+      h += `<td>${R > 2 ? `<button type="button" class="rm" data-rmrow="${i}" aria-label="Remove ${esc(o)}">×</button>` : ""}</td></tr>`;
+    });
+    h += `</tbody>`;
+    $("editor").innerHTML = h;
+    $("addRow").disabled = R >= MAX_N; $("addCol").disabled = C >= MAX_N;
+  }
+  const ed = $("editor");
+  ed.addEventListener("input", (e) => {
+    const t = e.target, k = t.dataset.k; if (!k) return;
+    const i = +t.dataset.r, j = +t.dataset.c;
+    if (k === "r") draft.rows[i] = t.value;
+    else if (k === "c") draft.cols[j] = t.value;
+    else if (k === "a") draft.a[i][j] = t.value;
+    else if (k === "b") draft.b[i][j] = t.value;
+    draft.name = ""; draft.preset = "";
+    t.classList.remove("err");
+    updateDirty();
+  });
+  ed.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); build(); } });
+  ed.addEventListener("click", (e) => {
+    const b = e.target.closest("button.rm"); if (!b) return;
+    if (b.dataset.rmrow !== undefined) { const i = +b.dataset.rmrow; draft.rows.splice(i, 1); draft.a.splice(i, 1); draft.b.splice(i, 1); }
+    else { const j = +b.dataset.rmcol; draft.cols.splice(j, 1); draft.a.forEach((r) => r.splice(j, 1)); draft.b.forEach((r) => r.splice(j, 1)); }
+    draft.name = ""; draft.preset = "";
+    renderEditor(); updateDirty();
+  });
+  $("addRow").onclick = () => {
+    if (draft.rows.length >= MAX_N) return;
+    const n = draft.rows.length + 1;
+    draft.rows.push(`R${sub(n)}`); draft.a.push(draft.cols.map(() => "")); draft.b.push(draft.cols.map(() => ""));
+    draft.name = ""; draft.preset = "";
+    renderEditor(); updateDirty();
+    const inp = ed.querySelector(`input[data-k="a"][data-r="${n - 1}"][data-c="0"]`); if (inp) inp.focus();
+  };
+  $("addCol").onclick = () => {
+    if (draft.cols.length >= MAX_N) return;
+    const n = draft.cols.length + 1;
+    draft.cols.push(`C${sub(n)}`); draft.a.forEach((r) => r.push("")); draft.b.forEach((r) => r.push(""));
+    draft.name = ""; draft.preset = "";
+    renderEditor(); updateDirty();
+    const inp = ed.querySelector(`input[data-k="a"][data-r="0"][data-c="${n - 1}"]`); if (inp) inp.focus();
+  };
+  $("buildBtn").onclick = build;
+
+  const narrow = window.matchMedia("(max-width: 979px)");
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  function showStage() { if (narrow.matches) document.querySelector("#gmApp .stage").scrollIntoView({ behavior: calm.matches ? "auto" : "smooth", block: "start" }); }
+  function setEditing(on) {
+    state.editing = on;
+    $("editCard").hidden = !on; $("workCard").hidden = on; $("summary").hidden = on;
+    $("cancelBtn").hidden = !state.problem;
+  }
+  $("ownBtn").onclick = () => { setEditing(true); const first = ed.querySelector('input[data-k="a"]'); if (first) first.focus(); };
+  $("cancelBtn").onclick = () => {
+    if (!state.built) return;
+    draft = JSON.parse(state.built);
+    $("edErr").hidden = true; state.buildError = false;
+    renderEditor(); setEditing(false); syncControls(); syncClassic(); render();
+  };
+  function updateDirty() {
+    const dirty = state.built !== snapshot();
+    $("dirtyHint").hidden = !dirty;
+    const stale = dirty || state.buildError;
+    $("workBody").classList.toggle("stale", !!stale);
+    $("summary").style.opacity = stale ? "0.35" : "";
+  }
+
+  // ================= Setup + mode controls =================
+  function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
+  function syncControls() {
+    segSync("kindSeg", draft.kind); segSync("modeSeg", state.mode);
+    $("kindNote").textContent = draft.kind === "zero"
+      ? "Each cell holds Row’s payoff; Column’s payoff is its negative. Row wants the numbers high, Column wants them low."
+      : "Each cell holds two payoffs: Row’s first, Column’s second.";
+    $("modeNote").textContent = {
+      practice: "Work through each tab yourself. Each verdict appears in the summary once you get it right.",
+      answers: "The full worked analysis for the selected tab.",
+      step: "Reveal the procedure one step at a time with ▶ or the arrow keys."
+    }[state.mode];
+    syncTally();
+  }
+  $("kindSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || b.dataset.v === draft.kind) return;
+    if (b.dataset.v === "zero") draft.b = draft.a.map((row) => row.map(negText));
+    else draft.b = draft.a.map((row) => row.map(negText));
+    draft.kind = b.dataset.v; draft.name = ""; draft.preset = "";
+    syncControls(); syncClassic(); renderEditor(); updateDirty();
+    setEditing(true); showStage();
+  });
+  $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.v; state.hint = null; render(); writeHash(); });
+  $("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.tab = b.dataset.v; renderWork(); writeHash(); });
+
+  // classic games
+  $("classic").innerHTML = `<option value="">— choose a game —</option>` + PRESETS.map((p) => `<option value="${p.id}">${esc(p.name)}${p.kind === "zero" ? " (zero-sum)" : ""}</option>`).join("");
+  function syncClassic() { $("classic").value = draft.preset || ""; }
+  $("classic").addEventListener("change", (e) => {
+    const p = PRESETS.find((x) => x.id === e.target.value); if (!p) return;
+    draft = fromPreset(p);
+    renderEditor(); build(); showStage();
+  });
+
+  // size
+  function applySize(v) { document.documentElement.style.setProperty("--tsize", v + "px"); segSync("sizeSeg", v); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+
+  // ================= Random games =================
+  const LEVEL_NOTE = {
+    easy: "2 × 2, small payoffs, no ties.",
+    medium: "3 × 3; often several rounds of deletion, or more than one equilibrium.",
+    hard: "3 × 4 or 4 × 4, with ties: weak dominance and tied best responses."
+  };
+  const ri = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+  const pick = (xs) => xs[ri(0, xs.length - 1)];
+  function noTies(A, B) {
+    const R = A.length, C = A[0].length;
+    for (let j = 0; j < C; j++) if (new Set(range(R).map((i) => A[i][j])).size < R) return false;
+    for (let i = 0; i < R; i++) if (new Set(range(C).map((j) => B[i][j])).size < C) return false;
+    return true;
+  }
+  function randomGame(level, rkind) {
+    const z = rkind === "zero" || (rkind === "either" && Math.random() < 0.5);
+    const R = level === "easy" ? 2 : level === "medium" ? 3 : ri(3, 4);
+    const C = level === "easy" ? 2 : level === "medium" ? 3 : 4;
+    const [lo, hi] = z ? (level === "easy" ? [-5, 5] : [-5, 9]) : (level === "easy" ? [0, 5] : [0, 9]);
+    const strict = level !== "hard";
+    // targets
+    const r = Math.random();
+    const wantNE = z ? null : level === "easy" ? (r < 0.5 ? 1 : r < 0.85 ? 2 : 0) : level === "medium" ? (r < 0.6 ? 1 : r < 0.85 ? 2 : 0) : (r < 0.45 ? 1 : r < 0.8 ? 2 : 0);
+    const wantSaddle = z ? Math.random() < 2 / 3 : null;
+    const wantDeep = !z && level === "medium" && Math.random() < 0.6;
+    const wantDel = !z && level === "hard" && Math.random() < 0.6;
+    const wantTieThing = level === "hard" && Math.random() < 0.5;
+    let fallback = null;
+    for (let tries = 0; tries < 6000; tries++) {
+      const A = range(R).map(() => range(C).map(() => ri(lo, hi)));
+      const B = z ? A.map((row) => row.map((x) => -x)) : range(R).map(() => range(C).map(() => ri(lo, hi)));
+      if (strict && !noTies(A, B)) continue;
+      if (new Set(A.map((row, i) => row.join() + "|" + B[i].join())).size < R) continue;
+      const pb = { kind: z ? "zero" : "general", rows: range(R).map((i) => `R${sub(i + 1)}`), cols: range(C).map((j) => `C${sub(j + 1)}`), A: A.map((row) => row.map((x) => new Q(BigInt(x)))), B: B.map((row) => row.map((x) => new Q(BigInt(x)))) };
+      const res = analyze(pb);
+      const cand = { z, A, B };
+      if (!fallback) fallback = cand;
+      if (z) {
+        if (res.zs.saddle !== wantSaddle) continue;
+        if (strict && res.zs.saddle && res.zs.saddleCells.length !== 1) continue;
+        if (!strict && res.zs.saddle && res.zs.saddleCells.length > 2) continue;
+      } else {
+        if (wantNE === 2 ? res.ne.length < 2 : res.ne.length !== wantNE) continue;
+        if (wantDeep && res.dels.length < 2) continue;
+        if (level === "medium" && !wantDeep && res.dels.length >= 2 && wantNE !== 1) continue;
+        if (wantDel && res.dels.length < 1) continue;
+      }
+      if (wantTieThing) {
+        // a weakly (not strongly) dominated strategy, or a tied best response
+        let tie = res.rowBR.some((s) => s.size > 1) || res.colBR.some((s) => s.size > 1);
+        for (let i = 0; i < R && !tie; i++) for (let k = 0; k < R && !tie; k++) if (i !== k && weakly(pb, "r", k, i, range(R), range(C))) tie = true;
+        if (!tie) continue;
+      }
+      return cand;
+    }
+    return fallback;
+  }
+  let level = ["easy", "medium", "hard"].includes(store.get("dg-gm-level")) ? store.get("dg-gm-level") : "medium";
+  let rkind = ["general", "zero", "either"].includes(store.get("dg-gm-rkind")) ? store.get("dg-gm-rkind") : "either";
+  function syncLevel() {
+    segSync("levelSeg", level); segSync("rkindSeg", rkind);
+    const kindTxt = { general: "a general game", zero: "a zero-sum game", either: "a general or a zero-sum game" }[rkind];
+    const size = { easy: "2 × 2", medium: "3 × 3", hard: "3 × 4 or 4 × 4" }[level];
+    const what = { easy: "small payoffs, no ties", medium: "often several rounds of deletion, or more than one equilibrium", hard: "with ties: weak dominance and tied best responses" }[level];
+    $("levelNote").textContent = `New problem: ${kindTxt}, ${size}; ${what}.`;
+  }
+  $("levelSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; level = b.dataset.v; store.set("dg-gm-level", level); syncLevel(); });
+  $("rkindSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; rkind = b.dataset.v; store.set("dg-gm-rkind", rkind); syncLevel(); });
+  $("newBtn").onclick = () => {
+    const g = randomGame(level, rkind);
+    const R = g.A.length, C = g.A[0].length;
+    draft = {
+      name: "", preset: "", kind: g.z ? "zero" : "general",
+      rows: range(R).map((i) => `R${sub(i + 1)}`), cols: range(C).map((j) => `C${sub(j + 1)}`),
+      a: g.A.map((row) => row.map(String)), b: g.B.map((row) => row.map(String))
+    };
+    renderEditor(); build(); showStage();
+  };
+  syncLevel();
+
+  // ================= URL state =================
+  // #tab=games&g=general&n=Prisoner’s Dilemma&r=C&r=D&c=C&c=D&a=3,0&a=5,1&b=3,5&b=0,1&m=practice&t=nash
+  function writeHash() {
+    if (!state.problem || !state.built || !window.LL || LL.active !== "games") return;
+    const d = JSON.parse(state.built);
+    const p = new URLSearchParams();
+    p.set("tab", "games"); p.set("g", d.kind);
+    if (d.preset) p.set("pre", d.preset);
+    d.rows.forEach((x) => p.append("r", x));
+    d.cols.forEach((x) => p.append("c", x));
+    d.a.forEach((row) => p.append("a", row.map((v) => v.trim()).join(",")));
+    if (d.kind !== "zero") d.b.forEach((row) => p.append("b", row.map((v) => v.trim()).join(",")));
+    p.set("m", state.mode); p.set("t", state.tab);
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (!location.hash.includes("=") || !window.LL || LL.tabOfHash() !== "games") return false;
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (["practice", "answers", "step"].includes(p.get("m"))) state.mode = p.get("m");
+    if (TABS.includes(p.get("t"))) state.tab = p.get("t");
+    const pre = PRESETS.find((x) => x.id === p.get("pre"));
+    const rows = p.getAll("r"), cols = p.getAll("c");
+    const R = rows.length, C = cols.length;
+    if (R < 2 || C < 2 || R > MAX_N || C > MAX_N) { if (pre) { draft = fromPreset(pre); return true; } return false; }
+    const kind = p.get("g") === "zero" ? "zero" : "general";
+    const grid = (xs) => xs.length === R && xs.every((r) => r.length === C);
+    const a = p.getAll("a").map((row) => row.split(","));
+    if (!grid(a)) return false;
+    let b = p.getAll("b").map((row) => row.split(","));
+    if (kind === "zero" || !grid(b)) b = a.map((row) => row.map(negText));
+    draft = { name: "", preset: "", kind, rows, cols, a, b };
+    if (pre) { const f0 = fromPreset(pre); if (JSON.stringify({ ...f0, name: "", preset: "" }) === JSON.stringify(draft)) draft = f0; }
+    return true;
+  }
+  window.addEventListener("hashchange", () => {
+    if (!window.LL || LL.tabOfHash() !== "games") return;
+    if (readHash()) { renderEditor(); build(); } else render();
+  });
+
+  readHash();
+  renderEditor();
+  build();
+  window.LL_hooks.games = { writeHash };
+  window.GM_TEST = { analyze, randomGame, Q, state, PRESETS };
+};
+
+</script>
+<script>
+window.LL_hooks = {};
+window.LL = (() => {
+  "use strict";
+  const TABS = ["decisions", "games"];
+  const PANEL = { decisions: "decApp", games: "gmApp" };
+  const INIT = { decisions: "initDec", games: "initGames" };
+  const SIZE_SEG = { decisions: "sizeSeg", games: "gm-sizeSeg" };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const started = {};
+  let navigating = false;
+  const api = { active: null };
+
+  api.tabOfHash = (h = location.hash) => {
+    const p = new URLSearchParams(h.replace(/^#/, ""));
+    let t = p.get("tab");
+    if (t === "decision" || t === "dec") t = "decisions";
+    if (t === "game") t = "games";
+    if (!t && (p.has("o") || p.has("u"))) t = "decisions"; // links made by Decision Lab
+    return TABS.includes(t) ? t : null;
+  };
+
+  function sync(id, v) { const s = document.getElementById(id); if (s) s.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(v)))); }
+
+  // shared size: one S/M/L/XL control, mapped onto each tool's own scale
+  let sizeIdx = +(store.get("dg-size") ?? 1);
+  if (!(sizeIdx >= 0 && sizeIdx <= 3)) sizeIdx = 1;
+  function applySize(tab) {
+    const seg = document.getElementById(SIZE_SEG[tab]);
+    const b = seg && seg.querySelectorAll("button")[sizeIdx];
+    if (b && started[tab]) b.click();
+  }
+  document.getElementById("ll-sizeSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    sizeIdx = +b.dataset.v; store.set("dg-size", sizeIdx); sync("ll-sizeSeg", sizeIdx);
+    TABS.forEach(applySize);
+  });
+  sync("ll-sizeSeg", sizeIdx);
+
+  // shared theme
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", v);
+    store.set("ttb-theme2", v);
+    ["ll-themeSeg", "themeSeg"].forEach((id) => sync(id, v));
+  }
+  document.getElementById("ll-themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  applyTheme(store.get("ttb-theme2") || "auto");
+
+  function show(tab) {
+    api.active = tab;
+    TABS.forEach((t) => {
+      document.getElementById(PANEL[t]).hidden = t !== tab;
+      const btn = document.getElementById("ll-tab-" + t);
+      btn.setAttribute("aria-selected", String(t === tab));
+      btn.tabIndex = t === tab ? 0 : -1;
+    });
+    if (!started[tab]) {
+      started[tab] = true;
+      window[INIT[tab]]();
+      applySize(tab);
+      sync("ll-themeSeg", store.get("ttb-theme2") || "auto");
+    } else if (window.LL_hooks[tab] && window.LL_hooks[tab].shown) {
+      requestAnimationFrame(() => window.LL_hooks[tab].shown());
+    }
+    const h = window.LL_hooks[tab];
+    if (h && h.writeHash) h.writeHash();
+    else if (api.tabOfHash() !== tab) { try { history.replaceState(null, "", `${location.pathname}${location.search}#tab=${tab}`); } catch (e) { /* ignore */ } }
+    store.set("dg-tab", tab);
+  }
+
+  // jump to a tool with state, e.g. go("games", { pre: "pd", m: "answers" })
+  api.go = (tab, params = {}) => {
+    const p = new URLSearchParams({ tab });
+    Object.entries(params).forEach(([k, v]) => (Array.isArray(v) ? v.forEach((x) => p.append(k, x)) : p.set(k, v)));
+    api.goHash(p.toString());
+    window.scrollTo({ top: 0 });
+  };
+  api.goHash = (h) => {
+    const tab = api.tabOfHash("#" + h) || "decisions";
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${h}`); } catch (e) { /* ignore */ }
+    if (started[tab]) { navigating = true; window.dispatchEvent(new HashChangeEvent("hashchange")); navigating = false; }
+    show(tab);
+  };
+
+  const tabsEl = document.getElementById("ll-tabs");
+  tabsEl.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b && b.dataset.tab !== api.active) show(b.dataset.tab); });
+  tabsEl.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const i = TABS.indexOf(api.active), n = TABS[(i + (e.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length];
+    show(n); document.getElementById("ll-tab-" + n).focus();
+  });
+
+  api.start = () => {
+    const saved = store.get("dg-tab");
+    show(api.tabOfHash() || (TABS.includes(saved) ? saved : "decisions"));
+    // a pasted link with a different tab
+    window.addEventListener("hashchange", () => { if (navigating) return; const t = api.tabOfHash(); if (t && t !== api.active) setTimeout(() => show(t), 0); });
+  };
+  return api;
+})();
+
+LL.start();
+</script>
+<script>
+// Shared lab shell: Present mode (hide the header, tabs and sidebar; XL size; Esc returns).
+// Also marks scrollable areas (.scrollfade > .scrollx) so a fade shows when more is off to the right.
+(() => {
+  "use strict";
+  const root = document.documentElement;
+  const sizeSeg = document.getElementById("ll-sizeSeg");
+  const btn = document.getElementById("ll-presentBtn");
+  const ex = document.getElementById("ll-presentExit");
+  let prev = null;
+  const curSize = () => { const b = sizeSeg.querySelector('button[aria-pressed="true"]'); return b ? b.dataset.v : "1"; };
+  const setSize = (v) => { const b = sizeSeg.querySelector(`button[data-v="${v}"]`); if (b) b.click(); };
+  const on = () => root.classList.contains("presenting");
+  function enter() {
+    if (on()) return;
+    prev = curSize();
+    root.classList.add("presenting");
+    setSize("3");
+    ex.hidden = false;
+    window.scrollTo({ top: 0 });
+    window.dispatchEvent(new Event("resize"));
+  }
+  function exit() {
+    if (!on()) return;
+    root.classList.remove("presenting");
+    if (prev != null) setSize(prev);
+    ex.hidden = true;
+    btn.focus({ preventScroll: true });
+    window.dispatchEvent(new Event("resize"));
+  }
+  btn.addEventListener("click", enter);
+  ex.addEventListener("click", exit);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && on()) { e.preventDefault(); e.stopPropagation(); exit(); } }, true);
+
+  // edge fade for horizontally scrolling areas
+  function fade(sc) {
+    const w = sc.closest(".scrollfade"); if (!w) return;
+    w.classList.toggle("more", sc.scrollLeft + sc.clientWidth < sc.scrollWidth - 2);
+  }
+  const refresh = () => document.querySelectorAll(".scrollfade .scrollx").forEach(fade);
+  document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("scrollx")) fade(e.target); }, true);
+  window.addEventListener("resize", refresh);
+  let pend = false;
+  new MutationObserver(() => { if (pend) return; pend = true; requestAnimationFrame(() => { pend = false; refresh(); }); }).observe(document.body, { childList: true, subtree: true });
+  window.LLPresent = { enter, exit, refresh };
+})();
+
+</script>
+</body>
+</html>

@@ -451,6 +451,35 @@
     #translateApp ol.sf li .f { grid-column: 2; justify-self: start; }
     #translateApp .keypad.six { max-width: none; }
   }
+
+  /* ================= shared lab shell: Present mode ================= */
+  .ll-present { margin-left: 4px; }
+  #ll-presentExit { display: none; }
+  #ll-presentExit kbd { font: inherit; font-size: 0.75em; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+  html.presenting #ll-presentExit { display: inline-flex; align-items: center; position: fixed; top: 10px; right: 12px; z-index: 60; opacity: 0.5; }
+  html.presenting #ll-presentExit:hover, html.presenting #ll-presentExit:focus-visible { opacity: 1; }
+  html.presenting .ll-top, html.presenting #ll-tabs, html.presenting .app > .panel, html.presenting [data-nopresent] { display: none !important; }
+  html.presenting .app { display: block !important; max-width: none !important; height: auto !important; min-height: 0 !important; padding: 50px 24px 28px !important; }
+  html.presenting .stage { width: 100%; }
+  @media (max-width: 640px) { .ll-present { display: none; } }
+
+  /* ================= shared: Check bar at the end of the task, sticky on phones ================= */
+  .checkbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  @media (max-width: 640px) {
+    .checkbar.sticky, .sticky-phone {
+      position: sticky; bottom: 0; z-index: 5; background: var(--surface);
+      box-shadow: 0 -1px 0 var(--line), 0 -6px 12px -8px rgb(0 0 0 / 0.25);
+    }
+  }
+
+  /* ================= shared: wide content scrolls with a visible edge fade ================= */
+  .scrollx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scrollfade { position: relative; }
+  .scrollfade::after {
+    content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 40px; pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--surface)); opacity: 0; transition: opacity 0.15s;
+  }
+  .scrollfade.more::after { opacity: 1; }
 </style>
 </head>
 <body>
@@ -470,8 +499,10 @@
     <div class="seg" role="group" aria-label="Theme" id="ll-themeSeg">
       <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
     </div>
+    <button type="button" class="btn small ll-present" id="ll-presentBtn" title="Full-width view for the projector (Esc to exit)">Present</button>
   </div>
 </header>
+<button type="button" class="btn small" id="ll-presentExit" hidden>Exit <kbd>Esc</kbd></button>
 <nav class="tabs" role="tablist" aria-label="Logic Lab tools" id="ll-tabs">
   <button type="button" role="tab" data-tab="table" id="ll-tab-table" aria-controls="tableApp">Tables</button>
   <button type="button" role="tab" data-tab="tree" id="ll-tab-tree" aria-controls="treeApp">Trees</button>
@@ -541,7 +572,7 @@
       </div>
 
       <div class="buildrow">
-        <button type="button" class="btn primary" id="buildBtn">Build table</button>
+        <button type="button" class="btn" id="buildBtn">Build table</button>
         <span class="hint" id="dirtyHint" hidden>Not built yet. Press Enter or click Build.</span>
       </div>
 
@@ -567,10 +598,10 @@
       <div class="opt">
         <span id="modeLbl">Mode</span>
         <div class="seg full" role="group" aria-labelledby="modeLbl" id="modeSeg">
-          <button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button><button type="button" data-v="practice">Practice</button>
+          <button type="button" data-v="practice">Practice</button><button type="button" data-v="step">Step through</button><button type="button" data-v="answers">Show answers</button>
         </div>
       </div>
-      <label class="check" id="lettersOpt" hidden><input type="checkbox" id="f-letters"> Students fill in the letter columns too</label>
+      <label class="check" id="lettersOpt" hidden><input type="checkbox" id="f-letters"> Fill in the reference columns too</label>
       <label class="check" id="stochOpt" hidden><input type="checkbox" id="f-stoch"> Stochastic truth table (a probability for each row)</label>
     </section>
 
@@ -602,19 +633,13 @@
             <button class="btn small primary" type="button" id="stNext" aria-label="Next step">▶</button>
             <button class="btn small" type="button" id="stLast" aria-label="Show all">⏭</button>
           </div>
-          <div id="practiceBtns" class="actions" hidden>
-            <button class="btn small primary" type="button" id="prCheck">Check</button>
-            <button class="btn small" type="button" id="prClear">Clear</button>
-          </div>
-          <a class="btn small" id="treeLink" href="#">Syntax tree →</a>
-          <button class="btn small" type="button" id="copyBtn">Copy table</button>
-          <button class="btn small" type="button" id="printBtn">Print</button>
+          <a class="btn small" id="treeLink" href="#" data-nopresent>Syntax tree →</a>
         </div>
       </div>
       <div class="stepcap" id="stepcap" hidden></div>
       <div class="practicecap" id="practicecap" hidden></div>
-      <div class="table-wrap" id="tableWrap"></div>
-      <div class="verdictbar" id="verdictbar" hidden></div>
+      <div class="scrollfade"><div class="table-wrap scrollx" id="tableWrap"></div></div>
+      <div class="verdictbar sticky-phone" id="verdictbar" hidden></div>
       <div class="stochbar" id="stochbar" hidden></div>
       <p class="foot" id="foot"></p>
     </section>
@@ -667,7 +692,7 @@
         <button type="button" data-s=")" aria-label="right parenthesis">)</button>
       </div>
       <div class="buildrow">
-        <button type="button" class="btn primary" id="st-buildBtn">Build tree</button>
+        <button type="button" class="btn" id="st-buildBtn">Build tree</button>
         <span class="hint" id="st-dirtyHint" hidden>Not built yet. Press Enter or click Build.</span>
       </div>
 
@@ -683,7 +708,7 @@
     <section class="card" id="st-displayCard" aria-labelledby="st-dispHead">
       <h2 id="st-dispHead">Mode</h2>
       <div class="seg full" role="group" aria-label="Mode" id="st-modeSeg">
-        <button type="button" data-v="practice">Build it</button><button type="button" data-v="show">Show tree</button>
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="show">Show tree</button>
       </div>
       <p class="status-text" id="st-modeNote"></p>
     </section>
@@ -709,7 +734,7 @@
         <div class="status" id="st-status" aria-live="polite"></div>
         <div class="actions">
           <button class="btn small" type="button" id="st-resetBtn">Start over</button>
-          <a class="btn small" id="st-ttLink" href="#">Truth table →</a>
+          <a class="btn small" id="st-ttLink" href="#" data-nopresent>Truth table →</a>
         </div>
       </div>
       <div class="hintbar" id="st-hintbar" aria-live="polite"></div>
@@ -993,7 +1018,7 @@ window.LogicCore = (() => {
         <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
       </div>
       <div class="buildrow">
-        <button type="button" class="btn primary" id="tr-newBtn">New sentence</button>
+        <button type="button" class="btn" id="tr-newBtn">New sentence</button>
       </div>
       <p class="seen" id="tr-seen"></p>
     </section>
@@ -1001,7 +1026,7 @@ window.LogicCore = (() => {
     <section class="card" id="tr-modeCard" aria-labelledby="tr-modeHead">
       <h2 id="tr-modeHead">Mode</h2>
       <div class="seg full" role="group" aria-label="Mode" id="tr-modeSeg">
-        <button type="button" data-v="practice">Practice</button><button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button>
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="step">Step through</button><button type="button" data-v="answers">Show answers</button>
       </div>
       <p class="status-text" id="tr-modeNote"></p>
       <p class="tally" id="tr-tally"></p>
@@ -1078,7 +1103,7 @@ window.LogicCore = (() => {
             </div>
           </section>
 
-          <div class="buildrow">
+          <div class="buildrow checkbar sticky-phone">
             <button type="button" class="btn primary" id="tr-check">Check</button>
             <button type="button" class="btn" id="tr-show">Show answer</button>
             <button type="button" class="btn" id="tr-next" hidden>Next →</button>
@@ -1623,7 +1648,7 @@ window.initTable = () => {
       if (score) {
         const sp = document.createElement("span");
         sp.className = "score" + (score.done ? " ok" : "");
-        sp.textContent = score.done ? "All correct: every cell, and the verdict." : score.cellsDone ? `All ${score.total} cells correct. ${pickVerdict ? "Check the verdict below." : "Now choose the verdict below."}` : score.filled === 0 ? "No cells filled in yet." : `${score.right} of ${score.filled} filled cells correct${score.filled < score.total ? `, ${score.total - score.filled} still blank` : ""}.`;
+        sp.textContent = score.done ? "Correct: every cell, and the verdict." : score.cellsDone ? `All ${score.total} cells right. ${pickVerdict ? "The verdict is not quite right." : "Now choose the verdict below."}` : score.filled === 0 ? "No cells filled in yet." : `Not quite: ${score.right} of ${score.filled} filled cells right${score.filled < score.total ? `, ${score.total - score.filled} still blank` : ""}.`;
         pc.append(sp);
       }
     } else pc.hidden = true;
@@ -1657,11 +1682,9 @@ window.initTable = () => {
     if (vChecked && pickVerdict) {
       const fb = document.createElement("span");
       const ok = pickVerdict === v.type;
-      fb.className = "fb " + (ok ? "ok" : "no"); fb.textContent = ok ? "Right" : "Not right";
+      fb.className = "fb " + (ok ? "ok" : "no"); fb.textContent = ok ? "Correct" : "Not quite";
       row1.append(fb);
     }
-    const chk = document.createElement("button"); chk.type = "button"; chk.className = "btn small primary"; chk.dataset.check = "1"; chk.textContent = "Check";
-    row1.append(chk);
     bar.append(row1);
     if (state.kind === "argument") {
       const row2 = document.createElement("div"); row2.className = "vrow";
@@ -1681,16 +1704,22 @@ window.initTable = () => {
         const parts = [];
         if (extra) parts.push(`${extra} marked row${extra > 1 ? "s aren’t" : " isn’t a"} counterexample${extra > 1 ? "s" : ""} (outlined in red)`);
         if (missing) parts.push(`${missing} counterexample${missing > 1 ? "s" : ""} still unmarked`);
-        fb.textContent = ok ? (v.cx.length ? "Rows right" : "Right: there are none") : parts.join("; ");
+        fb.textContent = ok ? (v.cx.length ? "Correct" : "Correct: there are none") : "Not quite: " + parts.join("; ");
         row2.append(fb);
       }
       bar.append(row2);
     }
+    const row3 = document.createElement("div"); row3.className = "vrow checkbar";
+    const chk = document.createElement("button"); chk.type = "button"; chk.className = "btn small primary"; chk.dataset.check = "1"; chk.textContent = "Check";
+    const clr = document.createElement("button"); clr.type = "button"; clr.className = "btn small"; clr.dataset.clear = "1"; clr.textContent = "Clear";
+    row3.append(chk, clr);
+    bar.append(row3);
   }
   $("verdictbar").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.verdict) { pickVerdict = pickVerdict === b.dataset.verdict ? null : b.dataset.verdict; vChecked = false; drawTable(); }
     else if (b.dataset.check) { checked = true; vChecked = true; drawTable(); }
+    else if (b.dataset.clear) { resetPractice(); drawTable(); }
   });
 
   function clearFieldError(inp) {
@@ -1762,13 +1791,11 @@ window.initTable = () => {
     $("condIn").hidden = !(state.stoch && state.kind === "formula");
     $("f-letters").checked = state.practiceLetters;
     $("stepper").hidden = state.mode !== "step" || !view;
-    $("practiceBtns").hidden = state.mode !== "practice" || !view;
     if (view) {
       $("stCount").textContent = `${state.step} / ${view.steps.length}`;
       $("stPrev").disabled = $("stFirst").disabled = state.step === 0;
       $("stNext").disabled = $("stLast").disabled = state.step >= view.steps.length;
     }
-    $("copyBtn").disabled = !view;
     $("treeLink").hidden = state.kind !== "formula" || !view;
     $("treeLink").href = location.pathname + location.search + "#" + new URLSearchParams({ view: "tree", f: state.formula, m: "practice" });
     renderExamples();
@@ -1837,8 +1864,6 @@ window.initTable = () => {
     else if (key === "ArrowRight") { e.preventDefault(); moveFocus(td, 0, 1); }
     else if (key === "ArrowLeft") { e.preventDefault(); moveFocus(td, 0, -1); }
   });
-  $("prCheck").onclick = () => { checked = true; vChecked = true; drawTable(); };
-  $("prClear").onclick = () => { resetPractice(); drawTable(); };
 
   // random problems
   const LEVEL_KEY = "ttb-level";
@@ -1851,25 +1876,10 @@ window.initTable = () => {
     renderInputs(); build();
   };
 
-  // copy + print
-  const statusFlash = (btn, msg) => { const o = btn.textContent; btn.textContent = msg; setTimeout(() => (btn.textContent = o), 1600); };
-  $("copyBtn").onclick = async () => {
-    if (!model) return;
-    const lines = [];
-    const hdr = ["#", ...view.cols.map((c) => c.header)];
-    lines.push(hdr.join("\t"));
-    model.rows.forEach((row, r) => {
-      lines.push([r + 1, ...view.cols.map((c) => c.type === "letter" ? T(row.env[c.letter]) : c.type === "val" ? T(row.vals[c.f][c.node.id]) : c.type === "prob" ? (probState.vals[r] ?? "") : c.type === "cprob" ? (condDist ? rstr(condDist[r]) : "") : "")].join("\t"));
-    });
-    try { await navigator.clipboard.writeText(lines.join("\n")); statusFlash($("copyBtn"), "Copied"); }
-    catch (e) { statusFlash($("copyBtn"), "Couldn’t copy"); }
-  };
-  $("printBtn").onclick = () => window.print();
   $("treeLink").addEventListener("click", (e) => {
     e.preventDefault();
     LL.goHash($("treeLink").href.split("#")[1]);
   });
-  if (framed) $("printBtn").hidden = true;
 
   // table size + theme
   function applySize(v) { document.documentElement.style.setProperty("--tsize", v + "px"); segSync("sizeSeg", v); store.set("ttb-size", v); }
@@ -2050,7 +2060,7 @@ window.initTree = () => {
   }
 
   function startHint() {
-    if (state.mode === "show") return { cls: "", parts: ["The finished tree. Switch to ", { b: "Build it" }, " to split it yourself."] };
+    if (state.mode === "show") return { cls: "", parts: ["The finished tree. Switch to ", { b: "Practice" }, " to split it yourself."] };
     if (isLeaf(ast)) return { cls: "", parts: ["A single sentence letter is already a complete tree."] };
     return { cls: "", parts: ["Click the ", { b: "main connective" }, " of the formula to split it."] };
   }
@@ -2708,7 +2718,14 @@ window.initTranslate = () => {
       ul.appendChild(li);
     });
   }
+  // any edit makes the last verdict stale: clear it (the red marks go too)
+  function staleVerdict() {
+    if (!work || !work.last || work.shown || state.mode !== "practice") return;
+    work.last = null;
+    renderVerdict(null); renderFeedback(null);
+  }
   function clearMarks() {
+    staleVerdict();
     let changed = false;
     work.rows.forEach((r) => { if (r.mark || r.msg) { r.mark = null; r.msg = null; changed = true; } });
     if (changed) renderPick();
@@ -2723,6 +2740,7 @@ window.initTranslate = () => {
       const nb = normalize(inp.value.slice(0, pos)), na = normalize(inp.value.slice(pos));
       if (nb + na !== inp.value) { inp.value = nb + na; inp.setSelectionRange(nb.length, nb.length); }
       setter(inp.value);
+      staleVerdict();
       inp.classList.remove("err");
       const er = document.getElementById(inp.dataset.err); if (er) er.hidden = true;
     });
@@ -2742,7 +2760,7 @@ window.initTranslate = () => {
       inp.setAttribute("autocapitalize", "characters"); inp.dataset.err = `tr-err-p${i}`;
       const rm = el("button", "icon-btn", "×"); rm.type = "button"; rm.setAttribute("aria-label", `Remove premise ${i + 1}`);
       rm.hidden = work.premises.length <= 1;
-      rm.onclick = () => { work.premises.splice(i, 1); renderPremises(); };
+      rm.onclick = () => { work.premises.splice(i, 1); staleVerdict(); renderPremises(); };
       fb.append(inp, rm);
       const er = el("div", "errmsg"); er.id = `tr-err-p${i}`; er.hidden = true;
       row.append(lab, fb, er); box.appendChild(row);
@@ -2758,7 +2776,7 @@ window.initTranslate = () => {
       const lab = el("label", "opt-row" + (work.option === i ? " sel" : "") + (work.optionOk && o.correct ? " right" : ""));
       const rb = el("input"); rb.type = "radio"; rb.name = "tr-opt"; rb.id = `tr-opt${i}`; rb.checked = work.option === i;
       rb.disabled = work.optionOk;
-      rb.onchange = () => { work.option = i; $("optMsg").hidden = true; renderOptions(it); };
+      rb.onchange = () => { work.option = i; $("optMsg").hidden = true; staleVerdict(); renderOptions(it); };
       lab.append(rb, document.createTextNode(" " + o.text));
       box.appendChild(lab);
     });
@@ -2783,6 +2801,7 @@ window.initTranslate = () => {
     document.querySelectorAll("#translateApp .errmsg").forEach((e) => (e.hidden = true));
     document.querySelectorAll("#translateApp .fin").forEach((e) => e.classList.remove("err"));
     $("next").hidden = !(work.done || work.shown);
+    promoteNext();
     $("check").disabled = work.shown;
     $("show").disabled = work.shown;
     renderVerdict(work.last);
@@ -2790,6 +2809,11 @@ window.initTranslate = () => {
     if (work.shown) renderShown(it);
   }
 
+  function promoteNext() {
+    const nx = !$("next").hidden;
+    $("next").classList.toggle("primary", nx);
+    $("check").classList.toggle("primary", !nx);
+  }
   function setVerdict(badge, cls, text) {
     const v = $("verdict"); v.innerHTML = "";
     if (badge) v.append(el("span", "badge " + cls, esc(badge)));
@@ -2799,9 +2823,10 @@ window.initTranslate = () => {
     if (state.mode !== "practice") return;
     if (work.shown) return setVerdict("Answer shown", "muted", "Try another, or step through this one.");
     if (!res) return setVerdict(null, null, state.kind === "s" ? "Translate the sentence into PL." : "Translate the argument into PL: premises and conclusion.");
-    if (res.kind === "dict") return setVerdict("Fix your dictionary first", "bad", "");
-    if (res.kind === "option") return setVerdict("Not that conclusion", "bad", "");
-    if (res.kind === "swap") return setVerdict("Premise and conclusion swapped", "bad", "");
+    if (res.kind === "input") return setVerdict("Not quite", "bad", res.text);
+    if (res.kind === "dict") return setVerdict("Not quite", "bad", "Fix your dictionary first.");
+    if (res.kind === "option") return setVerdict("Not quite", "bad", "That isn’t the conclusion.");
+    if (res.kind === "swap") return setVerdict("Not quite", "bad", "Premise and conclusion are swapped.");
     if (res.ok) return setVerdict("Correct", "good", res.note ? "" : "");
     return setVerdict("Not quite", "bad", "");
   }
@@ -2866,18 +2891,19 @@ window.initTranslate = () => {
     if (work.shown) return;
     document.querySelectorAll("#translateApp .errmsg").forEach((e) => (e.hidden = true));
     const d = dictionaryCheck(it);
-    if (d.input) { $("dictMsg").textContent = d.input; $("dictMsg").hidden = false; $("dictMsg").className = "dictmsg bad"; return; }
+    const inputError = (text) => { work.last = { kind: "input", text }; renderPick(); renderVerdict(work.last); renderFeedback(work.last); };
+    if (d.input) { $("dictMsg").textContent = d.input; $("dictMsg").hidden = false; $("dictMsg").className = "dictmsg bad"; inputError("Fix your dictionary: see the message under it."); return; }
     let res;
     if (!d.ok) {
       res = { kind: "dict", missing: d.missing };
     } else if (state.kind === "a" && !it.conclusion.stated && !work.optionOk) {
-      if (work.option == null) { $("optMsg").textContent = "Pick the conclusion first."; $("optMsg").className = "dictmsg bad"; $("optMsg").hidden = false; renderPick(); return; }
+      if (work.option == null) { $("optMsg").textContent = "Pick the conclusion first."; $("optMsg").className = "dictmsg bad"; $("optMsg").hidden = false; inputError("Pick the conclusion first."); return; }
       const o = it.options[work.option];
-      if (o.correct) { work.optionOk = true; renderPractice(it); $("conc").focus(); setVerdict("Right conclusion", "good", "Now translate it."); return; }
+      if (o.correct) { work.optionOk = true; renderPractice(it); $("conc").focus(); setVerdict("Correct", "good", "That’s the conclusion. Now translate it."); return; }
       res = { kind: "option", why: o.why };
     } else {
       res = state.kind === "s" ? judgeSentence(it, d.map) : judgeArgument(it, d.map);
-      if (!res) { renderPick(); return; } // input error shown inline
+      if (!res) { inputError("Your formula can’t be read yet: see the message under it."); return; } // input error shown inline
     }
     work.checks++;
     if (work.checks === 1) {
@@ -2889,6 +2915,7 @@ window.initTranslate = () => {
     renderPick();
     renderControls();
     $("next").hidden = !work.done;
+    promoteNext();
     renderVerdict(res); renderFeedback(res);
   }
 
@@ -2982,7 +3009,7 @@ window.initTranslate = () => {
 
   function renderFeedback(res) {
     const box = $("feedback"); box.innerHTML = "";
-    if (!res || work.shown) return;
+    if (!res || work.shown || res.kind === "input") return;
     const it = item();
     const noun = state.kind === "s" ? "sentence" : "passage";
     if (res.kind === "dict") {
@@ -3354,6 +3381,54 @@ window.LL = (() => {
 })();
 
 LL.start();
+</script>
+<script>
+// Shared lab shell: Present mode (hide the header, tabs and sidebar; XL size; Esc returns).
+// Also marks scrollable areas (.scrollfade > .scrollx) so a fade shows when more is off to the right.
+(() => {
+  "use strict";
+  const root = document.documentElement;
+  const sizeSeg = document.getElementById("ll-sizeSeg");
+  const btn = document.getElementById("ll-presentBtn");
+  const ex = document.getElementById("ll-presentExit");
+  let prev = null;
+  const curSize = () => { const b = sizeSeg.querySelector('button[aria-pressed="true"]'); return b ? b.dataset.v : "1"; };
+  const setSize = (v) => { const b = sizeSeg.querySelector(`button[data-v="${v}"]`); if (b) b.click(); };
+  const on = () => root.classList.contains("presenting");
+  function enter() {
+    if (on()) return;
+    prev = curSize();
+    root.classList.add("presenting");
+    setSize("3");
+    ex.hidden = false;
+    window.scrollTo({ top: 0 });
+    window.dispatchEvent(new Event("resize"));
+  }
+  function exit() {
+    if (!on()) return;
+    root.classList.remove("presenting");
+    if (prev != null) setSize(prev);
+    ex.hidden = true;
+    btn.focus({ preventScroll: true });
+    window.dispatchEvent(new Event("resize"));
+  }
+  btn.addEventListener("click", enter);
+  ex.addEventListener("click", exit);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && on()) { e.preventDefault(); e.stopPropagation(); exit(); } }, true);
+
+  // edge fade for horizontally scrolling areas
+  function fade(sc) {
+    const w = sc.closest(".scrollfade"); if (!w) return;
+    w.classList.toggle("more", sc.scrollLeft + sc.clientWidth < sc.scrollWidth - 2);
+  }
+  const refresh = () => document.querySelectorAll(".scrollfade .scrollx").forEach(fade);
+  document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("scrollx")) fade(e.target); }, true);
+  window.addEventListener("resize", refresh);
+  let pend = false;
+  new MutationObserver(() => { if (pend) return; pend = true; requestAnimationFrame(() => { pend = false; refresh(); }); }).observe(document.body, { childList: true, subtree: true });
+  window.LLPresent = { enter, exit, refresh };
+})();
+
 </script>
 </body>
 </html>
