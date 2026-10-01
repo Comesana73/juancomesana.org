@@ -480,6 +480,12 @@
     background: linear-gradient(to right, transparent, var(--surface)); opacity: 0; transition: opacity 0.15s;
   }
   .scrollfade.more::after { opacity: 1; }
+
+  /* P3.12: what feeds the focused practice cell */
+  .tt th.fcur { color: var(--accent); background: var(--accent-soft); }
+  .tt .fkid { background: var(--accent-softer); }
+  .tt th.fkid { color: var(--accent); }
+  .tt td.fsrc { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
 </style>
 </head>
 <body>
@@ -1363,7 +1369,7 @@ window.initTable = () => {
       if (c.type === "letter") th.classList.add("letter");
       if (c.sub) th.classList.add("sub");
       if (c.title) th.title = c.title;
-      th.scope = "col";
+      th.scope = "col"; th.dataset.col = c.key;
       hr.appendChild(th);
     });
     thead.appendChild(hr);
@@ -1385,6 +1391,7 @@ window.initTable = () => {
       cols.forEach((c) => {
         const td = document.createElement("td");
         td.className = cellClass(c, { cur, kidKeys, markMain });
+        td.dataset.col = c.key;
         const editable = practice && (c.type === "val" || (c.type === "letter" && state.practiceLetters));
         if (c.type === "prob") {
           const inp = document.createElement("input");
@@ -1562,6 +1569,26 @@ window.initTable = () => {
     const row = model.rows[r];
     return c.type === "letter" ? row.env[c.letter] : row.vals[c.f][c.node.id];
   }
+
+  // P3.12: the columns a column is computed from.
+  const colOf = (key) => view && view.cols.find((x) => x.key === key);
+  function feeds(c) {
+    if (!c || c.type !== "val") return [];
+    const n = c.node;
+    if (n.type === "var") { const lc = view.letterCol[n.name]; return lc && lc.key !== c.key ? [lc.key] : []; }
+    return kids(n).map((k) => view.nodeCol.get(k)).filter(Boolean).map((x) => x.key);
+  }
+  function hiFeeds(td) {
+    const wrap = $("tableWrap");
+    wrap.querySelectorAll(".fcur, .fkid, .fsrc").forEach((e) => e.classList.remove("fcur", "fkid", "fsrc"));
+    if (!td || state.mode !== "practice" || !view) return;
+    const c = colOf(td.dataset.key); if (!c) return;
+    const sel = (k) => wrap.querySelectorAll(`[data-col="${CSS.escape(k)}"]`);
+    sel(c.key).forEach((e) => { if (e.tagName === "TH") e.classList.add("fcur"); });
+    feeds(c).forEach((k) => sel(k).forEach((e) => e.classList.add(e.tagName === "TD" && e.parentElement === td.parentElement ? "fsrc" : "fkid")));
+  }
+  $("tableWrap").addEventListener("focusin", (e) => hiFeeds(e.target.closest("td.edit")));
+  $("tableWrap").addEventListener("focusout", (e) => { if (!e.relatedTarget || !$("tableWrap").contains(e.relatedTarget)) hiFeeds(null); });
 
   // Practice score (null until the student has pressed Check).
   function practiceScore() {
@@ -2232,7 +2259,7 @@ window.initTree = () => {
       el.append(badge("good", "Tree complete"), txt([mistakes === 0 ? "No wrong picks." : { b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, mistakes ? " along the way." : ""]));
       if (all.length && hint.cls !== "bad") hint = { cls: "good", parts: ["Every node is split down to sentence letters. ", mistakes ? "Try another formula, or Start over to do it cleanly." : "Nicely done."] };
     } else {
-      el.append(badge("muted", `${done} of ${all.length} split`), txt(mistakes ? [{ b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, " so far"] : ["Split each formula at its main connective."]));
+      el.append(badge("muted", `${done} of ${all.length} split`), txt(mistakes ? [{ b: `${mistakes} wrong pick${mistakes === 1 ? "" : "s"}` }, " so far"] : []));
     }
   }
 
@@ -2250,9 +2277,7 @@ window.initTree = () => {
   function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
   function syncControls() {
     segSync("modeSeg", state.mode);
-    $("modeNote").textContent = state.mode === "practice"
-      ? "Click the main connective of each formula. Wrong picks are marked so you can try again."
-      : "The whole tree at once, with each formula’s main connective highlighted.";
+    $("modeNote").textContent = ""; $("modeNote").hidden = true;
     $("resetBtn").hidden = state.mode !== "practice" || !ast;
     const f = ast ? state.formula : draft;
     $("ttLink").href = location.pathname + location.search + "#" + new URLSearchParams({ view: "table", k: "formula", f, m: "practice" });

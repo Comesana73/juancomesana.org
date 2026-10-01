@@ -419,6 +419,35 @@
     background: linear-gradient(to right, transparent, var(--surface)); opacity: 0; transition: opacity 0.15s;
   }
   .scrollfade.more::after { opacity: 1; }
+
+  /* ================= design review Priority 3, Oct 1 2026 ================= */
+  /* 15: no summary cards; each tab shows its status */
+  #decApp #summary, #gmApp #gm-summary { display: none !important; }
+  .work .tabs button { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 8px 12px 9px; line-height: 1.25; }
+  .work .tabs button .tl { font-size: 0.9rem; }
+  .work .tabs button .ts { font-size: 0.74rem; font-weight: 500; color: var(--ink); font-family: var(--logic); max-width: 16em; overflow: hidden; text-overflow: ellipsis; }
+  .work .tabs button .ts.off { font-family: var(--sans); font-weight: 400; color: var(--faint); }
+  .work .tabs button .ts.solved { color: var(--good); font-weight: 600; }
+  .work .tabs button.unavail .tl { color: var(--faint); }
+  /* 20: no "what" line; the head row only holds the stepper */
+  .work .work-head .what:empty { display: none; }
+  .work .work-head:not(:has(.stepper:not([hidden]))) { display: none; }
+  /* 19: focusable cells */
+  .mx td.clickable:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  /* 16: strategy names as buttons in Games dominance */
+  #gmApp .mx button.stratbtn { border: 1px dashed var(--line); background: transparent; border-radius: 6px; padding: 0.05em 0.45em; cursor: pointer; font: inherit; color: inherit; font-weight: 600; }
+  #gmApp .mx button.stratbtn.r:hover { border-color: var(--accent); }
+  #gmApp .mx button.stratbtn.c:hover { border-color: var(--colp); }
+  #gmApp .mx button.stratbtn[aria-pressed="true"] { border-style: solid; border-color: var(--bad); }
+  /* 17: Row's payoffs blue, Column's orange */
+  #gmApp .mx .gp .pa { color: var(--accent); }
+  #gmApp .mx .gp .pb { color: var(--colp); }
+  #gmApp .mx .xrow .pa, #gmApp .mx .xcol .pa, #gmApp .mx td.dom .pa, #gmApp .mx td.dimmed .pa, #gmApp .mx td.dimmed .pb { color: var(--faint) !important; }
+  #gmApp .mx .gp .wrong { color: var(--bad); }
+  /* 18: the kind of game, in the editor */
+  #gmApp .gm-edkind { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 10px; }
+  #gmApp .gm-edkind .lbl { font-size: 0.84rem; color: var(--muted); }
+  #gmApp .gm-edkind .note { flex-basis: 100%; }
 </style>
 </head>
 <body>
@@ -513,7 +542,12 @@
     </section>
 
     <details class="card help">
-      <summary>Entering numbers</summary>
+      <summary>How to answer</summary>
+      <p><b>Dominance:</b> classify each pair of options, tick “Dominated?” for every option that is dominated by some other option (ticking crosses it off), and press Check.</p>
+      <p><b>Maximin:</b> click each option’s worst outcome to star it (star every cell that ties for worst). Then click the name(s) of the maximin choice to mark them ** and press Check. If options tie, apply leximin.</p>
+      <p><b>Minimax regret:</b> fill in the regret table and each option’s largest regret. Then click the name(s) of the minimax-regret choice and press Check.</p>
+      <p><b>Expected utility:</b> type each option’s expected utility (a fraction, or a decimal to two places). Then click the name(s) of the best option and press Check.</p>
+      <p>On a keyboard, Tab to a cell or a name and press Enter or Space to click it.</p>
       <p>Utilities can be whole numbers, decimals or fractions: 3, −1, 1.5, 7/10. Probabilities can be decimals or fractions: 0.7 or 7/10. Answers you type in Practice can be fractions, or decimals rounded to two places.</p>
       <p>Click an option or state name in the matrix to rename it (P, M, R, ¬R…). Type ~ for ¬. Press Enter or click Done to use it.</p>
     </details>
@@ -575,13 +609,6 @@
     <section class="card setup-card" aria-labelledby="gm-setupHead">
       <h2 id="gm-setupHead">Setup</h2>
       <div class="opt">
-        <span class="lbl" id="gm-kindLbl">Game</span>
-        <div class="seg full" role="group" aria-labelledby="gm-kindLbl" id="gm-kindSeg">
-          <button type="button" data-v="general">General</button><button type="button" data-v="zero">Zero-sum</button>
-        </div>
-        <p class="note" id="gm-kindNote"></p>
-      </div>
-      <div class="opt">
         <label class="lbl" for="gm-classic">Classic games</label>
         <select id="gm-classic" class="gm-select"></select>
       </div>
@@ -591,7 +618,7 @@
           <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
         </div>
         <button type="button" class="btn" id="gm-newBtn">New problem</button>
-        <div class="seg full" role="group" aria-label="Kind of random game" id="gm-rkindSeg">
+        <div class="seg full" role="group" aria-label="Kind of game" id="gm-rkindSeg">
           <button type="button" data-v="general">General</button><button type="button" data-v="zero">Zero-sum</button><button type="button" data-v="either">Either</button>
         </div>
         <p class="note" id="gm-levelNote"></p>
@@ -613,8 +640,12 @@
 
     <details class="card help">
       <summary>Reading the matrix</summary>
-      <p>Row chooses a row and Column chooses a column. In a general game each cell shows two payoffs: Row’s first, Column’s second.</p>
+      <p>Row chooses a row and Column chooses a column. In a general game each cell shows two payoffs: Row’s at the lower left, in blue, and Column’s at the upper right, in orange.</p>
       <p>In a zero-sum game each cell shows only Row’s payoff. Column gets the negative of it, so Row wants the numbers high and Column wants them low.</p>
+      <p><b>Dominance:</b> click a strategy that is strongly dominated in the game that’s left, then the strategy that dominates it (the menus under the matrix do the same). When nothing more can go, press “Nothing else is dominated”.</p>
+      <p><b>Nash equilibrium:</b> click Row’s payoff in each column that is Row’s best response, and Column’s payoff in each row that is Column’s best response (star all ties); in a zero-sum game, switch “Starring for” between Row (the highest number in each column) and Column (the lowest number in each row). Press Check, then click the equilibria.</p>
+      <p><b>Saddle point:</b> fill in each row’s minimum and each column’s maximum, click Row’s maximin strategy and Column’s minimax strategy, say whether there is a saddle point, and press Check.</p>
+      <p>On a keyboard, Tab to a payoff, cell or name and press Enter or Space to click it.</p>
       <p>Click a strategy name in the matrix editor to rename it (C, D, Stag, Hare…). Payoffs can be whole numbers, decimals or fractions. Press Enter or click Done to use it.</p>
     </details>
   </aside>
@@ -627,6 +658,13 @@
           <button type="button" class="linkbtn" id="gm-addRow">+ Row strategy</button>
           <button type="button" class="linkbtn" id="gm-addCol">+ Column strategy</button>
         </div>
+      </div>
+      <div class="opt gm-edkind">
+        <span class="lbl" id="gm-kindLbl">Kind of game</span>
+        <div class="seg" role="group" aria-labelledby="gm-kindLbl" id="gm-kindSeg">
+          <button type="button" data-v="general">General</button><button type="button" data-v="zero">Zero-sum</button>
+        </div>
+        <p class="note" id="gm-kindNote"></p>
       </div>
       <div class="ed-wrap"><table class="ed" id="gm-editor"></table></div>
       <div class="ed-actions">
@@ -981,17 +1019,18 @@ window.initDec = () => {
   }
 
   function renderSummary() {
-    const el = $("summary");
-    if (!state.problem) { el.innerHTML = ""; return; }
-    el.innerHTML = TABS.map((t) => {
-      const label = t === "eu" ? (euName() === "CEU" ? "Cond. exp. utility" : "Expected utility") : TAB_LABEL[t];
-      const un = availability(t);
-      let v, cls = "v", solved = "";
-      if (un) { v = t === "eu" && state.kind !== "ordinal" ? "Needs probabilities" : "Needs cardinal utilities"; cls += " off"; }
-      else if (state.mode === "practice" && !state.solved[t]) { v = "Solve it to reveal"; cls += " off"; }
-      else { v = verdictText(t); if (state.mode === "practice") solved = " solved"; }
-      return `<div class="sum${solved}"><span class="k">${esc(label)}</span><span class="${cls}">${esc(v)}</span></div>`;
-    }).join("");
+    const LABEL = (t) => t === "eu" ? (state.problem && state.problem.probMode === "cells" ? "Conditional EU" : "Expected utility") : TAB_LABEL[t];
+    const UNAVAIL = (t) => t === "eu" && state.kind !== "ordinal" ? "Needs probabilities" : "Needs cardinal utilities";
+    $("tabs").querySelectorAll("button").forEach((b) => {
+      const t = b.dataset.v;
+      let v = "", cls = "ts";
+      if (state.problem) {
+        if (availability(t)) { v = UNAVAIL(t); cls += " off"; }
+        else if (state.mode === "practice" && !state.solved[t]) { v = "Not solved yet"; cls += " off"; }
+        else { v = verdictText(t); if (state.mode === "practice") cls += " solved"; }
+      }
+      b.innerHTML = `<span class="tl">${esc(LABEL(t))}</span>${v ? `<span class="${cls}" title="${esc(v)}">${esc(v)}</span>` : ""}`;
+    });
   }
 
   function header(extraHeads = [], { probs = true } = {}) {
@@ -1021,7 +1060,6 @@ window.initDec = () => {
       b.setAttribute("aria-selected", String(b.dataset.v === state.tab));
       b.classList.toggle("unavail", !!(state.problem && availability(b.dataset.v)));
     });
-    $("euTab").textContent = state.problem && state.problem.probMode === "cells" ? "Conditional EU" : "Expected utility";
     const body = $("workBody");
     const pb = state.problem;
     $("stepper").hidden = true; $("practiceBtns").hidden = true;
@@ -1041,7 +1079,7 @@ window.initDec = () => {
     if (state.mode === "practice") $("practiceBtns").hidden = false;
 
     const fn = { dominance: workDominance, maximin: workMaximin, regret: workRegret, eu: workEU }[state.tab];
-    body.innerHTML = fn(k, N);
+    body.innerHTML = fn(k, N); keyCells();
     if (state.mode === "answers") {
       body.insertAdjacentHTML("beforeend", `<div class="block"><h3>Worked analysis</h3><ol class="worked">${steps.map((s) => `<li>${s}</li>`).join("")}</ol></div>`);
     }
@@ -1058,7 +1096,7 @@ window.initDec = () => {
       if (state.hint && state.hint.tab === state.tab) setHint(state.hint.html, state.hint.cls);
       else setHint(practiceIntro(state.tab), "");
     }
-    $("what").textContent = whatText(state.tab);
+    $("what").textContent = "";
   }
 
   function whatText(tab) {
@@ -1080,12 +1118,12 @@ window.initDec = () => {
   function practiceIntro(tab) {
     const w = state.work.maximin;
     return {
-      dominance: "Classify each pair of options, tick “Dominated?” for every option that is dominated by some other option (ticking crosses it off), and press Check.",
+      dominance: "Classify each pair, tick every dominated option, and press Check.",
       maximin: w.stage === 2
         ? "There’s a tie for maximin. Apply leximin: tick the option(s) leximin keeps, and press Check."
-        : "Click each option’s worst outcome to star it (star every cell that ties for worst). Then click the name(s) of the maximin choice to mark them ** and press Check.",
-      regret: "Fill in the regret table and each option’s largest regret. Then click the name(s) of the minimax-regret choice and press Check.",
-      eu: `Type each option’s ${euName() === "CEU" ? "conditional " : ""}expected utility (a fraction, or a decimal to two places). Then click the name(s) of the best option and press Check.`
+        : "Star each option’s worst outcome, click the maximin choice, and press Check.",
+      regret: "Fill in the regrets and each option’s largest regret, click the minimax-regret choice, and press Check.",
+      eu: `Type each option’s ${euName() === "CEU" ? "conditional " : ""}expected utility, click the best option, and press Check.`
     }[tab];
   }
   function setHint(html, cls) { const h = $("hintbar"); h.innerHTML = html; h.className = "hintbar" + (cls ? " " + cls : ""); h.hidden = !html; }
@@ -1249,6 +1287,22 @@ window.initDec = () => {
       w.maximin.stars.has(key) ? w.maximin.stars.delete(key) : w.maximin.stars.add(key);
       clearMarks(); renderWork();
     }
+  });
+
+  // P3.19: clickable cells take focus; Enter or Space clicks them, and focus stays on the cell
+  function keyCells() {
+    body.querySelectorAll("td.clickable").forEach((td) => {
+      td.tabIndex = 0; td.setAttribute("role", "button");
+      td.setAttribute("aria-pressed", String(td.classList.contains("star") || td.classList.contains("sel")));
+    });
+  }
+  body.addEventListener("keydown", (e) => {
+    const td = e.target.closest && e.target.closest("td.clickable");
+    if (!td || (e.key !== "Enter" && e.key !== " ")) return;
+    e.preventDefault();
+    const r = td.dataset.r, c = td.dataset.c;
+    td.click();
+    const again = body.querySelector(`td.clickable[data-r="${r}"][data-c="${c}"]`); if (again) again.focus();
   });
   const focusRow = (r) => { const b = body.querySelector(`button.rowbtn[data-row="${r}"]`); if (b) b.focus(); };
   body.addEventListener("change", (e) => {
@@ -1495,7 +1549,7 @@ window.initDec = () => {
       ? "Only the order of the numbers matters. Dominance and maximin work; minimax regret and expected utility don’t."
       : "Differences between utilities are meaningful (an interval scale), so every rule applies.";
     $("modeNote").textContent = {
-      practice: "Work through each rule yourself and press Check. Each rule’s verdict appears in the summary once you get it right.",
+      practice: "Work through each rule yourself and press Check. Each rule’s verdict appears under its tab once you get it right.",
       answers: "The full worked analysis for the selected rule.",
       step: "Reveal the procedure one step at a time with ▶ or the arrow keys."
     }[state.mode];
@@ -1966,15 +2020,17 @@ window.initGames = () => {
   function render() { syncControls(); renderSummary(); renderWork(); updateDirty(); }
 
   function renderSummary() {
-    const el = $("summary");
-    if (!state.problem) { el.innerHTML = ""; return; }
-    el.innerHTML = TABS.map((t) => {
-      let v, cls = "v", solved = "";
-      if (availability(t)) { v = unavailShort(t); cls += " off"; }
-      else if (state.mode === "practice" && !state.solved[t]) { v = "Solve it to reveal"; cls += " off"; }
-      else { v = verdictText(t); if (state.mode === "practice") solved = " solved"; }
-      return `<div class="sum${solved}"><span class="k">${esc(TAB_LABEL[t])}</span><span class="${cls}">${esc(v)}</span></div>`;
-    }).join("");
+    const LABEL = (t) => TAB_LABEL[t], UNAVAIL = unavailShort;
+    $("tabs").querySelectorAll("button").forEach((b) => {
+      const t = b.dataset.v;
+      let v = "", cls = "ts";
+      if (state.problem) {
+        if (availability(t)) { v = UNAVAIL(t); cls += " off"; }
+        else if (state.mode === "practice" && !state.solved[t]) { v = "Not solved yet"; cls += " off"; }
+        else { v = verdictText(t); if (state.mode === "practice") cls += " solved"; }
+      }
+      b.innerHTML = `<span class="tl">${esc(LABEL(t))}</span>${v ? `<span class="${cls}" title="${esc(v)}">${esc(v)}</span>` : ""}`;
+    });
   }
 
   // a matrix: o.cell(i,j) -> {html, cls}; o.rowHead(i) / o.colHead(j) -> {html, cls}; o.rowExtra / o.extraHead; o.footRow
@@ -2011,7 +2067,7 @@ window.initGames = () => {
     $("stepper").hidden = true; $("practiceBtns").hidden = true;
     if (!state.problem) { body.innerHTML = `<p class="unavail-note">Fill in the matrix and press Build.</p>`; setHint("", ""); $("what").textContent = ""; return; }
     const un = availability(state.tab);
-    $("what").textContent = whatText(state.tab);
+    $("what").textContent = "";
     if (un) { body.innerHTML = `<p class="unavail-note">${un}</p>`; setHint("", ""); return; }
     if (state.mode !== "practice") state.peeked.add(state.tab);
     const steps = stepsFor(state.tab), N = steps.length;
@@ -2023,7 +2079,7 @@ window.initGames = () => {
       $("stNext").disabled = $("stLast").disabled = k >= N;
     }
     if (state.mode === "practice") { $("practiceBtns").hidden = false; $("checkBtn").hidden = state.tab === "dominance"; }
-    body.innerHTML = { dominance: workDominance, nash: workNash, pareto: workPareto, saddle: workSaddle }[state.tab](k, N, steps);
+    body.innerHTML = { dominance: workDominance, nash: workNash, pareto: workPareto, saddle: workSaddle }[state.tab](k, N, steps); keyCells();
     if (state.mode === "answers" && state.tab !== "dominance") body.insertAdjacentHTML("beforeend", `<div class="block"><h3>Worked analysis</h3><ol class="worked">${steps.map((s) => `<li>${s}</li>`).join("")}</ol></div>`);
     if (state.mode === "step") setHint(k === 0 ? introStep(state.tab) : `<b>Step ${k}.</b> ${steps[k - 1]}`, "");
     else if (state.mode === "answers") setHint(`<b>${esc(TAB_LABEL[state.tab])}:</b> ${esc(verdictText(state.tab))}.`, "");
@@ -2044,14 +2100,14 @@ window.initGames = () => {
   function practiceIntro(tab) {
     const w = state.work;
     return {
-      dominance: "Choose a strategy that is strongly dominated in the game that’s left, choose the strategy that dominates it, and press Cross off. When nothing more can go, press “Nothing else is dominated”.",
+      dominance: "Click a strategy to cross off, then the strategy that strongly dominates it. When nothing more can go, press “Nothing else is dominated”.",
       nash: w.nash.stage === 2
         ? "Now click every cell where both payoffs are starred (the Nash equilibria), or tick “No pure-strategy equilibrium”, and press Check."
         : zero()
-          ? "With “Starring for: Row”, click the highest number in each column (Row’s best responses). With “Starring for: Column”, click the lowest number in each row (Column’s best responses). Star all ties, then press Check."
-          : "Click Row’s payoff in each column that is Row’s best response, and Column’s payoff in each row that is Column’s best response (star all ties). Then press Check.",
+          ? "Star each player’s best responses (switch with “Starring for”), then press Check."
+          : "Star each player’s best responses, then press Check.",
       pareto: "Click every Pareto-optimal outcome, then press Check.",
-      saddle: "Fill in each row’s minimum and each column’s maximum, click Row’s maximin strategy and Column’s minimax strategy, say whether there is a saddle point, and press Check."
+      saddle: "Fill in the row minima and column maxima, click the maximin and minimax strategies, say whether there’s a saddle point, and press Check."
     }[tab];
   }
   function setHint(html, cls) { const h = $("hintbar"); h.innerHTML = html; h.className = "hintbar" + (cls ? " " + cls : ""); h.hidden = !html; }
@@ -2068,11 +2124,15 @@ window.initGames = () => {
       if (k >= 1 && k <= D) cur = res.dels[k - 1];
     }
     const cls = (p, x) => (cur && cur.p === p ? (x === cur.v ? " curv" : x === cur.d ? " curd" : "") : "");
+    // Practice: the strategy names still in the game are buttons; the one chosen to cross off is shaded
+    const live = practice && !state.solved.dominance;
+    const hb = (p, x, gone) => (live && !gone ? `<button type="button" class="stratbtn ${p}" data-s="${p}:${x}" aria-pressed="${w.vsel === `${p}:${x}`}">${esc(SN(p, x))}</button>` : esc(SN(p, x)));
+    const sel = (p, x) => (practice && w.vsel === `${p}:${x}` ? " curv" : "");
     const table = matrixHTML({
       pairs: !zero(),
-      rowHead: (i) => ({ html: esc(RN(i)), cls: (xr.has(i) ? "xrow" : "") + cls("r", i) }),
-      colHead: (j) => ({ html: esc(CN(j)), cls: (xc.has(j) ? "xcol" : "") + cls("c", j) }),
-      cell: (i, j) => ({ html: zero() ? single(i, j) : pairHTML(i, j), cls: (xr.has(i) ? " xrow" : "") + (xc.has(j) ? " xcol" : "") + (cur && !xr.has(i) && !xc.has(j) ? (cur.p === "r" ? cls("r", i) : cls("c", j)) : "") })
+      rowHead: (i) => ({ html: hb("r", i, xr.has(i)), cls: (xr.has(i) ? "xrow" : "") + cls("r", i) + sel("r", i) }),
+      colHead: (j) => ({ html: hb("c", j, xc.has(j)), cls: (xc.has(j) ? "xcol" : "") + cls("c", j) + sel("c", j) }),
+      cell: (i, j) => ({ html: zero() ? single(i, j) : pairHTML(i, j), cls: (xr.has(i) ? " xrow" : "") + (xc.has(j) ? " xcol" : "") + (cur && !xr.has(i) && !xc.has(j) ? (cur.p === "r" ? cls("r", i) : cls("c", j)) : "") + sel("r", i) + sel("c", j) })
     });
     if (!practice) {
       const items = steps.map((s, idx) => `<li class="${idx < k ? "" : "hid"}">${s}</li>`).join("");
@@ -2229,6 +2289,8 @@ window.initGames = () => {
     const w = state.work, t = e.target;
     if (state.tab === "dominance") {
       if (t.closest("#gm-delBtn")) { tryDelete(); return; }
+      const sb = t.closest("button.stratbtn");
+      if (sb) { pickStrat(sb.dataset.s); return; }
       if (t.closest("#gm-doneBtn")) { tryDone(); return; }
       if (t.closest("#gm-undoBtn")) {
         const s = w.dominance.dels.pop();
@@ -2273,6 +2335,22 @@ window.initGames = () => {
       if (cb) { const s = w.saddle.cpick, j = +cb.dataset.col; s.has(j) ? s.delete(j) : s.add(j); w.saddle.marks = null; state.hint = null; renderWork(); const b = body.querySelector(`button.colbtn[data-col="${j}"]`); if (b) b.focus(); }
     }
   });
+
+  // P3.19: clickable cells take focus; Enter or Space clicks them, and focus stays on the cell
+  function keyCells() {
+    body.querySelectorAll("td.clickable").forEach((td) => {
+      td.tabIndex = 0; td.setAttribute("role", "button");
+      td.setAttribute("aria-pressed", String(td.classList.contains("star") || td.classList.contains("sel")));
+    });
+  }
+  body.addEventListener("keydown", (e) => {
+    const td = e.target.closest && e.target.closest("td.clickable");
+    if (!td || (e.key !== "Enter" && e.key !== " ")) return;
+    e.preventDefault();
+    const r = td.dataset.r, c = td.dataset.c;
+    td.click();
+    const again = body.querySelector(`td.clickable[data-r="${r}"][data-c="${c}"]`); if (again) again.focus();
+  });
   body.addEventListener("change", (e) => {
     if (state.mode !== "practice") return;
     const t = e.target, w = state.work;
@@ -2292,6 +2370,18 @@ window.initGames = () => {
   });
   body.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.classList.contains("ans")) { e.preventDefault(); check(); } });
 
+  // P3.16: first click = the strategy to cross off, second click (same player) = the one that dominates it
+  function pickStrat(s) {
+    const w = state.work.dominance, tab = "dominance";
+    if (w.vsel === s) { w.vsel = ""; w.dsel = ""; state.hint = null; renderWork(); }
+    else if (!w.vsel || w.vsel[0] !== s[0]) {
+      w.vsel = s; w.dsel = "";
+      state.hint = { tab, cls: "", html: `Crossing off <b>${esc(SN(s[0], +s.slice(2)))}</b>: now click the strategy that strongly dominates it (or click ${esc(SN(s[0], +s.slice(2)))} again to cancel).` };
+      renderWork();
+    } else { w.dsel = s; tryDelete(); }
+    const b = body.querySelector(`button.stratbtn[data-s="${s}"]`) || body.querySelector("button.stratbtn");
+    if (b) b.focus();
+  }
   function tryDelete() {
     const pb = pb_(), w = state.work.dominance, tab = "dominance";
     if (!w.vsel) { bad(tab, "Choose the strategy to cross off."); renderWork(); return; }
@@ -2313,11 +2403,11 @@ window.initGames = () => {
       const eq = opp.filter((x) => (p === "r" ? pb.A[d][x].eq(pb.A[v][x]) : pb.B[x][d].eq(pb.B[x][v]))).map((x) => SN(p === "r" ? "c" : "r", x));
       msg = `${Dn} only <b>weakly</b> dominates ${V}: they do equally well against ${esc(andList(eq))}. Iterated deletion here uses strong dominance only, so ${V} stays.`;
     } else if (strongly(pb, p, v, d, rs, cs) && ((p === "r" && !zero() && cs.every((j) => pb.B[d][j].cmp(pb.B[v][j]) > 0)) || (p === "c" && rs.every((i) => pb.A[i][d].cmp(pb.A[i][v]) > 0)))) {
-      msg = `It’s the other way round: ${V} strongly dominates ${Dn}. ${p === "r" ? "Row’s strategies are compared by Row’s payoffs, the first number in each cell." : zero() ? "The numbers are Row’s payoffs, so Column wants them <b>low</b>." : "Column’s strategies are compared by Column’s payoffs, the second number in each cell."}`;
+      msg = `It’s the other way round: ${V} strongly dominates ${Dn}. ${p === "r" ? "Row’s strategies are compared by Row’s payoffs, the lower-left number in each cell." : zero() ? "The numbers are Row’s payoffs, so Column wants them <b>low</b>." : "Column’s strategies are compared by Column’s payoffs, the upper-right number in each cell."}`;
     } else if (p === "r" && !zero() && cs.every((j) => pb.B[d][j].cmp(pb.B[v][j]) > 0)) {
-      msg = `That compares Column’s payoffs. Whether one of Row’s strategies dominates another depends on Row’s payoffs, the first number in each cell.`;
+      msg = `That compares Column’s payoffs. Whether one of Row’s strategies dominates another depends on Row’s payoffs, the lower-left number in each cell.`;
     } else if (p === "c" && !zero() && rs.every((i) => pb.A[i][d].cmp(pb.A[i][v]) > 0)) {
-      msg = `That compares Row’s payoffs. Whether one of Column’s strategies dominates another depends on Column’s payoffs, the second number in each cell.`;
+      msg = `That compares Row’s payoffs. Whether one of Column’s strategies dominates another depends on Column’s payoffs, the upper-right number in each cell.`;
     } else if (p === "c" && zero() && rs.every((i) => pb.A[i][d].cmp(pb.A[i][v]) > 0)) {
       msg = `In a zero-sum game the numbers are Row’s payoffs, so Column wants them <b>low</b>. Against every row, ${Dn} gives Row more than ${V}, so ${Dn} is worse for Column, not better.`;
     } else if (strongly(pb, p, v, d, rs, cs)) {
@@ -2375,10 +2465,10 @@ window.initGames = () => {
         range(res.C).forEach((j) => { const mB = maxOf(range(res.R).map((i) => pb.B[i][j])); range(res.R).forEach((i) => { if (pb.B[i][j].eq(mB)) colWise.add(`${i},${j}`); }); });
         range(res.R).forEach((i) => { const mA = maxOf(pb.A[i]); range(res.C).forEach((j) => { if (pb.A[i][j].eq(mA)) rowByA.add(`${i},${j}`); }); });
         const notes = [];
-        if (marks.r.size && setEq(n.rstars, rowWise) && !setEq(rowWise, wantR)) notes.push(zero() ? "For Row’s stars, go down each column: Row’s best response to a Column strategy is the highest number in that column." : "For Row’s stars, go down each column: Row’s best response to a Column strategy is the highest first number in that column.");
-        else if (marks.r.size && setEq(n.rstars, colByB) && !setEq(colByB, wantR)) notes.push("Row’s best responses depend on Row’s payoffs, the first number in each cell.");
-        if (marks.c.size && setEq(n.cstars, colWise) && !setEq(colWise, wantC)) notes.push(zero() ? "For Column’s stars, go along each row: Column’s best response to a Row strategy is the lowest number in that row." : "For Column’s stars, go along each row: Column’s best response to a Row strategy is the highest second number in that row.");
-        else if (marks.c.size && setEq(n.cstars, rowByA) && !setEq(rowByA, wantC)) notes.push(zero() ? "The numbers are Row’s payoffs, so Column’s best response is the lowest number in each row, not the highest." : "Column’s best responses depend on Column’s payoffs, the second number in each cell.");
+        if (marks.r.size && setEq(n.rstars, rowWise) && !setEq(rowWise, wantR)) notes.push(zero() ? "For Row’s stars, go down each column: Row’s best response to a Column strategy is the highest number in that column." : "For Row’s stars, go down each column: Row’s best response to a Column strategy is the highest lower-left number in that column.");
+        else if (marks.r.size && setEq(n.rstars, colByB) && !setEq(colByB, wantR)) notes.push("Row’s best responses depend on Row’s payoffs, the lower-left number in each cell.");
+        if (marks.c.size && setEq(n.cstars, colWise) && !setEq(colWise, wantC)) notes.push(zero() ? "For Column’s stars, go along each row: Column’s best response to a Row strategy is the lowest number in that row." : "For Column’s stars, go along each row: Column’s best response to a Row strategy is the highest upper-right number in that row.");
+        else if (marks.c.size && setEq(n.cstars, rowByA) && !setEq(rowByA, wantC)) notes.push(zero() ? "The numbers are Row’s payoffs, so Column’s best response is the lowest number in each row, not the highest." : "Column’s best responses depend on Column’s payoffs, the upper-right number in each cell.");
         const badCols = range(res.C).filter((j) => range(res.R).some((i) => marks.r.has(`${i},${j}`)));
         const badRows = range(res.R).filter((i) => range(res.C).some((j) => marks.c.has(`${i},${j}`)));
         badCols.forEach((j) => issues.push(`Row’s best response to ${CN(j)}`));
@@ -2567,10 +2657,10 @@ window.initGames = () => {
   function syncControls() {
     segSync("kindSeg", draft.kind); segSync("modeSeg", state.mode);
     $("kindNote").textContent = draft.kind === "zero"
-      ? "Each cell holds Row’s payoff; Column’s payoff is its negative. Row wants the numbers high, Column wants them low."
-      : "Each cell holds two payoffs: Row’s first, Column’s second.";
+      ? "Type Row’s payoff in each cell; Column’s payoff is its negative."
+      : "Type Row’s payoff at the lower left of each cell and Column’s at the upper right.";
     $("modeNote").textContent = {
-      practice: "Work through each tab yourself. Each verdict appears in the summary once you get it right.",
+      practice: "Work through each tab yourself. Each verdict appears under its tab once you get it right.",
       answers: "The full worked analysis for the selected tab.",
       step: "Reveal the procedure one step at a time with ▶ or the arrow keys."
     }[state.mode];

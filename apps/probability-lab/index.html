@@ -512,6 +512,28 @@
     background: linear-gradient(to right, transparent, var(--surface)); opacity: 0; transition: opacity 0.15s;
   }
   .scrollfade.more::after { opacity: 1; }
+
+  /* P3.21: stochastic table density */
+  #tableApp .tt th.tok.gsep, #tableApp .tt td.tok.gsep { padding-left: 0.6em; }
+  #tableApp .tt th.tok.gend, #tableApp .tt td.tok.gend { padding-right: 0.6em; }
+  #tableApp .tt thead tr.groups th { font-family: var(--sans); font-size: 0.6em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); border-bottom: 0; padding: 0 0.6em; font-style: normal; }
+  #tableApp .tt thead tr.groups th.psi { color: var(--accent); }
+  #tableApp ol.qlist.qgrid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 10px; align-items: center; padding-left: 0; }
+  #tableApp ol.qgrid > li { display: contents; }
+  #tableApp ol.qgrid .ql { text-align: right; }
+  #tableApp ol.qgrid .qrest { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+  #tableApp ol.qgrid .qrest:empty { display: none; }
+  #tableApp ol.qgrid > li.qcol { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; grid-column: 1 / -1; }
+  #tableApp ol.qgrid > li.qcol .ql { text-align: left; }
+
+  /* the P = row at the foot of a stochastic table */
+  #tableApp .tt tfoot td, #tableApp .tt tfoot th { border-top: 2px solid var(--line-strong); padding-top: 0.45em; padding-bottom: 0.3em; border-bottom: 0; }
+  #tableApp .tt tfoot th.psl { text-align: right; font-family: var(--logic); font-weight: 600; padding-right: 0.6em; }
+  #tableApp .tt tfoot td.psv { text-align: center; white-space: nowrap; font-family: var(--mono); font-size: 0.85em; }
+  #tableApp .tt tfoot td.psv b { color: var(--accent); }
+  #tableApp .tt tfoot td.psv .pq { color: var(--faint); }
+  #tableApp .tt tfoot input.sumin { width: 5.2em; padding: 0.15em 0.3em; font-size: 1em; text-align: center; }
+  #tableApp .tt tfoot .qm { margin-left: 0.25em; }
 </style>
 </head>
 <body>
@@ -1189,13 +1211,17 @@ window.initTable = () => {
     const vw = state.editing ? { cols: [], condVals: null, condInputs: false } : view();
     const t = el("table", "tt st-tt");
     const psiTxt = show(prob.psi);
-    let h = "<thead><tr><th class='num'></th>" + L.map((x, i) => `<th class="letter${i === 0 ? "" : ""}">${x}</th>`).join("") + `<th class="sep pc">P( )</th>`;
+    let h = "<thead>";
+    if (vw.cols.some((c) => c.psi)) {
+      h += `<tr class="groups"><th colspan="${L.length + 2}"></th>` + vw.cols.map((c) => `<th class="gsep${c.psi ? " psi" : ""}" colspan="${printTokens(c.ast, true).length}">${c.psi ? "Condition" : ""}</th>`).join("") + (state.editing ? "" : "<th class='sep'></th>") + "</tr>";
+    }
+    h += "<tr><th class='num'></th>" + L.map((x, i) => `<th class="letter${i === 0 ? "" : ""}">${x}</th>`).join("") + `<th class="sep pc">P( )</th>`;
     const markMain = state.mode !== "practice";
     vw.cols.forEach((c) => {
       const toks = printTokens(c.ast, true);
       toks.forEach((t, ti) => {
         const main = t.kind === "conn" && t.node === c.ast && (markMain || !c.edit);
-        h += `<th class="tok ${t.kind}${ti === 0 ? " gsep" : ""}${c.psi ? " psi" : ""}${main ? " main" : ""}">${esc(t.text)}</th>`;
+        h += `<th class="tok ${t.kind}${ti === 0 ? " gsep" : ""}${ti === toks.length - 1 ? " gend" : ""}${c.psi ? " psi" : ""}${main ? " main" : ""}">${esc(t.text)}</th>`;
       });
     });
     if (!state.editing) h += `<th class="sep pc cpv">P( · | ${esc(psiTxt)})</th>`;
@@ -1206,8 +1232,9 @@ window.initTable = () => {
       if (state.editing) h += `<td class="sep pc"><input class="pin" id="st-ep${r}" data-r="${r}" value="${esc(editState.p[r] ?? "")}" autocomplete="off" spellcheck="false" aria-label="P of row ${r + 1}"></td>`;
       else h += `<td class="sep pc pv">${fmtP(prob.p[r])}</td>`;
       vw.cols.forEach((c) => {
-        printTokens(c.ast, true).forEach((t, ti) => {
-          const first = ti === 0 ? " gsep" : "";
+        const tk = printTokens(c.ast, true);
+        tk.forEach((t, ti) => {
+          const first = (ti === 0 ? " gsep" : "") + (ti === tk.length - 1 ? " gend" : "");
           if (t.kind === "paren") { h += `<td class="tok paren${first}"></td>`; return; }
           const v = evalNode(t.node, env);
           if (t.kind === "leaf") { h += `<td class="tok lv${first}">${v ? "T" : "F"}</td>`; return; }
@@ -1232,7 +1259,27 @@ window.initTable = () => {
       h += "</tr>";
     });
     h += "</tbody>";
+    const fIdx = (c) => { if (c.key) { const m = /^f(\d+)$/.exec(c.key); return m ? +m[1] : -1; } return c.psi ? -1 : prob.fs.indexOf(c.ast); };
+    if (!state.editing && vw.cols.some((c) => fIdx(c) >= 0)) {
+      const SSf = state.mode === "step" ? steps() : null;
+      const Sf = SSf ? SSf[Math.max(0, Math.min(state.step, SSf.length - 1))] : null;
+      const shownF = (key) => state.mode === "answers" || !!(Sf && Sf.done && Sf.done.includes(key));
+      h += `<tfoot><tr class="psum"><th class="psl" colspan="${L.length + 2}">P =</th>`;
+      vw.cols.forEach((c) => {
+        const span = printTokens(c.ast, true).length, i = fIdx(c);
+        if (i < 0) { h += `<td class="gsep" colspan="${span}"></td>`; return; }
+        if (state.mode === "practice") {
+          const mk = work.marks ? work.marks.fs[i] : null;
+          h += `<td class="gsep psv" colspan="${span}"><input class="ain sumin${mk === false ? " bad" : mk === true ? " ok" : ""}" id="st-a${i}" data-i="${i}" value="${esc(work.ans[i])}" autocomplete="off" spellcheck="false" aria-label="P(${esc(show(c.ast))})">${mk != null ? `<span class="qm ${mk ? "ok" : "bad"}">${mk ? "✓" : "✗"}</span>` : ""}</td>`;
+        } else h += `<td class="gsep psv" colspan="${span}">${shownF("f" + i) ? `<b>${fmtP(probOf(c.ast, prob))}</b>` : `<span class="pq">?</span>`}</td>`;
+      });
+      h += `<td class="sep"></td></tr></tfoot>`;
+    }
     t.innerHTML = h; wrap.append(t);
+    wrap.querySelectorAll("input.sumin").forEach((inp) => {
+      inp.addEventListener("input", () => { work.ans[+inp.dataset.i] = inp.value; inp.classList.remove("bad", "ok"); });
+      inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); check(); } });
+    });
     wrap.querySelectorAll("td.edit").forEach((td) => {
       const set = (v) => { work.tv[td.dataset.k][+td.dataset.t][+td.dataset.r] = v; td.textContent = v; td.classList.remove("wrong", "right"); };
       td.addEventListener("click", () => set({ "": "T", T: "F", F: "" }[td.textContent]));
@@ -1242,9 +1289,12 @@ window.initTable = () => {
           const cells = [...wrap.querySelectorAll("td.edit")];
           const id = (c) => c.dataset.k + ":" + c.dataset.t;
           const keys = [...new Set(cells.map(id))];
-          const ki = keys.indexOf(id(td)) + dc;
-          const n = cells.find((c) => id(c) === keys[ki] && +c.dataset.r === r + dr);
+          let ki = keys.indexOf(id(td)) + dc, rr = r + dr;
+          if (dc === 0 && rr >= N) { rr = 0; ki++; }      // bottom of a column: top of the next
+          if (dc === 0 && rr < 0) { rr = N - 1; ki--; }   // and back
+          const n = cells.find((c) => id(c) === keys[ki] && +c.dataset.r === rr);
           if (n) n.focus();
+          else if (dc === 0 && dr > 0 && ki >= keys.length) { const c0 = $("a0") || $("c0"); if (c0) { c0.focus(); c0.select(); } }  // last column done: on to P( · | ψ)
         };
         if (k === "T" || k === "F" || k === "1" || k === "0") { e.preventDefault(); set(k === "1" ? "T" : k === "0" ? "F" : k); go(1, 0); }
         else if (e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); set(""); }
@@ -1304,7 +1354,7 @@ window.initTable = () => {
       ol.append(li);
     });
     // conditional column
-    const li = el("li", "q");
+    const li = el("li", "q qcol");
     const psiTxt = esc(show(prob.psi));
     if (state.mode === "practice") {
       li.innerHTML = `<span class="ql">Fill in the column P( · | ${psiTxt}) in the table.</span>`;
@@ -1340,6 +1390,18 @@ window.initTable = () => {
       }
       ol.append(li2);
     }
+    if (state.mode === "practice") [...ol.children].forEach((item) => {
+      const inp = item.querySelector("input.ain"); if (!inp || !/^st-a\d+$/.test(inp.id)) return;
+      inp.remove(); item.querySelector(".qm")?.remove();
+      const ql = item.querySelector(".ql"); ql.textContent = ql.textContent.replace(/ =$/, ":");
+      if (!item.querySelector(".linkbtn, .qmsg")) item.remove();
+    });
+    ol.classList.add("qgrid");
+    [...ol.children].forEach((item) => {
+      const ql = item.querySelector(".ql"), rest = el("span", "qrest");
+      [...item.childNodes].forEach((n) => { if (n !== ql && !(n.nodeType === 3 && !n.textContent.trim())) rest.append(n); });
+      item.append(rest);
+    });
     box.append(ol);
   }
 
@@ -2126,10 +2188,10 @@ window.initEik = () => {
         this.hits = { v: hit("v", "col-resize", "Column divider"), lh: hit("lh", "row-resize", "Left row divider"), rh: hit("rh", "row-resize", "Right row divider") };
         this.handles = ["hl", "hr"].map((k) => {
           const hg = mk("g", { "data-drag": k, style: "cursor:move" }, hits);
-          mk("circle", { r: 22, fill: "transparent" }, hg);
+          const pad = mk("circle", { r: 22, fill: "transparent" }, hg);
           const ring = mk("circle", { r: 11, "stroke-width": 2 }, hg);
           const dot = mk("circle", { r: 4 }, hg);
-          return { hg, ring, dot };
+          return { hg, ring, dot, pad };
         });
       }
     }
@@ -2215,10 +2277,13 @@ window.initEik = () => {
         setA(this.hits.v, { x1: midX, y1: y0, x2: midX, y2: y0 + h, "aria-valuenow": prob(m.pA), "aria-valuetext": `P(${s.a}) = ${pct(m.pA)}`, "aria-label": `Column divider, P(${s.a})` });
         setA(this.hits.lh, { x1: x0, y1: lY, x2: midX, y2: lY, "aria-valuenow": prob(s.pBgA), "aria-valuetext": `P(${s.b}|${s.a}) = ${pct(s.pBgA)}`, "aria-label": `Left row divider, P(${s.b}|${s.a})` });
         setA(this.hits.rh, { x1: midX, y1: rY, x2: x0 + w, y2: rY, "aria-valuenow": prob(s.pBgNotA), "aria-valuetext": `P(${s.b}|${s.notA}) = ${pct(s.pBgNotA)}`, "aria-label": `Right row divider, P(${s.b}|${s.notA})` });
-        const hr = clamp(base * 0.5, 9, 13);
-        [[midX - Math.min(hr + 6, (midX - x0) / 2), lY], [midX + Math.min(hr + 6, (x0 + w - midX) / 2), rY]].forEach(([cx, cy], i) => {
+        const coarse = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+        Object.values(this.hits).forEach((ln) => ln.setAttribute("stroke-width", coarse ? 44 : 26));
+        const hr = clamp(base * 0.5, coarse ? 11 : 9, 13);
+        [[x0 + (midX - x0) / 2, lY], [midX + (x0 + w - midX) / 2, rY]].forEach(([cx, cy], i) => {
           const hd = this.handles[i];
           hd.hg.setAttribute("transform", `translate(${cx} ${cy})`);
+          hd.pad.setAttribute("r", coarse ? 26 : 22);
           setA(hd.ring, { r: hr, fill: pal.handle, stroke: pal.divider });
           setA(hd.dot, { r: hr * 0.36, fill: i === 0 ? pal.hStrong : pal.nStrong });
         });
@@ -2399,18 +2464,16 @@ window.initEik = () => {
     if (!drag) return;
     const r = svg.getBoundingClientRect(), g = scene.geom;
     const c = (v) => clamp(snap(v), MIN, MAX);
-    if (drag.kind === "cl" || drag.kind === "cr") {
+    if (["cl", "cr", "hl", "hr"].includes(drag.kind)) {
       const dx = (e.clientX - drag.sx) / g.w, dy = (e.clientY - drag.sy) / g.h;
       state.pA = c(drag.s0.pA + dx);
-      if (drag.kind === "cl") state.pBgA = c(drag.s0.pBgA - dy);
+      if (drag.kind === "cl" || drag.kind === "hl") state.pBgA = c(drag.s0.pBgA - dy);
       else state.pBgNotA = c(drag.s0.pBgNotA - dy);
     } else {
       const px = c((e.clientX - r.left - g.x0) / g.w), py = c(1 - (e.clientY - r.top - g.y0) / g.h);
       if (drag.kind === "v") state.pA = px;
       else if (drag.kind === "lh") state.pBgA = py;
       else if (drag.kind === "rh") state.pBgNotA = py;
-      else if (drag.kind === "hl") { state.pA = px; state.pBgA = py; }
-      else if (drag.kind === "hr") { state.pA = px; state.pBgNotA = py; }
     }
     render();
   }
@@ -2422,7 +2485,7 @@ window.initEik = () => {
     svg.setPointerCapture(e.pointerId);
     if (t.focus && kind in scene.hits) t.focus({ preventScroll: true });
     e.preventDefault();
-    if (kind !== "cl" && kind !== "cr") move(e);
+    if (!["cl", "cr", "hl", "hr"].includes(kind)) move(e);
   });
   svg.addEventListener("pointermove", move);
   const end = () => { if (drag) { drag = null; writeHash(); } };
