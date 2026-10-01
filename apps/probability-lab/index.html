@@ -1,0 +1,2621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Probability Lab</title>
+<link rel="preload" href="../fonts/plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../fonts/plex.css">
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef1f6;
+    --ink: #14202e;
+    --muted: #5a6778;
+    --faint: #9aa5b4;
+    --line: #dbe1e9;
+    --line-strong: #14202e;
+    --accent: #2c5cc9;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3ebfb;
+    --accent-softer: #f0f4fd;
+    --good: #1d7f53;
+    --good-soft: #e1f3e9;
+    --bad: #b93a32;
+    --bad-soft: #fbe3e0;
+    --focus: #2c5cc9;
+    --radius: 10px;
+    --tsize: 18px;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --logic: "IBM Plex Sans", "Cambria Math", "STIX Two Math", "Segoe UI Symbol", "Apple Symbols", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+      --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+      --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+      --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e131a; --surface: #151c26; --surface-2: #1c2531;
+    --ink: #e7ecf3; --muted: #97a3b4; --faint: #5f6b7c; --line: #2a3443; --line-strong: #c9d2de;
+    --accent: #86a9f6; --accent-ink: #0e131a; --accent-soft: #223252; --accent-softer: #1a2436;
+    --good: #5fcf97; --good-soft: #173527; --bad: #f08a80; --bad-soft: #3e1f1d; --focus: #86a9f6;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 14px 16px 0; max-width: 1600px; margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 28px; height: 28px; flex: none; border-radius: 6px; overflow: hidden;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+    background: var(--surface); border: 1px solid var(--line); padding: 3px;
+  }
+  .brand-mark span { border-radius: 2px; background: var(--accent-soft); }
+  .brand-mark span:nth-child(1), .brand-mark span:nth-child(4) { background: var(--accent); }
+  .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+  .brand p { font-size: 0.8rem; color: var(--muted); }
+  .top-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .top-controls .lbl { font-size: 0.78rem; color: var(--muted); }
+
+  /* ---------- segmented controls ---------- */
+  .seg {
+    display: inline-flex; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 2px; gap: 2px;
+  }
+  .seg button {
+    border: 0; background: transparent; padding: 5px 10px; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap;
+  }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+  .seg.full { display: flex; }
+  .seg.full button { flex: 1; }
+
+  /* ---------- layout ---------- */
+  .app {
+    display: grid; grid-template-columns: 1fr; gap: 16px;
+    padding: 14px 16px 24px; max-width: 1600px; margin: 0 auto;
+  }
+  .panel, .stage { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  details.card { display: block; }
+  details.card[open] > * + * { margin-top: 0; }
+  @media (max-width: 979px) {
+    .app { display: flex; flex-direction: column; }
+    .panel { display: contents; }
+    #buildCard { order: 1; } .stage { order: 2; } #displayCard { order: 3; } .help { order: 4; }
+  }
+  @media (min-width: 980px) {
+    .app { grid-template-columns: 350px minmax(0, 1fr); gap: 20px; padding: 16px 20px 28px; }
+    .topbar { padding: 16px 20px 0; }
+    .panel { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 2px; }
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .card h2 {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  }
+
+  /* ---------- formula inputs ---------- */
+  .frow { display: flex; flex-direction: column; gap: 4px; }
+  .frow label { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+  .fbox { display: flex; align-items: center; gap: 6px; }
+  .fbox .pre { font-family: var(--logic); color: var(--muted); width: 1.1em; text-align: center; flex: none; }
+  .fin {
+    flex: 1; min-width: 0; width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--surface-2); font-family: var(--logic); font-size: 1.05rem; letter-spacing: 0.01em;
+  }
+  .fin.err { border-color: var(--bad); }
+  .icon-btn {
+    border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 6px;
+    width: 30px; height: 30px; flex: none; font-size: 1.1rem; line-height: 1;
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+  .errmsg { font-size: 0.82rem; color: var(--bad); display: flex; flex-direction: column; gap: 2px; }
+  .errmsg code { font-family: var(--logic); color: var(--ink); white-space: pre-wrap; word-break: break-all; }
+  .errmsg mark { background: var(--bad-soft); color: var(--bad); border-bottom: 2px solid var(--bad); border-radius: 2px; padding: 0 1px; }
+
+  .keypad { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px; }
+  .keypad button {
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px; padding: 6px 0;
+    font-family: var(--logic); font-size: 1.05rem; cursor: pointer;
+  }
+  .keypad button:hover { border-color: var(--muted); }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; }
+  .examples .lbl { font-size: 0.78rem; color: var(--muted); width: 100%; }
+  .chip {
+    border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 3px 10px;
+    font-family: var(--logic); font-size: 0.85rem; cursor: pointer; color: var(--ink);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn {
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 7px;
+    padding: 7px 12px; font-size: 0.88rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--muted); }
+  a.btn { text-decoration: none; color: var(--ink); display: inline-block; }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.small { padding: 4px 10px; font-size: 0.82rem; }
+  .linkbtn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 0.85rem; font-weight: 500; align-self: flex-start; }
+
+  .check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+  .opt { display: flex; flex-direction: column; gap: 6px; }
+  .opt > span { font-size: 0.78rem; color: var(--muted); }
+
+  details.help summary { cursor: pointer; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  details.help[open] summary { margin-bottom: 10px; }
+  .help dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 0.85rem; }
+  .help dt { font-family: var(--logic); font-weight: 500; }
+  .help dd { margin: 0; color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+  .help p { font-size: 0.84rem; color: var(--muted); margin-top: 10px; }
+
+  /* ---------- stage ---------- */
+  .result { padding: 0; gap: 0; }
+  .result-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 14px 16px; border-bottom: 1px solid var(--line);
+  }
+  .verdict { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 11px;
+    font-size: 0.85rem; font-weight: 600; white-space: nowrap;
+  }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.neutral { background: var(--accent-soft); color: var(--accent); }
+  .badge.muted { background: var(--surface-2); color: var(--muted); }
+  .verdict-text { font-size: 0.92rem; color: var(--muted); }
+  .verdict-text b { color: var(--ink); font-weight: 600; }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stepper { display: inline-flex; align-items: center; gap: 4px; }
+  .stepper .count { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); min-width: 4.5em; text-align: center; }
+  .stepcap { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.9rem; background: var(--accent-softer); }
+  .stepcap .f { font-family: var(--logic); font-weight: 600; }
+  .practicecap { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 0.88rem; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .score { font-weight: 600; color: var(--ink); }
+  .score.ok { color: var(--good); }
+
+  .table-wrap { overflow-x: auto; padding: 8px 8px 12px; }
+  .table-wrap.stale, .verdict.stale { opacity: 0.35; transition: opacity 0.15s; }
+  .buildrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .buildrow .hint { font-size: 0.8rem; color: var(--muted); }
+  .buildrow .hint::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
+  .empty { padding: 40px 16px; text-align: center; color: var(--muted); }
+
+  table.tt {
+    border-collapse: separate; border-spacing: 0; margin: 0 auto;
+    font-size: var(--tsize); font-variant-numeric: tabular-nums;
+  }
+  .tt th, .tt td { padding: 0.28em 0.42em; text-align: center; white-space: nowrap; }
+  .tt thead th {
+    font-family: var(--logic); font-weight: 500; border-bottom: 2px solid var(--line-strong);
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  .tt thead tr.groups th {
+    font-family: var(--sans); font-size: 0.62em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); border-bottom: 0; padding-bottom: 0;
+  }
+  .tt th.letter, .tt .letter-h { font-style: italic; }
+  .tt th.num, .tt td.num { font-family: var(--mono); font-size: 0.62em; color: var(--faint); font-weight: 400; padding-right: 0.9em; }
+  .tt td { font-family: var(--mono); font-weight: 400; border-bottom: 1px solid var(--line); }
+  .tt td.letter { font-weight: 700; }
+  .tt .sep { border-left: 2px solid var(--line-strong); }
+  .tt .gsep { border-left: 1px solid var(--line); }
+  .tt .paren { padding-left: 0.04em; padding-right: 0.04em; color: var(--muted); }
+  .tt th.paren { color: var(--ink); }
+  .tt th.leaf { font-style: italic; }
+  .tt .tight { padding-left: 0.12em; padding-right: 0.12em; }
+  .tt .main { font-weight: 700; }
+  .tt td.main { background: var(--accent-softer); }
+  .tt th.main { color: var(--accent); }
+  .tt td.muted-v { color: var(--faint); }
+  .tt tr.grp td { border-top: 2px solid var(--line); }
+  .tt tbody tr:last-child td { border-bottom: 2px solid var(--line-strong); }
+  .tt th.sub { font-weight: 500; }
+
+  .tt tr.cx td { background: var(--bad-soft); }
+  .tt tr.cx td.num { color: var(--bad); font-weight: 700; }
+  .tt tr.pt td { background: var(--good-soft); }
+  .tt tr.pt td.num { color: var(--good); font-weight: 700; }
+
+  .tt .cur { background: var(--accent-soft) !important; }
+  .tt th.cur { color: var(--accent); font-weight: 700; }
+  .tt .kid { background: var(--accent-softer) !important; }
+  .tt td.hid { color: transparent; }
+
+  .tt td.edit { cursor: pointer; user-select: none; min-width: 1.4em; }
+  .tt td.edit:empty::after { content: "·"; color: var(--faint); }
+  .tt td.edit:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .tt td.edit.wrong { background: var(--bad-soft) !important; color: var(--bad); box-shadow: inset 0 0 0 1.5px var(--bad); }
+  .tt td.edit.right { color: var(--good); }
+
+  .foot { font-size: 0.8rem; color: var(--muted); padding: 0 16px 14px; }
+
+    /* ================= Probability Lab shell ================= */
+  .tabs {
+    display: flex; gap: 2px; max-width: 1600px; margin: 10px auto 0; padding: 0 16px;
+    border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button {
+    border: 0; background: none; padding: 9px 14px 10px; font-size: 0.92rem; font-weight: 500; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+  }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  @media (min-width: 980px) { .tabs { padding: 0 20px; } }
+  .tally { font-size: 0.82rem; color: var(--muted); }
+  .tally:empty { display: none; }
+  .xlinks { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* ================= Tables tab ================= */
+  #tableApp .tt th.tok { font-family: var(--logic); font-weight: 500; padding-left: 0.16em; padding-right: 0.16em; }
+  #tableApp .tt th.tok.leaf { font-style: italic; }
+  #tableApp .tt th.tok.paren, #tableApp .tt td.tok.paren { padding-left: 0.04em; padding-right: 0.04em; color: var(--muted); }
+  #tableApp .tt th.tok.psi { color: var(--accent); }
+  #tableApp .tt td.tok { padding-left: 0.16em; padding-right: 0.16em; }
+  #tableApp .tt td.tok.lv { font-family: var(--mono); font-size: 0.75em; color: var(--faint); }
+  #tableApp .tt th.tok.main { color: var(--accent); font-weight: 700; }
+  #tableApp .tt td.tok.main { background: var(--accent-softer); }
+  #tableApp .tt td.fv { font-family: var(--mono); font-size: 0.85em; }
+  #tableApp .tt td.fv.fvf { color: var(--faint); }
+  #tableApp .tt td.fv.tv { font-weight: 700; }
+  #tableApp .tt td.edit { cursor: pointer; user-select: none; min-width: 1.6em; font-weight: 700; }
+  #tableApp .tt td.edit:empty::after { content: "·"; color: var(--faint); font-weight: 400; }
+  #tableApp .tt td.edit:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
+  #tableApp .tt td.edit.wrong { background: var(--bad-soft); color: var(--bad); box-shadow: inset 0 0 0 1.5px var(--bad); }
+  #tableApp .tt td.edit.right { color: var(--good); }
+  #tableApp .tt th.pc, #tableApp .tt td.pv { font-family: var(--mono); }
+  #tableApp .tt td.pv { font-size: 0.8em; padding-left: 0.6em; padding-right: 0.6em; }
+  #tableApp .tt td.cpv { font-family: var(--mono); font-size: 0.8em; color: var(--accent); min-width: 4.5em; }
+  #tableApp .tt th.cpv { font-size: 0.75em; color: var(--accent); }
+  #tableApp .tt input.pin { width: 5.6em; padding: 0.15em 0.3em; border: 1px solid var(--line); border-radius: 5px; background: var(--surface-2); font-family: var(--mono); font-size: 0.85em; text-align: center; color: var(--accent); }
+  #tableApp .tt input.pin.bad { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+  #tableApp .tt input.pin.ok { border-color: var(--good); color: var(--good); }
+  #tableApp .st-qs { padding: 4px 16px 12px; }
+  #tableApp .st-qs:empty { display: none; }
+  #tableApp ol.qlist { margin: 0; padding-left: 1.6em; display: flex; flex-direction: column; gap: 10px; }
+  #tableApp ol.qlist li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  #tableApp .ql { font-family: var(--logic); font-weight: 500; }
+  #tableApp .qa { font-family: var(--logic); }
+  #tableApp .qa b { font-family: var(--mono); color: var(--accent); }
+  #tableApp .qa.muted { color: var(--faint); }
+  .ain { width: 7em; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font-family: var(--mono); font-size: 0.95rem; }
+  .ain.bad { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+  .ain.ok { border-color: var(--good); color: var(--good); }
+  .qm { font-weight: 700; }
+  .qm.ok { color: var(--good); } .qm.bad { color: var(--bad); }
+  .qmsg { font-size: 0.84rem; color: var(--bad); flex-basis: 100%; }
+  #tableApp .st-edit { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  #tableApp #st-editQs { border-bottom: 0; border-top: 1px solid var(--line); }
+  #tableApp .st-edit h3 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-top: 4px; }
+  #tableApp .erow { display: grid; grid-template-columns: minmax(0, 14em) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+  #tableApp .erow label { font-size: 0.84rem; color: var(--muted); }
+  #tableApp .sum { font-size: 0.85rem; font-weight: 600; }
+  #tableApp .sum.ok { color: var(--good); } #tableApp .sum.bad { color: var(--bad); }
+  @media (max-width: 979px) { #st-probCard { order: 1; } #tableApp .stage { order: 2; } #st-modeCard { order: 3; } #st-help { order: 4; } }
+  @media (max-width: 640px) { #tableApp .erow { grid-template-columns: 1fr auto; } #tableApp .erow label { grid-column: 1 / -1; } }
+
+  /* ================= Bayes tab ================= */
+  #bayesApp { --tsize-by: 18px; }
+  #bayesApp .by-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  #bayesApp .story { font-size: var(--tsize-by); line-height: 1.55; max-width: 64ch; text-wrap: pretty; }
+  #bayesApp .story mark { background: transparent; color: inherit; border-radius: 3px; padding: 0 2px; }
+  #bayesApp .story mark.on { background: var(--accent-soft); box-shadow: inset 0 -2px 0 var(--accent); }
+  #bayesApp .dictline { font-size: 0.95rem; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); align-self: flex-start; max-width: 100%; }
+  #bayesApp .dk { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-right: 6px; }
+  #bayesApp #by-practice { display: flex; flex-direction: column; gap: 16px; }
+  #bayesApp .by-step { display: flex; flex-direction: column; gap: 8px; }
+  #bayesApp .by-step h3 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  #bayesApp .seg.ev { align-self: flex-start; }
+  #bayesApp .seg.ev button { font-family: var(--logic); font-size: 1rem; padding: 5px 22px; }
+  #bayesApp .seg.ev.bad { border-color: var(--bad); } #bayesApp .seg.ev.ok { border-color: var(--good); }
+  #bayesApp .qgrid { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 8px 10px; align-items: center; justify-content: start; }
+  #bayesApp .qgrid label { font-family: var(--logic); font-weight: 500; text-align: right; }
+  #bayesApp .smsg { font-size: 0.84rem; color: var(--muted); }
+  #bayesApp .smsg.bad { color: var(--bad); } #bayesApp .smsg.ok { color: var(--good); }
+  #bayesApp .by-step > .smsg:empty { display: none; }
+  #bayesApp .qgrid .smsg:empty { display: block; }
+  #bayesApp .worked { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+  #bayesApp .worked .lbl { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-right: 6px; }
+  #bayesApp ul.qty { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  #bayesApp ul.qty .ql { font-family: var(--logic); font-weight: 500; display: inline-block; min-width: 6.5em; }
+  #bayesApp ul.qty b { font-family: var(--mono); color: var(--accent); }
+  #bayesApp .hw { font-size: 0.85rem; color: var(--muted); }
+  #bayesApp .eq { font-family: var(--logic); overflow-wrap: anywhere; }
+  #bayesApp .eq b { font-family: var(--mono); color: var(--accent); }
+  #bayesApp #by-view { display: flex; flex-direction: column; gap: 12px; }
+  @media (max-width: 979px) { #by-probCard { order: 1; } #bayesApp .stage { order: 2; } #by-modeCard { order: 3; } #by-help { order: 4; } }
+  @media (max-width: 560px) { #bayesApp .qgrid { grid-template-columns: auto minmax(0, 1fr); } #bayesApp .qgrid .smsg { grid-column: 1 / -1; } }
+:root { --h-strong: #6e9bf2; --h-soft: #d9e5fc; --n-strong: #f0a848; --n-soft: #fbe8cc; --on-strong: #14202e; --on-soft: #14202e; --divider: #14202e; --handle: #ffffff; --dscale: 1; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --h-strong: #5d8ded; --h-soft: #22324f; --n-strong: #e39b3f; --n-soft: #3d2d18; --on-strong: #0e131a; --on-soft: #e7ecf3; --divider: #e7ecf3; --handle: #151c26; } }
+:root[data-theme="dark"] { --h-strong: #5d8ded; --h-soft: #22324f; --n-strong: #e39b3f; --n-soft: #3d2d18; --on-strong: #0e131a; --on-soft: #e7ecf3; --divider: #e7ecf3; --handle: #151c26; }
+#eikApp .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }#eikApp /* ---------- layout ---------- */
+  .app {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }#eikApp .stage { min-width: 0; display: flex; flex-direction: column; gap: 14px; }#eikApp .panel { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+
+  @media (min-width: 960px) {#eikApp .app {
+      height: 100%;
+      grid-template-columns: 320px minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas: "top top" "panel stage";
+      gap: 16px 20px;
+      padding: 20px;
+    }#eikApp .topbar { grid-area: top; }#eikApp .panel { grid-area: panel; overflow-y: auto; padding-right: 4px; }#eikApp .stage { grid-area: stage; min-height: 0; }
+  }
+
+  /* On phones and narrow windows: the diagram comes first, then the readouts,
+     then the probability sliders; labels and export go last. */
+  @media (max-width: 959px) {#eikApp .panel { display: contents; }#eikApp .topbar { order: 0; }#eikApp .stage { order: 1; }#eikApp .panel > .card { order: 2; }#eikApp .diagram-card { order: -1; }
+  }#eikApp /* ---------- top bar ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }#eikApp .brand { display: flex; align-items: center; gap: 10px; padding: 2px 2px 4px; }#eikApp .top-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }#eikApp .top-controls .lbl { font-size: 0.78rem; color: var(--muted); }#eikApp .top-controls .seg { display: inline-flex; }#eikApp .top-controls .seg button { flex: none; }#eikApp .brand-mark {
+    width: 28px; height: 28px; flex: none; border-radius: 6px; overflow: hidden;
+    display: grid; grid-template-columns: 11fr 17fr;
+  }#eikApp .brand-mark span:first-child { background: linear-gradient(to top, var(--h-strong) 64%, var(--h-soft) 64%); }#eikApp .brand-mark span:last-child { background: linear-gradient(to top, var(--n-strong) 30%, var(--n-soft) 30%); }#eikApp .brand h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }#eikApp .brand p { font-size: 0.8rem; color: var(--muted); }#eikApp /* ---------- panel sections ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 14px;
+  }#eikApp .card h2 {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted);
+  }#eikApp .control { display: flex; flex-direction: column; gap: 8px; }#eikApp .control-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }#eikApp .control-head label { font-weight: 600; font-size: 0.95rem; }#eikApp .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 0; }#eikApp .sw-h { background: var(--h-strong); }#eikApp .sw-n { background: var(--n-strong); }#eikApp .control input.pin {
+    width: 6.8em; padding: 5px 8px; text-align: right;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2);
+    font-family: var(--mono); font-size: 0.9rem;
+  }#eikApp .control .hint { font-size: 0.78rem; color: var(--muted); margin-top: -4px; }#eikApp input[type="range"] {
+    width: 100%; margin: 0; height: 28px; background: transparent;
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    --fill: 50%;
+  }#eikApp input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, var(--accent) var(--fill), var(--line) var(--fill));
+  }#eikApp input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }#eikApp input[type="range"]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--accent); }#eikApp input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; margin-top: -7px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--accent); box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  }#eikApp input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--accent);
+  }#eikApp .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }#eikApp .fields .wide { grid-column: 1 / -1; }#eikApp .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }#eikApp .field label { font-size: 0.78rem; color: var(--muted); }#eikApp .field input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--surface-2);
+  }#eikApp .check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }#eikApp .check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }#eikApp .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }#eikApp .btn {
+    border: 1px solid var(--line); background: var(--surface-2); border-radius: 7px;
+    padding: 8px 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer;
+  }#eikApp .btn:hover { border-color: var(--muted); }#eikApp .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }#eikApp .btn.primary:hover { filter: brightness(1.08); }#eikApp .status { font-size: 0.82rem; color: var(--muted); min-height: 1.2em; }#eikApp .note { font-size: 0.8rem; color: var(--muted); }#eikApp /* segmented switch */
+  .seg { display: flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; }#eikApp .seg button { flex: 1; border: 0; background: transparent; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; }#eikApp .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }#eikApp /* ---------- stage ---------- */
+  .readouts {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  }#eikApp .readout { padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }#eikApp .readout + .readout { border-left: 1px solid var(--line); }#eikApp .readout .k { font-size: calc(0.78rem * var(--dscale)); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }#eikApp .readout .v { font-family: var(--mono); font-size: calc(clamp(1.25rem, 2.2vw, 1.75rem) * var(--dscale)); font-weight: 500; letter-spacing: -0.02em; }#eikApp .readout .v .approx { font-size: 0.55em; color: var(--muted); letter-spacing: 0; margin-left: 0.4em; white-space: nowrap; }#eikApp .readout .t { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }#eikApp .readout.key { background: color-mix(in srgb, var(--accent) 9%, transparent); }#eikApp .readout.key .v { color: var(--accent); }#eikApp .readout:first-child { border-radius: var(--radius) 0 0 var(--radius); }#eikApp .readout:last-child { border-radius: 0 var(--radius) var(--radius) 0; }#eikApp .diagram-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    display: flex; flex-direction: column; min-height: 0;
+  }#eikApp .diagram-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px 0;
+  }#eikApp .diagram-bar h2 { font-size: calc(1.15rem * var(--dscale)); font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }#eikApp .sentence { font-size: calc(0.9rem * var(--dscale)); color: var(--muted); }#eikApp .sentence b { color: var(--ink); font-weight: 600; }#eikApp .toggle {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px 5px 6px;
+    font-size: 0.86rem; font-weight: 500; background: var(--surface-2);
+  }#eikApp .toggle input { position: absolute; opacity: 0; pointer-events: none; }#eikApp .toggle .knob {
+    width: 30px; height: 18px; border-radius: 999px; background: var(--line); position: relative; flex: none;
+    transition: background 0.15s;
+  }#eikApp .toggle .knob::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--surface); transition: transform 0.15s; box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  }#eikApp .toggle input:checked + .knob { background: var(--accent); }#eikApp .toggle input:checked + .knob::after { transform: translateX(12px); }#eikApp .toggle:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }#eikApp .diagram {
+    position: relative; width: 100%;
+    aspect-ratio: 4 / 3.3; max-width: 100%;
+    padding: 4px 8px 8px;
+  }
+  @media (min-width: 960px) {#eikApp .diagram-card { flex: 1; }#eikApp .diagram { aspect-ratio: auto; flex: 1; min-height: 340px; }
+  }#eikApp .diagram svg { position: absolute; inset: 4px 8px 8px; width: calc(100% - 16px); height: calc(100% - 12px); display: block; touch-action: none; user-select: none; -webkit-user-select: none; }#eikApp .diagram svg text { pointer-events: none; }#eikApp .diagram svg [data-drag] { outline: none; }#eikApp .foot { font-size: 0.82rem; color: var(--muted); padding: 0 16px 12px; }
+
+  @media (max-width: 720px) {#eikApp .readouts { grid-template-columns: 1fr 1fr; }#eikApp .readout:nth-child(3) { border-left: 0; }#eikApp .readout:nth-child(n+3) { border-top: 1px solid var(--line); }#eikApp .readout:first-child { border-radius: var(--radius) 0 0 0; }#eikApp .readout:nth-child(2) { border-radius: 0 var(--radius) 0 0; }#eikApp .readout:nth-child(3) { border-radius: 0 0 0 var(--radius); }#eikApp .readout:last-child { border-radius: 0 0 var(--radius) 0; }#eikApp .diagram { aspect-ratio: 1 / 1.05; padding: 2px 2px 6px; }#eikApp .diagram svg { inset: 2px 2px 6px; width: calc(100% - 4px); height: calc(100% - 8px); }#eikApp .diagram-bar { padding: 12px 12px 0; }#eikApp .foot { padding: 0 12px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {#eikApp * { transition: none !important; }
+  }
+
+  /* inside Probability Lab: no Eikosogram top bar */
+  #eikApp .app { height: auto; }
+  @media (min-width: 960px) {
+    #eikApp .app { height: calc(100vh - 118px); min-height: 560px; grid-template-rows: minmax(0, 1fr); grid-template-areas: "panel stage"; }
+    #eikApp .panel { position: static; max-height: none; align-self: stretch; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar ll-top">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div>
+      <h1>Probability Lab</h1>
+      <p>Stochastic tables, Bayes’ theorem, eikosograms</p>
+    </div>
+  </div>
+  <div class="top-controls">
+    <span class="lbl" id="ll-sizeLbl">Size</span>
+    <div class="seg" role="group" aria-labelledby="ll-sizeLbl" id="ll-sizeSeg">
+      <button type="button" data-v="0">S</button><button type="button" data-v="1">M</button><button type="button" data-v="2">L</button><button type="button" data-v="3">XL</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme" id="ll-themeSeg">
+      <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+    </div>
+  </div>
+</header>
+<nav class="tabs" role="tablist" aria-label="Probability Lab tools" id="ll-tabs">
+  <button type="button" role="tab" data-tab="table" id="ll-tab-table" aria-controls="tableApp">Stochastic tables</button>
+  <button type="button" role="tab" data-tab="bayes" id="ll-tab-bayes" aria-controls="bayesApp">Bayes</button>
+  <button type="button" role="tab" data-tab="eik" id="ll-tab-eik" aria-controls="eikApp">Eikosograms</button>
+</nav>
+<div id="tableApp" hidden>
+<div hidden><div class="seg" id="st-sizeSeg"><button type="button" data-v="15">S</button><button type="button" data-v="18">M</button><button type="button" data-v="23">L</button><button type="button" data-v="30">XL</button></div></div>
+<div class="app">
+  <aside class="panel" aria-label="Problem and options">
+    <section class="card" id="st-probCard" aria-labelledby="st-probHead">
+      <h2 id="st-probHead">Problem</h2>
+      <div class="seg full" role="group" aria-label="Difficulty" id="st-diffSeg">
+        <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+      </div>
+      <div class="buildrow">
+        <button type="button" class="btn primary" id="st-newBtn">New problem</button>
+        <button type="button" class="btn" id="st-editBtn">Your own table</button>
+      </div>
+      <div class="opt">
+        <span id="st-fmtLbl">Show probabilities as</span>
+        <div class="seg full" role="group" aria-labelledby="st-fmtLbl" id="st-fmtSeg">
+          <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="st-modeCard" aria-labelledby="st-modeHead">
+      <h2 id="st-modeHead">Mode</h2>
+      <div class="seg full" role="group" aria-label="Mode" id="st-modeSeg">
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button>
+      </div>
+      <p class="status-text" id="st-modeNote"></p>
+      <p class="tally" id="st-tally"></p>
+    </section>
+
+    <details class="card help" id="st-help">
+      <summary>Typing answers and formulas</summary>
+      <p>Probabilities can be typed as fractions (2/5), decimals (0.4) or percentages (40%). Fractions don’t need to be reduced: 4/10 counts as 2/5.</p>
+      <dl>
+        <dt>¬</dt><dd>~  !</dd>
+        <dt>∧</dt><dd>&amp;  ^</dd>
+        <dt>∨</dt><dd>|  v (between spaces)</dd>
+        <dt>→</dt><dd>-&gt;  =&gt;</dd>
+        <dt>↔</dt><dd>&lt;-&gt;  &lt;=&gt;</dd>
+      </dl>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card result">
+      <div class="result-head">
+        <div class="verdict" id="st-verdict" aria-live="polite"></div>
+        <div class="actions">
+          <div class="stepper" id="st-stepper" hidden>
+            <button class="btn small" type="button" id="st-stFirst" aria-label="Back to start">⏮</button>
+            <button class="btn small" type="button" id="st-stPrev" aria-label="Previous step">◀</button>
+            <span class="count" id="st-stCount">0 / 0</span>
+            <button class="btn small primary" type="button" id="st-stNext" aria-label="Next step">▶</button>
+            <button class="btn small" type="button" id="st-stLast" aria-label="Show all">⏭</button>
+          </div>
+          <div class="actions" id="st-practiceBtns">
+            <button class="btn small primary" type="button" id="st-check">Check</button>
+            <button class="btn small" type="button" id="st-clear">Clear</button>
+          </div>
+          <div class="actions" id="st-editBtns" hidden>
+            <button class="btn small primary" type="button" id="st-done">Use this table</button>
+            <button class="btn small" type="button" id="st-cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="stepcap" id="st-stepcap" hidden></div>
+      <div id="st-editTop" class="st-edit" hidden>
+        <div class="opt">
+          <span id="st-nLbl">Sentence letters</span>
+          <div class="seg" role="group" aria-labelledby="st-nLbl" id="st-nSeg">
+            <button type="button" data-v="2">P, Q</button><button type="button" data-v="3">P, Q, R</button><button type="button" data-v="4">P, Q, R, S</button>
+          </div>
+        </div>
+        <div class="xlinks"><button type="button" class="btn small" id="st-eqBtn">Equal (indifference)</button><button type="button" class="btn small" id="st-rndBtn">Random</button><span class="sum" id="st-sum"></span></div>
+      </div>
+      <div class="table-wrap" id="st-tableWrap"></div>
+      <div class="st-qs" id="st-qs"></div>
+      <div id="st-editQs" class="st-edit" hidden></div>
+      <div class="st-feedback" id="st-feedback" aria-live="polite"></div>
+    </section>
+  </main>
+</div>
+</div>
+<div id="bayesApp" hidden>
+<div hidden><div class="seg" id="by-sizeSeg"><button type="button" data-v="16">S</button><button type="button" data-v="18">M</button><button type="button" data-v="21">L</button><button type="button" data-v="26">XL</button></div></div>
+<div class="app">
+  <aside class="panel" aria-label="Problem and options">
+    <section class="card" id="by-probCard" aria-labelledby="by-probHead">
+      <h2 id="by-probHead">Problem</h2>
+      <div class="seg full" role="group" aria-label="Difficulty" id="by-diffSeg">
+        <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+      </div>
+      <div class="buildrow">
+        <button type="button" class="btn primary" id="by-newBtn">New problem</button>
+      </div>
+      <div class="opt">
+        <span id="by-fmtLbl">Show probabilities as</span>
+        <div class="seg full" role="group" aria-labelledby="by-fmtLbl" id="by-fmtSeg">
+          <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="by-modeCard" aria-labelledby="by-modeHead">
+      <h2 id="by-modeHead">Mode</h2>
+      <div class="seg full" role="group" aria-label="Mode" id="by-modeSeg">
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="answers">Show answers</button><button type="button" data-v="step">Step through</button>
+      </div>
+      <p class="status-text" id="by-modeNote"></p>
+      <p class="tally" id="by-tally"></p>
+    </section>
+
+    <details class="card help" id="by-help">
+      <summary>The method</summary>
+      <p>As in the book: start from the dictionary, decide whether you learned E or ¬E, identify the prior and the likelihoods, then use Bayes’ theorem to compute the posterior.</p>
+      <p>The likelihoods are always about E: P(E | H) and P(E | ¬H). If you learned ¬E, use P(¬E | H) = 1 − P(E | H) and P(¬E | ¬H) = 1 − P(E | ¬H).</p>
+      <p>Probabilities can be typed as fractions (7/26), decimals (0.27) or percentages (27%).</p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card result">
+      <div class="result-head">
+        <div class="verdict" id="by-verdict" aria-live="polite"></div>
+        <div class="actions">
+          <div class="stepper" id="by-stepper" hidden>
+            <button class="btn small" type="button" id="by-stFirst" aria-label="Back to start">⏮</button>
+            <button class="btn small" type="button" id="by-stPrev" aria-label="Previous step">◀</button>
+            <span class="count" id="by-stCount">0 / 0</span>
+            <button class="btn small primary" type="button" id="by-stNext" aria-label="Next step">▶</button>
+            <button class="btn small" type="button" id="by-stLast" aria-label="Show all">⏭</button>
+          </div>
+        </div>
+      </div>
+      <div class="stepcap" id="by-stepcap" hidden></div>
+      <div class="by-body">
+        <p class="story" id="by-story"></p>
+        <p class="dictline" id="by-dict"></p>
+
+        <div id="by-practice">
+          <section class="by-step" id="by-s1">
+            <h3>1. What did you learn?</h3>
+            <div class="seg ev" role="radiogroup" aria-label="What did you learn" id="by-evSeg">
+              <button type="button" data-v="E" role="radio">E</button><button type="button" data-v="notE" role="radio">¬E</button>
+            </div>
+            <p class="smsg" id="by-m1"></p>
+          </section>
+          <section class="by-step" id="by-s2">
+            <h3>2. Prior and likelihoods</h3>
+            <div class="qgrid">
+              <label for="by-pH">P(H) =</label><input class="ain" id="by-pH" autocomplete="off" spellcheck="false"><span class="smsg" id="by-mH"></span>
+              <label for="by-pEH">P(E | H) =</label><input class="ain" id="by-pEH" autocomplete="off" spellcheck="false"><span class="smsg" id="by-mEH"></span>
+              <label for="by-pEnH">P(E | ¬H) =</label><input class="ain" id="by-pEnH" autocomplete="off" spellcheck="false"><span class="smsg" id="by-mEnH"></span>
+            </div>
+          </section>
+          <section class="by-step" id="by-s3">
+            <h3>3. Posterior</h3>
+            <div class="qgrid">
+              <label for="by-post" id="by-postLbl">P(H | E) =</label><input class="ain" id="by-post" autocomplete="off" spellcheck="false"><span class="smsg" id="by-mPost"></span>
+            </div>
+          </section>
+          <div class="buildrow">
+            <button type="button" class="btn primary" id="by-check">Check</button>
+            <button type="button" class="btn" id="by-show">Show answer</button>
+            <button type="button" class="btn" id="by-next" hidden>Next →</button>
+            <button type="button" class="btn" id="by-eikBtn" hidden>Show eikosogram →</button>
+          </div>
+        </div>
+        <div id="by-view" hidden></div>
+      </div>
+    </section>
+  </main>
+</div>
+</div>
+<div id="eikApp" hidden>
+<div class="app">
+  <header class="topbar" hidden>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span></div>
+      <div>
+        <h1>Eikosogram Studio</h1>
+        <p>Joint probability, drawn to scale</p>
+      </div>
+    </div>
+    <div class="top-controls">
+      <span class="lbl" id="sizeLbl">Text size</span>
+      <div class="seg" role="group" aria-labelledby="sizeLbl" id="sizeSeg">
+        <button type="button" data-v="0.85">S</button><button type="button" data-v="1">M</button><button type="button" data-v="1.25">L</button><button type="button" data-v="1.55">XL</button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme" id="themeSeg">
+        <button type="button" data-v="auto">Auto</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button>
+      </div>
+    </div>
+  </header>
+  <aside class="panel" aria-label="Controls">
+    <section class="card" aria-labelledby="probHead">
+      <h2 id="probHead">Probabilities</h2>
+      <div class="seg" role="group" aria-label="Show numbers as" id="fmtSeg">
+        <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <label for="in-pA"><span class="swatch sw-h"></span><span data-l="pA">P(H)</span></label>
+          <input id="in-pA" class="pin" type="text" autocomplete="off" spellcheck="false">
+        </div>
+        <input id="rg-pA" type="range" min="0" max="1" step="0.001" aria-label="Prior probability">
+        <p class="hint">Width of the left column</p>
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <label for="in-pBgA"><span class="swatch sw-h"></span><span data-l="pBgA">P(E|H)</span></label>
+          <input id="in-pBgA" class="pin" type="text" autocomplete="off" spellcheck="false">
+        </div>
+        <input id="rg-pBgA" type="range" min="0" max="1" step="0.001" aria-label="Likelihood given the left category">
+        <p class="hint">Height of the bottom cell, left column</p>
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <label for="in-pBgNotA"><span class="swatch sw-n"></span><span data-l="pBgNotA">P(E|not H)</span></label>
+          <input id="in-pBgNotA" class="pin" type="text" autocomplete="off" spellcheck="false">
+        </div>
+        <input id="rg-pBgNotA" type="range" min="0" max="1" step="0.001" aria-label="Likelihood given the right category">
+        <p class="hint">Height of the bottom cell, right column</p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="labelHead">
+      <h2 id="labelHead">Labels</h2>
+      <div class="fields">
+        <div class="field wide"><label for="f-title">Title</label><input id="f-title" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-a">Left column</label><input id="f-a" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-na">Right column</label><input id="f-na" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-b">Bottom row</label><input id="f-b" type="text" autocomplete="off"></div>
+        <div class="field"><label for="f-nb">Top row</label><input id="f-nb" type="text" autocomplete="off"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="exportHead">
+      <h2 id="exportHead">Export for slides</h2>
+      <label class="check"><input id="f-bg" type="checkbox"> Transparent background</label>
+      <div class="btns">
+        <button class="btn primary" id="svgBtn" type="button">Download SVG</button>
+        <button class="btn" id="pngBtn" type="button">Download PNG</button>
+        <button class="btn" id="copyImgBtn" type="button">Copy image</button>
+        <button class="btn" id="copySvgBtn" type="button">Copy SVG code</button>
+        <button class="btn" id="linkBtn" type="button">Copy link</button>
+        <button class="btn" id="resetBtn" type="button">Reset</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <p class="note" id="exportNote">SVG stays sharp at any size in Keynote and PowerPoint. The exported figure is always light, and includes the P(<span data-l="a">H</span>|<span data-l="b">E</span>) bar when it’s showing.</p>
+    </section>
+  </aside>
+
+  <main class="stage">
+    <div class="readouts" aria-live="polite">
+      <div class="readout"><span class="t">Prior</span><span class="v" id="r-pA">50.0%</span><span class="k" id="k-pA">P(H)</span></div>
+      <div class="readout"><span class="t">Evidence</span><span class="v" id="r-pB">50.0%</span><span class="k" id="k-pB">P(E)</span></div>
+      <div class="readout key"><span class="t">Posterior</span><span class="v" id="r-pAgB">50.0%</span><span class="k" id="k-pAgB">P(H|E)</span></div>
+      <div class="readout"><span class="t" id="t-pAgNB">If not E</span><span class="v" id="r-pAgNB">50.0%</span><span class="k" id="k-pAgNB">P(H|not E)</span></div>
+    </div>
+
+    <div class="diagram-card">
+      <div class="diagram-bar">
+        <div>
+          <h2 id="titleOut">Probability Eikosogram</h2>
+          <p class="sentence" id="sentence"></p>
+        </div>
+        <label class="toggle" id="postToggle" title="Shortcut: P">
+          <input id="f-post" type="checkbox">
+          <span class="knob" aria-hidden="true"></span>
+          <span>Show <span id="postLabel">P(H|E)</span></span>
+        </label>
+      </div>
+      <div class="diagram" id="diagramBox">
+        <svg id="svg" role="group" aria-label="Interactive eikosogram"></svg>
+      </div>
+      <p class="foot">Drag a divider or handle to reshape the diagram. On a keyboard, Tab to a divider and use the arrow keys (hold Shift for bigger steps).</p>
+    </div>
+  </main>
+</div>
+</div>
+<script>
+window.initTable = () => {
+  "use strict";
+  const $ = (id) => document.getElementById("st-" + id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+    const BIN = {
+    and:  { sym: "∧", assoc: true,  f: (a, b) => a && b, name: "conjunction" },
+    or:   { sym: "∨", assoc: true,  f: (a, b) => a || b, name: "disjunction" },
+    imp:  { sym: "→", assoc: false, f: (a, b) => !a || b, name: "conditional" },
+    iff:  { sym: "↔", assoc: false, f: (a, b) => a === b, name: "biconditional" },
+    nand: { sym: "↑", assoc: false, f: (a, b) => !(a && b), name: "NAND" },
+    nor:  { sym: "↓", assoc: false, f: (a, b) => !(a || b), name: "NOR" }
+  };
+  const MAX_LETTERS = 8;
+
+  class ParseError extends Error {
+    constructor(message, pos, len) { super(message); this.pos = pos; this.len = Math.max(1, len || 1); }
+  }
+
+  // Replace ASCII shortcuts with logic symbols as the user types.
+  function normalize(s) {
+    return s
+      .replace(/<->|<=>|≡/g, "↔")
+      .replace(/->|=>|⊃/g, "→")
+      .replace(/[~!]/g, "¬")
+      .replace(/[&^]/g, "∧")
+      .replace(/\|/g, "∨")
+      // a lowercase v between formulas is "or", with or without spaces: A v B, AvB, (A)v¬B
+      .replace(/(^|[\s)A-Z0-9₀-₉'])v(?=[\s(¬A-Z~!])/g, "$1∨");
+  }
+
+  function tokenize(src) {
+    const out = [];
+    let i = 0;
+    while (i < src.length) {
+      const ch = src[i];
+      if (/\s/.test(ch)) { i++; continue; }
+      const push = (t) => { out.push({ ...t, pos: i, len: t.len || 1 }); i += t.len || 1; };
+      if (ch === "(" || ch === "[") { push({ t: "lp" }); continue; }
+      if (ch === ")" || ch === "]") { push({ t: "rp" }); continue; }
+      if (ch === "¬") { push({ t: "not" }); continue; }
+      const binBy = { "∧": "and", "∨": "or", "→": "imp", "↔": "iff", "↑": "nand", "↓": "nor" };
+      if (binBy[ch]) { push({ t: "bin", op: binBy[ch] }); continue; }
+      if (ch === "⊤") { push({ t: "const", val: true }); continue; }
+      if (ch === "⊥") { push({ t: "const", val: false }); continue; }
+      // A sentence letter is ONE capital letter, optionally followed by digits or primes (A, B, A1, P₂, A').
+      // So "AB" is two letters (and the parser reports the missing connective), and "AvB" is A ∨ B.
+      if (/[A-Z]/.test(ch)) {
+        let j = i + 1;
+        while (j < src.length && /[0-9₀-₉']/.test(src[j])) j++;
+        out.push({ t: "var", name: src.slice(i, j), pos: i, len: j - i }); i = j; continue;
+      }
+      if (ch === "v") { push({ t: "bin", op: "or" }); continue; }
+      if (/[a-z]/.test(ch)) throw new ParseError(`Sentence letters are capitals: write “${ch.toUpperCase()}”, not “${ch}”.`, i, 1);
+      if (/[0-9]/.test(ch)) throw new ParseError(`Sentence letters start with a letter; “${ch}” can’t start one.`, i, 1);
+      throw new ParseError(`“${ch}” isn’t a symbol the builder knows.`, i, 1);
+    }
+    return out;
+  }
+
+  function parse(src) {
+    const toks = tokenize(src);
+    if (!toks.length) return null;
+    let k = 0;
+    let nextId = 0;
+    const peek = () => toks[k];
+    const endPos = src.replace(/\s+$/, "").length;
+    const describe = (t) => t.t === "var" ? t.name : t.t === "bin" ? BIN[t.op].sym : t.t === "not" ? "¬" : t.t === "lp" ? "(" : t.t === "rp" ? ")" : (t.val ? "⊤" : "⊥");
+
+    function atom() {
+      const t = peek();
+      if (!t) throw new ParseError("The formula stops too early: something is missing at the end.", endPos, 1);
+      if (t.t === "var") { k++; return { type: "var", name: t.name, id: nextId++, pos: t.pos }; }
+      if (t.t === "const") { k++; return { type: "const", val: t.val, id: nextId++, pos: t.pos }; }
+      if (t.t === "lp") {
+        k++;
+        const inner = expr();
+        const c = peek();
+        if (!c || c.t !== "rp") {
+          if (!c) throw new ParseError("A “(” is never closed.", t.pos, 1);
+          throw new ParseError(`Expected “)” here, found “${describe(c)}”.`, c.pos, c.len);
+        }
+        k++;
+        inner.parens = true;
+        return inner;
+      }
+      if (t.t === "not") { return unary(); }
+      if (t.t === "rp") throw new ParseError("There’s a “)” with nothing before it to close.", t.pos, 1);
+      throw new ParseError(`“${describe(t)}” needs a formula on its left.`, t.pos, t.len);
+    }
+    function unary() {
+      const t = peek();
+      if (t && t.t === "not") {
+        k++;
+        const arg = unary();
+        return { type: "not", arg, id: nextId++, pos: t.pos };
+      }
+      return atom();
+    }
+    function expr() {
+      let left = unary();
+      let first = null;
+      while (peek() && peek().t === "bin") {
+        const t = peek();
+        if (first && (t.op !== first.op || !BIN[t.op].assoc)) {
+          const a = BIN[first.op].sym, b = BIN[t.op].sym;
+          throw new ParseError(
+            t.op === first.op
+              ? `Two “${b}” in a row without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`
+              : `Mixing “${a}” and “${b}” without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`,
+            t.pos, t.len);
+        }
+        first = first || t;
+        k++;
+        const right = unary();
+        left = { type: "bin", op: t.op, left, right, id: nextId++, pos: t.pos };
+      }
+      return left;
+    }
+
+    const ast = expr();
+    if (k < toks.length) {
+      const t = toks[k];
+      if (t.t === "rp") throw new ParseError("This “)” doesn’t match any “(”.", t.pos, 1);
+      const prev = toks[k - 1];
+      throw new ParseError(`A connective is missing between “${describe(prev)}” and “${describe(t)}”.`, t.pos, t.len);
+    }
+    return ast;
+  }
+
+  function lettersOf(node, acc) {
+    if (node.type === "var") { if (!acc.includes(node.name)) acc.push(node.name); }
+    else if (node.type === "not") lettersOf(node.arg, acc);
+    else if (node.type === "bin") { lettersOf(node.left, acc); lettersOf(node.right, acc); }
+    return acc;
+  }
+  function height(node) {
+    if (node.type === "var" || node.type === "const") return (node.h = 0);
+    if (node.type === "not") return (node.h = 1 + height(node.arg));
+    return (node.h = 1 + Math.max(height(node.left), height(node.right)));
+  }
+  function evaluate(node, env, out) {
+    let v;
+    if (node.type === "var") v = env[node.name];
+    else if (node.type === "const") v = node.val;
+    else if (node.type === "not") v = !evaluate(node.arg, env, out);
+    else v = BIN[node.op].f(evaluate(node.left, env, out), evaluate(node.right, env, out));
+    out[node.id] = v;
+    return v;
+  }
+  const kids = (n) => n.type === "not" ? [n.arg] : n.type === "bin" ? [n.left, n.right] : [];
+  const isLeaf = (n) => n.type === "var" || n.type === "const";
+
+  // Printed form, as a list of tokens that remember their node.
+  // Textbook conventions: outer parentheses dropped, ¬ binds to what follows,
+  // and a chain of one associative connective is written without inner parentheses.
+  function printTokens(node, top = true) {
+    if (node.type === "var") return [{ text: node.name, node, kind: "leaf" }];
+    if (node.type === "const") return [{ text: node.val ? "⊤" : "⊥", node, kind: "leaf" }];
+    if (node.type === "not") return [{ text: "¬", node, kind: "conn" }, ...printTokens(node.arg, false)];
+    const leftChain = node.left.type === "bin" && node.left.op === node.op && BIN[node.op].assoc && !node.left.parens;
+    const inner = [
+      ...(leftChain ? printTokens(node.left, true) : printTokens(node.left, false)),
+      { text: BIN[node.op].sym, node, kind: "conn", bin: true },
+      ...printTokens(node.right, false)
+    ];
+    return top ? inner : [{ text: "(", kind: "paren" }, ...inner, { text: ")", kind: "paren" }];
+  }
+  const textOf = (toks) => toks.map((t) => (t.bin ? ` ${t.text} ` : t.text)).join("");
+  const canon = (node) => textOf(printTokens(node, true));
+
+    const bgcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) [a, b] = [b, a % b]; return a; };
+  const Rq = (n, d = 1n) => { if (d < 0n) { n = -n; d = -d; } const g = bgcd(n, d) || 1n; return { n: n / g, d: d / g }; };
+  const radd = (a, b) => Rq(a.n * b.d + b.n * a.d, a.d * b.d);
+  const rdiv = (a, b) => Rq(a.n * b.d, a.d * b.n);
+  const RZ = Rq(0n), R1 = Rq(1n);
+  const req = (a, b) => a.n === b.n && a.d === b.d;
+  const rstr = (q) => (q.d === 1n ? `${q.n}` : `${q.n}/${q.d}`);
+  const rnum = (q) => Number(q.n) / Number(q.d);
+  const rapprox = (q) => { const x = rnum(q); return x > 0 && x < 0.001 ? x.toPrecision(2) : String(+x.toFixed(4)); };
+  // 1/8, 0.125, .125, 12.5%
+  function parseR(raw) {
+    const t = String(raw ?? "").trim();
+    let m;
+    if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/))) return BigInt(m[2]) === 0n ? null : Rq(BigInt(m[1]), BigInt(m[2]));
+    const dec = (w, f) => Rq(BigInt((w || "0") + (f || "")), 10n ** BigInt((f || "").length));
+    if ((m = t.match(/^(\d*)\.?(\d*)\s*%$/)) && (m[1] || m[2])) { const q = dec(m[1], m[2]); return Rq(q.n, q.d * 100n); }
+    if ((m = t.match(/^(\d*)\.?(\d*)$/)) && (m[1] || m[2])) return dec(m[1], m[2]);
+    return null;
+  }
+
+
+  // ---------- formulas ----------
+  function evalNode(n, env) {
+    if (n.type === "var") return env[n.name];
+    if (n.type === "const") return n.val;
+    if (n.type === "not") return !evalNode(n.arg, env);
+    return BIN[n.op].f(evalNode(n.left, env), evalNode(n.right, env));
+  }
+  const V = (name) => ({ type: "var", name });
+  const NOT = (arg) => ({ type: "not", arg });
+  const B = (op, left, right) => ({ type: "bin", op, left, right });
+  const show = (n) => canon(n);
+  const par = (t) => (/\s/.test(t) ? `(${t})` : t);
+  const parN = (n) => (n.type === "bin" ? `(${show(n)})` : show(n));
+  const LETTERS = ["P", "Q", "R", "S"];
+  function rowsOf(L) {
+    const out = [];
+    for (let r = 0; r < (1 << L.length); r++) { const env = {}; L.forEach((x, i) => (env[x] = !((r >> (L.length - 1 - i)) & 1))); out.push(env); }
+    return out;
+  }
+  const rnd = (n) => Math.floor(Math.random() * n);
+  const pick = (a) => a[rnd(a.length)];
+  function randFormula(L, k) {
+    if (k === 0) return V(pick(L));
+    if (Math.random() < 0.25) { const a = randFormula(L, k - 1); return a.type === "not" ? randFormula(L, k) : NOT(a); }
+    const kl = rnd(k), kr = k - 1 - kl;
+    const l = randFormula(L, kl), r = randFormula(L, kr);
+    if (show(l) === show(r)) return randFormula(L, k);
+    return B(pick(["and", "or", "imp", "iff"]), l, r);
+  }
+  // a formula with 2+ connectives that just says P, or ¬P, is a bad exercise
+  function trivial(f, L) {
+    if (conns(f) < 2) return false;
+    const rs = rowsOf(L), vec = rs.map((env) => evalNode(f, env)).join();
+    return L.some((x) => rs.map((env) => env[x]).join() === vec || rs.map((env) => !env[x]).join() === vec);
+  }
+  function conns(n) { return n.type === "var" ? 0 : n.type === "not" ? 1 + conns(n.arg) : 1 + conns(n.left) + conns(n.right); }
+
+  // ---------- probability over rows ----------
+  function probOf(ast, prob) { const rows = rowsOf(prob.letters); return rows.reduce((a, env, i) => (evalNode(ast, env) ? radd(a, prob.p[i]) : a), RZ); }
+  function trueRows(ast, prob) { return rowsOf(prob.letters).map((env, i) => (evalNode(ast, env) ? i : -1)).filter((i) => i >= 0); }
+
+  // ---------- generation ----------
+  function composition(N, D, zeros) {
+    // N parts summing to D, exactly `zeros` of them 0, the rest at least 1
+    const zs = new Set(); while (zs.size < zeros) zs.add(rnd(N));
+    const k = N - zeros; if (D < k) return null;
+    const cuts = new Set(); while (cuts.size < k - 1) cuts.add(1 + rnd(D - 1));
+    const c = [0, ...[...cuts].sort((a, b) => a - b), D];
+    const parts = c.slice(1).map((x, i) => x - c[i]);
+    let j = 0; return Array.from({ length: N }, (_, i) => (zs.has(i) ? 0 : parts[j++]));
+  }
+  const SPEC = {
+    easy: { n: 2, dens: [10, 4], zeros: [0, 0, 1], k: 1, cond: 0 },
+    medium: { n: 3, dens: [10, 20, 5], zeros: [1, 1, 2], k: 2, cond: 1 },
+    hard: { n: 3, dens: [20, 25, 50, 100], zeros: [0, 1, 2], k: 3, cond: 2 }
+  };
+  function generate(diff) {
+    const sp = SPEC[diff];
+    for (let tries = 0; tries < 500; tries++) {
+      const L = LETTERS.slice(0, sp.n), N = 1 << sp.n;
+      const D = pick(sp.dens), z = pick(sp.zeros);
+      const parts = composition(N, D, z); if (!parts) continue;
+      const prob = { letters: L, p: parts.map((x) => Rq(BigInt(x), BigInt(D))) };
+      const used = new Set(), fs = [];
+      for (let t = 0; t < 200 && fs.length < 4; t++) {
+        const f = randFormula(L, sp.k);
+        const s = show(f), pv = probOf(f, prob), tr = trueRows(f, prob).length;
+        if (used.has(s) || tr === 0 || tr === N || conns(f) !== sp.k || trivial(f, L)) continue;
+        if (fs.some((g) => req(probOf(g, prob), pv)) && Math.random() < 0.7) continue;
+        used.add(s); fs.push(f);
+      }
+      if (fs.length < 4) continue;
+      let psi = null;
+      for (let t = 0; t < 200; t++) {
+        let c = sp.cond === 0 ? (Math.random() < 0.7 ? V(pick(L)) : NOT(V(pick(L)))) : randFormula(L, sp.cond);
+        if (conns(c) !== sp.cond && !(sp.cond === 0)) continue;
+        const pc = probOf(c, prob);
+        if (pc.n === 0n || req(pc, R1) || used.has(show(c)) || trivial(c, L)) continue;
+        psi = c; break;
+      }
+      if (!psi) continue;
+      let cond = null;
+      if (diff === "hard") {
+        for (let t = 0; t < 200; t++) {
+          const phi = randFormula(L, 1 + rnd(2));
+          const both = probOf(B("and", phi, psi), prob), pc = probOf(psi, prob);
+          if (both.n === 0n || req(both, pc) || show(phi) === show(psi) || trivial(phi, L)) continue;
+          cond = phi; break;
+        }
+        if (!cond) continue;
+      }
+      return { kind: diff, letters: L, p: prob.p, fs, psi, phi: cond };
+    }
+    throw new Error("could not generate");
+  }
+
+  // ---------- state ----------
+  const state = {
+    diff: ["easy", "medium", "hard"].includes(store.get("pl-st-diff")) ? store.get("pl-st-diff") : "easy",
+    mode: "practice", step: 0, fmt: store.get("pl-fmt") === "d" ? "d" : "f", editing: false
+  };
+  let prob = null;           // { kind, letters, p[], fs[], psi, phi }
+  let work = null;           // practice answers
+  let tally = (() => { try { return JSON.parse(store.get("pl-st-tally")) || { n: 0, ok: 0 }; } catch (e) { return { n: 0, ok: 0 }; } })();
+  // the formula columns students fill in: one per formula, plus ψ (and φ on hard problems)
+  function colDefs() {
+    const out = prob.fs.map((f, i) => ({ key: "f" + i, ast: f }));
+    out.push({ key: "psi", ast: prob.psi, psi: true });
+    if (prob.phi && !prob.fs.some((f) => show(f) === show(prob.phi)) && show(prob.phi) !== show(prob.psi)) out.push({ key: "phi", ast: prob.phi });
+    return out;
+  }
+  const fresh = () => {
+    const N = 1 << prob.letters.length;
+    // one fillable cell per connective of each formula, as in the book's truth tables
+    const tv = {}; colDefs().forEach((c) => { tv[c.key] = {}; printTokens(c.ast, true).forEach((t, ti) => { if (t.kind === "conn") tv[c.key][ti] = Array(N).fill(""); }); });
+    return { ans: prob.fs.map(() => ""), col: Array(N).fill(""), cond: "", tv, marks: null, shown: new Set(), checks: 0, msgs: [] };
+  };
+
+  const fmtP = (q) => {
+    if (state.fmt === "d") { const x = rnum(q); return String(+x.toFixed(4)); }
+    return rstr(q);
+  };
+  const approx = (q) => (q.d === 1n ? "" : ` ≈ ${+rnum(q).toFixed(4)}`);
+  // answer parsing: exact rational, or a decimal within 0.0005
+  function same(raw, q) {
+    const v = parseR(raw); if (!v) return null;
+    if (req(v, q)) return true;
+    return Math.abs(rnum(v) - rnum(q)) <= 0.0005;
+  }
+
+  // ---------- rendering ----------
+  function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
+  function setVerdict(badge, cls, text) {
+    const v = $("verdict"); v.innerHTML = "";
+    if (badge) v.append(el("span", "badge " + cls, esc(badge)));
+    if (text) v.append(el("span", "verdict-text", text));
+  }
+
+  // which formula columns to show, and which rows to shade
+  function view() {
+    const cols = []; // {label, ast, shade}
+    let condVals = null, condInputs = false, condZeroOnly = false, focusRows = null;
+    const SS = state.mode === "step" ? steps() : null;
+    const S = SS ? SS[Math.max(0, Math.min(state.step, SS.length - 1))] : null;
+    if (state.mode === "answers") {
+      colDefs().forEach((c) => cols.push(c));
+      condVals = condColumn();
+    } else if (state.mode === "step") {
+      (S.cols || []).forEach((c) => cols.push(c));
+      if (S.cond === "zero") condZeroOnly = true;
+      if (S.cond === "full") condVals = condColumn();
+      focusRows = S.rows || null;
+    } else {
+      colDefs().forEach((c) => cols.push({ ...c, edit: !work.shown.has(c.key) }));
+      condInputs = !state.editing;
+    }
+    return { cols, condVals, condInputs, condZeroOnly, focusRows };
+  }
+  function condColumn() {
+    const pPsi = probOf(prob.psi, prob);
+    return rowsOf(prob.letters).map((env, i) => (evalNode(prob.psi, env) ? rdiv(prob.p[i], pPsi) : RZ));
+  }
+
+  function renderTable() {
+    const wrap = $("tableWrap"); wrap.innerHTML = "";
+    const L = prob.letters, rows = rowsOf(L), N = rows.length;
+    const vw = state.editing ? { cols: [], condVals: null, condInputs: false } : view();
+    const t = el("table", "tt st-tt");
+    const psiTxt = show(prob.psi);
+    let h = "<thead><tr><th class='num'></th>" + L.map((x, i) => `<th class="letter${i === 0 ? "" : ""}">${x}</th>`).join("") + `<th class="sep pc">P( )</th>`;
+    const markMain = state.mode !== "practice";
+    vw.cols.forEach((c) => {
+      const toks = printTokens(c.ast, true);
+      toks.forEach((t, ti) => {
+        const main = t.kind === "conn" && t.node === c.ast && (markMain || !c.edit);
+        h += `<th class="tok ${t.kind}${ti === 0 ? " gsep" : ""}${c.psi ? " psi" : ""}${main ? " main" : ""}">${esc(t.text)}</th>`;
+      });
+    });
+    if (!state.editing) h += `<th class="sep pc cpv">P( · | ${esc(psiTxt)})</th>`;
+    h += "</tr></thead><tbody>";
+    rows.forEach((env, r) => {
+      const fr = vw.focusRows && vw.focusRows.includes(r);
+      h += `<tr class="${fr ? "pt" : ""}"><td class="num">${r + 1}</td>` + L.map((x) => `<td class="letter">${env[x] ? "T" : "F"}</td>`).join("");
+      if (state.editing) h += `<td class="sep pc"><input class="pin" id="st-ep${r}" data-r="${r}" value="${esc(editState.p[r] ?? "")}" autocomplete="off" spellcheck="false" aria-label="P of row ${r + 1}"></td>`;
+      else h += `<td class="sep pc pv">${fmtP(prob.p[r])}</td>`;
+      vw.cols.forEach((c) => {
+        printTokens(c.ast, true).forEach((t, ti) => {
+          const first = ti === 0 ? " gsep" : "";
+          if (t.kind === "paren") { h += `<td class="tok paren${first}"></td>`; return; }
+          const v = evalNode(t.node, env);
+          if (t.kind === "leaf") { h += `<td class="tok lv${first}">${v ? "T" : "F"}</td>`; return; }
+          if (c.edit) {
+            const val = work.tv[c.key][ti][r], mk = work.marks && work.marks.tv && work.marks.tv[c.key] ? work.marks.tv[c.key][ti][r] : null;
+            h += `<td class="tok fv edit${first}${mk === false ? " wrong" : mk === true ? " right" : ""}" tabindex="0" data-k="${c.key}" data-t="${ti}" data-r="${r}" aria-label="${esc(show(c.ast))}, under ${esc(t.text)}, row ${r + 1}">${val}</td>`;
+          } else {
+            const main = t.node === c.ast && (markMain || !c.edit);
+            h += `<td class="tok fv${first}${main ? " main" : ""} ${v ? "tv" : "fvf"}">${v ? "T" : "F"}</td>`;
+          }
+        });
+      });
+      if (!state.editing) {
+        const psiTrue = evalNode(prob.psi, env);
+        if (vw.condInputs) {
+          const mk = work.marks && work.marks.col ? work.marks.col[r] : null;
+          h += `<td class="sep pc cpv"><input class="pin cin ${mk === false ? "bad" : mk === true ? "ok" : ""}" id="st-c${r}" data-r="${r}" value="${esc(work.col[r])}" autocomplete="off" spellcheck="false" aria-label="P(row ${r + 1} | ${esc(psiTxt)})"></td>`;
+        } else if (vw.condVals) h += `<td class="sep pc cpv">${fmtP(vw.condVals[r])}</td>`;
+        else if (vw.condZeroOnly) h += `<td class="sep pc cpv">${psiTrue ? "" : "0"}</td>`;
+        else h += `<td class="sep pc cpv"></td>`;
+      }
+      h += "</tr>";
+    });
+    h += "</tbody>";
+    t.innerHTML = h; wrap.append(t);
+    wrap.querySelectorAll("td.edit").forEach((td) => {
+      const set = (v) => { work.tv[td.dataset.k][+td.dataset.t][+td.dataset.r] = v; td.textContent = v; td.classList.remove("wrong", "right"); };
+      td.addEventListener("click", () => set({ "": "T", T: "F", F: "" }[td.textContent]));
+      td.addEventListener("keydown", (e) => {
+        const k = e.key.toUpperCase(), r = +td.dataset.r;
+        const go = (dr, dc) => {
+          const cells = [...wrap.querySelectorAll("td.edit")];
+          const id = (c) => c.dataset.k + ":" + c.dataset.t;
+          const keys = [...new Set(cells.map(id))];
+          const ki = keys.indexOf(id(td)) + dc;
+          const n = cells.find((c) => id(c) === keys[ki] && +c.dataset.r === r + dr);
+          if (n) n.focus();
+        };
+        if (k === "T" || k === "F" || k === "1" || k === "0") { e.preventDefault(); set(k === "1" ? "T" : k === "0" ? "F" : k); go(1, 0); }
+        else if (e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); set(""); }
+        else if (e.key === "ArrowDown") { e.preventDefault(); go(1, 0); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); go(-1, 0); }
+        else if (e.key === "ArrowRight") { e.preventDefault(); go(0, 1); }
+        else if (e.key === "ArrowLeft") { e.preventDefault(); go(0, -1); }
+        else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); set({ "": "T", T: "F", F: "" }[td.textContent]); }
+      });
+    });
+    if (vw.condInputs) wrap.querySelectorAll("input.cin").forEach((inp) => {
+      inp.addEventListener("input", () => { work.col[+inp.dataset.r] = inp.value; inp.classList.remove("bad", "ok"); });
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); check(); return; }
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = $(`c${+inp.dataset.r + (e.key === "ArrowUp" ? -1 : 1)}`); if (n) n.focus(); }
+      });
+    });
+    if (state.editing) wrap.querySelectorAll("input.pin").forEach((inp) => inp.addEventListener("input", () => { editState.p[+inp.dataset.r] = inp.value; editSum(); }));
+  }
+
+  function sumText(ast) {
+    const rs = trueRows(ast, prob);
+    if (!rs.length) return "0 (true in no row)";
+    const parts = rs.map((r) => fmtP(prob.p[r]));
+    const tot = probOf(ast, prob);
+    return rs.length === 1 ? `${parts[0]} (row ${rs[0] + 1})` : `${parts.join(" + ")} = <b>${fmtP(tot)}</b>`;
+  }
+
+  function renderQs() {
+    const box = $("qs"); box.innerHTML = "";
+    if (state.editing) return;
+    const ol = el("ol", "qlist");
+    const SS = state.mode === "step" ? steps() : null;
+    const S = SS ? SS[Math.max(0, Math.min(state.step, SS.length - 1))] : null;
+    const reveal = (key) => state.mode === "answers" || (S && S.done && S.done.includes(key));
+    prob.fs.forEach((f, i) => {
+      const li = el("li", "q");
+      const lab = `P(${esc(show(f))}) =`;
+      if (state.mode === "practice") {
+        const mk = work.marks ? work.marks.fs[i] : null;
+        li.innerHTML = `<span class="ql">${lab}</span>`;
+        const inp = el("input", "ain" + (mk === false ? " bad" : mk === true ? " ok" : "")); inp.id = `st-a${i}`; inp.value = work.ans[i];
+        inp.setAttribute("autocomplete", "off"); inp.setAttribute("spellcheck", "false"); inp.setAttribute("aria-label", `P(${show(f)})`);
+        inp.oninput = () => { work.ans[i] = inp.value; inp.classList.remove("bad", "ok"); };
+        inp.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); check(); } };
+        li.append(inp);
+        if (mk != null) li.append(el("span", "qm " + (mk ? "ok" : "bad"), mk ? "✓" : "✗"));
+        if ((mk === false || (work.marks && work.marks.colWrong && work.marks.colWrong["f" + i])) && !work.shown.has("f" + i)) {
+          const b = el("button", "linkbtn", "Show the column"); b.type = "button";
+          b.onclick = () => { work.shown.add("f" + i); render(); };
+          li.append(b);
+        }
+        const msg = work.msgs[i]; if (msg) li.append(el("span", "qmsg", msg));
+      } else {
+        li.innerHTML = `<span class="ql">${lab}</span> ` + (reveal("f" + i) ? `<span class="qa">${sumText(f)}</span>` : `<span class="qa muted">?</span>`);
+      }
+      ol.append(li);
+    });
+    // conditional column
+    const li = el("li", "q");
+    const psiTxt = esc(show(prob.psi));
+    if (state.mode === "practice") {
+      li.innerHTML = `<span class="ql">Fill in the column P( · | ${psiTxt}) in the table.</span>`;
+      const mk = work.marks ? work.marks.colOk : null;
+      if (mk != null) li.append(el("span", "qm " + (mk ? "ok" : "bad"), mk ? "✓" : "✗"));
+      if (work.marks && work.marks.colMsg) li.append(el("span", "qmsg", work.marks.colMsg));
+      if ((mk === false || (work.marks && work.marks.colWrong && work.marks.colWrong.psi)) && !work.shown.has("psi")) {
+        const b = el("button", "linkbtn", `Show the ${show(prob.psi)} column`); b.type = "button";
+        b.onclick = () => { work.shown.add("psi"); render(); };
+        li.append(b);
+      }
+    } else {
+      const pPsi = probOf(prob.psi, prob);
+      li.innerHTML = `<span class="ql">The column P( · | ${psiTxt}):</span> ` + (reveal("col") ? `<span class="qa">rows where ${psiTxt} is false get 0; P(${psiTxt}) = ${sumText(prob.psi)}, and each remaining row is divided by ${fmtP(pPsi)}.</span>` : `<span class="qa muted">?</span>`);
+    }
+    ol.append(li);
+    if (prob.phi) {
+      const li2 = el("li", "q");
+      const phiT = show(prob.phi), lab = `P(${esc(phiT)} | ${psiTxt}) =`;
+      if (state.mode === "practice") {
+        const mk = work.marks ? work.marks.cond : null;
+        li2.innerHTML = `<span class="ql">${lab}</span>`;
+        const inp = el("input", "ain" + (mk === false ? " bad" : mk === true ? " ok" : "")); inp.id = "st-acond"; inp.value = work.cond;
+        inp.setAttribute("autocomplete", "off"); inp.setAttribute("spellcheck", "false"); inp.setAttribute("aria-label", `P(${phiT} | ${show(prob.psi)})`);
+        inp.oninput = () => { work.cond = inp.value; inp.classList.remove("bad", "ok"); };
+        inp.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); check(); } };
+        li2.append(inp);
+        if (mk != null) li2.append(el("span", "qm " + (mk ? "ok" : "bad"), mk ? "✓" : "✗"));
+        if (work.marks && work.marks.condMsg) li2.append(el("span", "qmsg", work.marks.condMsg));
+      } else {
+        const both = probOf(B("and", prob.phi, prob.psi), prob), pPsi = probOf(prob.psi, prob);
+        li2.innerHTML = `<span class="ql">${lab}</span> ` + (reveal("cond") ? `<span class="qa">P(${esc(parN(prob.phi))} ∧ ${esc(parN(prob.psi))}) / P(${psiTxt}) = ${fmtP(both)} / ${fmtP(pPsi)} = <b>${fmtP(rdiv(both, pPsi))}</b>${state.fmt === "f" ? approx(rdiv(both, pPsi)) : ""}</span>` : `<span class="qa muted">?</span>`);
+      }
+      ol.append(li2);
+    }
+    box.append(ol);
+  }
+
+  // ---------- step through ----------
+  function steps() {
+    const S = [];
+    const done = [];
+    prob.fs.forEach((f, i) => {
+      const rs = trueRows(f, prob);
+      S.push({ cap: `P(${show(f)}): find the rows where ${show(f)} is true.`, cols: [{ ast: f }], rows: rs, done: [...done] });
+      done.push("f" + i);
+      S.push({ cap: `Add their probabilities: P(${show(f)}) = ${sumText(f).replace(/<\/?b>/g, "")}.`, cols: [{ ast: f }], rows: rs, done: [...done] });
+    });
+    const psi = show(prob.psi), rsP = trueRows(prob.psi, prob), pPsi = probOf(prob.psi, prob);
+    S.push({ cap: `The column P( · | ${psi}): find the rows where ${psi} is true.`, cols: [{ ast: prob.psi, psi: true }], rows: rsP, done: [...done] });
+    S.push({ cap: `Rows where ${psi} is false get probability 0.`, cols: [{ ast: prob.psi, psi: true }], rows: rsP, cond: "zero", done: [...done] });
+    S.push({ cap: `P(${psi}) = ${sumText(prob.psi).replace(/<\/?b>/g, "")}.`, cols: [{ ast: prob.psi, psi: true }], rows: rsP, cond: "zero", done: [...done] });
+    done.push("col");
+    S.push({ cap: `Divide each remaining row by ${fmtP(pPsi)}, so the column adds up to 1.`, cols: [{ ast: prob.psi, psi: true }], rows: rsP, cond: "full", done: [...done] });
+    if (prob.phi) {
+      const conj = B("and", prob.phi, prob.psi);
+      S.push({ cap: `P(${show(prob.phi)} | ${psi}): find the rows where both ${show(prob.phi)} and ${psi} are true.`, cols: [{ ast: prob.phi }, { ast: prob.psi, psi: true }], rows: trueRows(conj, prob), cond: "full", done: [...done] });
+      done.push("cond");
+      const both = probOf(conj, prob);
+      S.push({ cap: `Their sum, ${fmtP(both)}, divided by P(${psi}) = ${fmtP(pPsi)}: ${fmtP(rdiv(both, pPsi))}.`, cols: [{ ast: prob.phi }, { ast: prob.psi, psi: true }], rows: trueRows(conj, prob), cond: "full", done: [...done] });
+    }
+    return S;
+  }
+
+  function render() {
+    segSync("diffSeg", prob.kind === "own" ? "" : state.diff); segSync("modeSeg", state.mode); segSync("fmtSeg", state.fmt);
+    const ed = state.editing;
+    $("editTop").hidden = !ed; $("editQs").hidden = !ed; $("editBtns").hidden = !ed;
+    $("practiceBtns").hidden = ed || state.mode !== "practice";
+    $("stepper").hidden = ed || state.mode !== "step"; $("stepcap").hidden = ed || state.mode !== "step";
+    $("modeNote").textContent = ed ? "Type the probability of each row, then the formulas you want students to work on."
+      : { practice: "Fill in a value under every connective of each formula: click a cell, or type T or F. Then type the probabilities and click Check.", answers: "Every answer, with the rows that add up to it.", step: "One question at a time, the way the book does it. Use ▶ or the arrow keys." }[state.mode];
+    $("tally").textContent = tally.n ? `All right on the first check: ${tally.ok} of ${tally.n} problems` : "";
+    renderTable();
+    if (ed) { renderEditQs(); setVerdict("Your own table", "neutral", ""); $("qs").innerHTML = ""; $("feedback").innerHTML = ""; editSum(); writeHash(); return; }
+    renderQs();
+    if (state.mode === "step") {
+      const S = steps(); state.step = Math.max(0, Math.min(state.step, S.length - 1));
+      $("stCount").textContent = `${state.step + 1} / ${S.length}`;
+      $("stepcap").textContent = S[state.step].cap;
+      $("stFirst").disabled = $("stPrev").disabled = state.step === 0;
+      $("stNext").disabled = $("stLast").disabled = state.step === S.length - 1;
+      setVerdict("Step through", "neutral", "");
+    } else if (state.mode === "answers") setVerdict("Answers", "neutral", "");
+    else renderPracticeVerdict();
+    writeHash();
+  }
+  function renderPracticeVerdict() {
+    const m = work.marks;
+    $("feedback").innerHTML = "";
+    if (!m) return setVerdict(null, null, "Fill in the column under each connective, then calculate the probabilities.");
+    const total = m.cols.length + m.fs.length + 1 + (prob.phi ? 1 : 0);
+    const right = m.cols.filter((x) => x === true).length + m.fs.filter((x) => x === true).length + (m.colOk ? 1 : 0) + (prob.phi && m.cond ? 1 : 0);
+    if (right === total) setVerdict("All correct", "good", "");
+    else setVerdict(`${right} of ${total} right`, "bad", m.blank ? "Some answers are still blank." : "Wrong answers are marked; fix them and check again.");
+  }
+
+  // ---------- checking ----------
+  function check() {
+    if (state.mode !== "practice" || state.editing) return;
+    const marks = { fs: [], col: [], colOk: null, colMsg: "", cond: null, condMsg: "", blank: false, tv: {}, colWrong: {}, cols: [] };
+    // truth-value columns
+    const envs = rowsOf(prob.letters);
+    colDefs().forEach((c) => {
+      if (work.shown.has(c.key)) return;
+      const toks = printTokens(c.ast, true);
+      const tis = Object.keys(work.tv[c.key]).map(Number);
+      if (!tis.length) return; // a single letter: nothing to fill in
+      marks.tv[c.key] = {};
+      let filled = 0, total = 0, ok = true, wrong = false;
+      tis.forEach((ti) => {
+        marks.tv[c.key][ti] = work.tv[c.key][ti].map((v, r) => {
+          total++; if (!v) { ok = false; return null; }
+          filled++; const right = (v === "T") === evalNode(toks[ti].node, envs[r]);
+          if (!right) { ok = false; wrong = true; } return right;
+        });
+      });
+      if (!filled) { marks.blank = true; marks.cols.push(null); return; }
+      if (filled < total) marks.blank = true;
+      marks.colWrong[c.key] = wrong;
+      marks.cols.push(ok);
+    });
+    work.msgs = [];
+    prob.fs.forEach((f, i) => {
+      const raw = work.ans[i].trim();
+      if (!raw) { marks.fs.push(null); marks.blank = true; return; }
+      const v = probOf(f, prob), r = same(raw, v);
+      if (r === null) { marks.fs.push(false); work.msgs[i] = "Type a probability: a fraction like 2/5, a decimal or a percentage."; return; }
+      marks.fs.push(r);
+      if (!r) {
+        const neg = probOf(NOT(f), prob);
+        if (same(raw, neg)) work.msgs[i] = `That’s P(¬${parN(f)}): you added the rows where ${show(f)} is false.`;
+      }
+    });
+    // conditional column
+    const cv = condColumn();
+    const rows = rowsOf(prob.letters);
+    if (work.col.every((x) => !x.trim())) { marks.colOk = null; marks.blank = true; }
+    else {
+      let all = true, sum = RZ, parsedAll = true;
+      rows.forEach((env, r) => {
+        const raw = work.col[r].trim();
+        if (!raw) { marks.col[r] = false; all = false; parsedAll = false; return; }
+        const ok = same(raw, cv[r]); marks.col[r] = !!ok; if (!ok) all = false;
+        const q = parseR(raw); if (q) sum = radd(sum, q); else parsedAll = false;
+      });
+      marks.colOk = all;
+      if (!all) {
+        const psi = show(prob.psi);
+        const keptP = rows.every((env, r) => evalNode(prob.psi, env) || !work.col[r].trim() || same(work.col[r], prob.p[r]));
+        if (parsedAll && Math.abs(rnum(sum) - 1) > 0.001) marks.colMsg = `A conditional column is a probability column: its values must add up to 1 (yours add up to ${rstr(sum)}).`;
+        else if (rows.some((env, r) => !evalNode(prob.psi, env) && work.col[r].trim() && !same(work.col[r], RZ)) && keptP) marks.colMsg = `Rows where ${psi} is false must get 0.`;
+        else marks.colMsg = `Rows where ${psi} is false get 0; the others keep their proportions, divided by P(${psi}).`;
+      }
+    }
+    if (prob.phi) {
+      const raw = work.cond.trim();
+      if (!raw) { marks.cond = null; marks.blank = true; }
+      else {
+        const both = probOf(B("and", prob.phi, prob.psi), prob), pPsi = probOf(prob.psi, prob), v = rdiv(both, pPsi);
+        const r = same(raw, v); marks.cond = !!r;
+        if (!r) {
+          if (same(raw, probOf(B("imp", prob.psi, prob.phi), prob))) marks.condMsg = `That’s the probability of the conditional ${parN(prob.psi)} → ${parN(prob.phi)}, not the conditional probability.`;
+          else if (same(raw, both)) marks.condMsg = `That’s P(${parN(prob.phi)} ∧ ${parN(prob.psi)}); now divide by P(${show(prob.psi)}).`;
+        }
+      }
+    }
+    work.marks = marks;
+    const answered = marks.cols.some((x) => x !== null) || marks.fs.some((x) => x !== null) || marks.colOk !== null || marks.cond !== null;
+    if (answered) {
+      work.checks++;
+      if (work.checks === 1) {
+        const allRight = !marks.blank && marks.cols.every((x) => x === true) && marks.fs.every((x) => x === true) && marks.colOk && (!prob.phi || marks.cond);
+        tally.n++; if (allRight) tally.ok++;
+        store.set("pl-st-tally", JSON.stringify(tally));
+      }
+    }
+    render();
+  }
+
+  // ---------- your own table ----------
+  let editState = null;
+  function startEdit() {
+    const n = prob.letters.length;
+    editState = { n, p: prob.p.map(rstr), fs: prob.fs.map(show), psi: show(prob.psi), phi: prob.phi ? show(prob.phi) : "", err: "", backup: prob };
+    state.editing = true; render();
+  }
+  function editSum() {
+    const parsed = editState.p.map(parseR);
+    const bad = parsed.some((q) => !q || q.n > q.d);
+    const tot = bad ? null : parsed.reduce(radd, RZ);
+    $("sum").textContent = bad ? "Each row needs a probability between 0 and 1." : req(tot, R1) ? "They add up to 1." : `They add up to ${rstr(tot)}, not 1.`;
+    $("sum").className = "sum " + (!bad && req(tot, R1) ? "ok" : "bad");
+  }
+  function renderEditQs() {
+    const box = $("editQs"); box.innerHTML = "";
+    segSync("nSeg", editState.n);
+    const mkRow = (label, val, onInput, rm) => {
+      const row = el("div", "erow");
+      const lab = el("label", null, esc(label));
+      const inp = el("input", "fin"); inp.value = val; inp.setAttribute("autocomplete", "off"); inp.setAttribute("spellcheck", "false"); inp.setAttribute("autocapitalize", "characters");
+      inp.addEventListener("input", () => {
+        const pos = inp.selectionStart ?? inp.value.length;
+        const nb = normalize(inp.value.slice(0, pos)), na = normalize(inp.value.slice(pos));
+        if (nb + na !== inp.value) { inp.value = nb + na; inp.setSelectionRange(nb.length, nb.length); }
+        onInput(inp.value);
+      });
+      row.append(lab, inp);
+      if (rm) { const b = el("button", "icon-btn", "×"); b.type = "button"; b.setAttribute("aria-label", "Remove"); b.onclick = rm; row.append(b); }
+      return row;
+    };
+    box.append(el("h3", null, "Calculate the probability of"));
+    editState.fs.forEach((f, i) => box.append(mkRow(`Formula ${i + 1}`, f, (v) => (editState.fs[i] = v), editState.fs.length > 1 ? () => { editState.fs.splice(i, 1); renderEditQs(); } : null)));
+    if (editState.fs.length < 6) { const b = el("button", "linkbtn", "+ Add formula"); b.type = "button"; b.onclick = () => { editState.fs.push(""); renderEditQs(); }; box.append(b); }
+    box.append(el("h3", null, "Conditional column"));
+    box.append(mkRow("P( · | ψ), with ψ =", editState.psi, (v) => (editState.psi = v)));
+    box.append(mkRow("Also ask P(φ | ψ), with φ = (optional)", editState.phi, (v) => (editState.phi = v)));
+    if (editState.err) box.append(el("p", "errmsg", esc(editState.err)));
+  }
+  function finishEdit() {
+    const L = LETTERS.slice(0, editState.n), N = 1 << editState.n;
+    const ps = editState.p.slice(0, N).map(parseR);
+    const fail = (m) => { editState.err = m; renderEditQs(); };
+    if (ps.length < N || ps.some((q) => !q || q.n > q.d)) return fail("Each row needs a probability between 0 and 1.");
+    if (!req(ps.reduce(radd, RZ), R1)) return fail("The row probabilities must add up to exactly 1.");
+    const parseIn = (src, what) => {
+      let a; try { a = parse(src); } catch (e) { if (e instanceof ParseError) throw new Error(`${what}: ${e.message}`); throw e; }
+      if (!a) throw new Error(`${what} is empty.`);
+      const bad = lettersOf(a, []).filter((x) => !L.includes(x));
+      if (bad.length) throw new Error(`${what} uses ${bad.join(", ")}, which ${bad.length > 1 ? "aren’t" : "isn’t"} in the table.`);
+      return a;
+    };
+    try {
+      const fs = editState.fs.map((s, i) => s.trim()).filter(Boolean).map((s, i) => parseIn(s, `Formula ${i + 1}`));
+      if (!fs.length) return fail("Add at least one formula.");
+      const psi = parseIn(editState.psi, "ψ");
+      const tmp = { letters: L, p: ps };
+      if (probOf(psi, tmp).n === 0n) return fail("P(ψ) is 0 in this table, so P( · | ψ) is undefined.");
+      const phi = editState.phi.trim() ? parseIn(editState.phi, "φ") : null;
+      prob = { kind: "own", letters: L, p: ps, fs, psi, phi };
+    } catch (e) { return fail(e.message); }
+    state.editing = false; state.mode = "practice"; work = fresh(); render();
+  }
+  $("nSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const n = +b.dataset.v; const N = 1 << n;
+    editState.n = n; editState.p = Array.from({ length: N }, (_, i) => editState.p[i] ?? "");
+    editState.p.length = N; editState.err = "";
+    prob = { ...prob, letters: LETTERS.slice(0, n), p: Array(N).fill(RZ) };
+    render();
+  });
+  $("eqBtn").onclick = () => { const N = 1 << editState.n; editState.p = Array(N).fill(N === 1 ? "1" : `1/${N}`); render(); };
+  $("rndBtn").onclick = () => { const N = 1 << editState.n; const D = N <= 4 ? 10 : 20; editState.p = composition(N, D, 0).map((x) => rstr(Rq(BigInt(x), BigInt(D)))); render(); };
+  $("editBtn").onclick = startEdit;
+  $("done").onclick = finishEdit;
+  $("cancel").onclick = () => { state.editing = false; if (editState && editState.backup) prob = editState.backup; render(); };
+
+  // ---------- controls ----------
+  function newProblem() { prob = generate(state.diff); work = fresh(); state.step = 0; }
+  $("diffSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || state.editing) return;
+    state.diff = b.dataset.v; store.set("pl-st-diff", state.diff); newProblem(); render();
+  });
+  $("newBtn").onclick = () => { if (state.editing) state.editing = false; newProblem(); render(); };
+  $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b || state.editing) return; state.mode = b.dataset.v; state.step = 0; render(); });
+  $("fmtSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.fmt = b.dataset.v; store.set("pl-fmt", state.fmt); render(); });
+  $("check").onclick = check;
+  $("clear").onclick = () => { work = fresh(); render(); };
+  const stepTo = (n) => { state.step = Math.max(0, Math.min(n, steps().length - 1)); render(); };
+  $("stFirst").onclick = () => stepTo(0);
+  $("stPrev").onclick = () => stepTo(state.step - 1);
+  $("stNext").onclick = () => stepTo(state.step + 1);
+  $("stLast").onclick = () => stepTo(999);
+  document.addEventListener("keydown", (e) => {
+    if (window.LL.active !== "table" || state.mode !== "step" || state.editing) return;
+    if (e.target.closest("input, textarea")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); stepTo(state.step + 1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); stepTo(state.step - 1); }
+  });
+  function applySize(v) { document.documentElement.style.setProperty("--tsize", v + "px"); segSync("sizeSeg", v); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  applySize("18");
+
+  // ---------- URL state: the whole problem, so a link reopens it ----------
+  function writeHash() {
+    if (!window.LL || LL.active !== "table") return;
+    const p = new URLSearchParams({ tab: "table", k: prob.kind, n: prob.letters.length, pr: prob.p.map(rstr).join(",") });
+    prob.fs.forEach((f) => p.append("f", show(f)));
+    p.set("c", show(prob.psi)); if (prob.phi) p.set("g", show(prob.phi));
+    p.set("m", state.editing ? "practice" : state.mode);
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (!window.LL || LL.tabOfHash() !== "table") return false;
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (["practice", "answers", "step"].includes(p.get("m"))) state.mode = p.get("m");
+    if (!p.has("pr")) return false;
+    try {
+      const n = +p.get("n"); if (!(n >= 2 && n <= 4)) return false;
+      const L = LETTERS.slice(0, n), ps = p.get("pr").split(",").map(parseR);
+      if (ps.length !== 1 << n || ps.some((q) => !q) || !req(ps.reduce(radd, RZ), R1)) return false;
+      const fs = p.getAll("f").map((s) => parse(normalize(s)));
+      const psi = parse(normalize(p.get("c") || ""));
+      const phi = p.get("g") ? parse(normalize(p.get("g"))) : null;
+      if (!fs.length || !psi || [...fs, psi, ...(phi ? [phi] : [])].some((a) => lettersOf(a, []).some((x) => !L.includes(x)))) return false;
+      const kind = ["easy", "medium", "hard"].includes(p.get("k")) ? p.get("k") : "own";
+      if (kind !== "own") state.diff = kind;
+      prob = { kind, letters: L, p: ps, fs, psi, phi };
+      work = fresh(); state.step = 0; state.editing = false;
+      return true;
+    } catch (e) { return false; }
+  }
+  if (!readHash()) newProblem();
+  render();
+  window.addEventListener("hashchange", () => { if (LL.tabOfHash() === "table" && readHash()) render(); });
+  window.LL_hooks.table = { writeHash: () => writeHash() };
+  // for tests
+  window.LL_test = window.LL_test || {}; window.LL_test.table = { get prob() { return prob; }, generate, probOf, condColumn: () => condColumn(), rstr, show };
+};
+
+</script>
+<script>
+window.initBayes = () => {
+  "use strict";
+  const $ = (id) => document.getElementById("by-" + id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+    const bgcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) [a, b] = [b, a % b]; return a; };
+  const Rq = (n, d = 1n) => { if (d < 0n) { n = -n; d = -d; } const g = bgcd(n, d) || 1n; return { n: n / g, d: d / g }; };
+  const radd = (a, b) => Rq(a.n * b.d + b.n * a.d, a.d * b.d);
+  const rdiv = (a, b) => Rq(a.n * b.d, a.d * b.n);
+  const RZ = Rq(0n), R1 = Rq(1n);
+  const req = (a, b) => a.n === b.n && a.d === b.d;
+  const rstr = (q) => (q.d === 1n ? `${q.n}` : `${q.n}/${q.d}`);
+  const rnum = (q) => Number(q.n) / Number(q.d);
+  const rapprox = (q) => { const x = rnum(q); return x > 0 && x < 0.001 ? x.toPrecision(2) : String(+x.toFixed(4)); };
+  // 1/8, 0.125, .125, 12.5%
+  function parseR(raw) {
+    const t = String(raw ?? "").trim();
+    let m;
+    if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/))) return BigInt(m[2]) === 0n ? null : Rq(BigInt(m[1]), BigInt(m[2]));
+    const dec = (w, f) => Rq(BigInt((w || "0") + (f || "")), 10n ** BigInt((f || "").length));
+    if ((m = t.match(/^(\d*)\.?(\d*)\s*%$/)) && (m[1] || m[2])) { const q = dec(m[1], m[2]); return Rq(q.n, q.d * 100n); }
+    if ((m = t.match(/^(\d*)\.?(\d*)$/)) && (m[1] || m[2])) return dec(m[1], m[2]);
+    return null;
+  }
+
+  const rmul = (a, b) => Rq(a.n * b.n, a.d * b.d);
+  const rsub = (a, b) => Rq(a.n * b.d - b.n * a.d, a.d * b.d);
+  const R = (s) => parseR(s);
+
+  const DATA = {"scenarios": [{"id": "S01", "title": "Medical test", "H": "You have the disease", "E": "Your test comes back positive", "notE": "Your test comes back negative", "templates": {"easy": [{"text": "{prior%} of people in your town have a certain disease. A test for it comes back positive for {p%} of people who have the disease and for {q%} of people who don't. Your test comes back positive. How confident should you be that you have the disease?", "obs": "B"}], "medium": [{"text": "About {prior1in} people in your town have a certain disease. A test for it misses {np%} of people who have the disease (it comes back negative for them), and it comes back positive for {q%} of people who don't. Your test comes back positive. How confident should you be that you have the disease?", "obs": "B"}], "hard": [{"text": "{prior%} of people in your town have a certain disease. A test for it comes back positive for {p%} of people who have the disease and correctly comes back negative for {nq%} of people who don't. Your test comes back negative. How confident should you be that you have the disease anyway?", "obs": "notB"}]}, "priors": ["1/100", "1/50", "3/100", "1/25", "1/20", "2/25", "1/10", "3/20", "1/5", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S02", "title": "Spam filter", "H": "The email is spam", "E": "The filter flags the email", "notE": "The filter doesn't flag the email", "templates": {"easy": [{"text": "{prior%} of the emails you receive are spam. Your spam filter flags {p%} of spam emails and {q%} of genuine ones. The filter flags an email. How confident should you be that it is spam?", "obs": "B"}], "medium": [{"text": "{prior%} of the emails you receive are spam. Your spam filter lets {np%} of spam emails through without flagging them, and it flags {q%} of genuine ones. The filter flags an email. How confident should you be that it is spam?", "obs": "B"}], "hard": [{"text": "{prior%} of the emails you receive are spam. Your spam filter flags {p%} of spam emails, and it leaves {nq%} of genuine emails unflagged. An email arrives and the filter does not flag it. How confident should you be that it is spam anyway?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "1/2", "3/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S03", "title": "Smoke alarm", "H": "There is a fire in the building", "E": "The smoke alarm goes off", "notE": "The smoke alarm doesn't go off", "templates": {"easy": [{"text": "On any given night, the chance of a fire in your building is {prior%}. The smoke alarm goes off on {p%} of nights with a fire and on {q%} of nights without one (burnt toast, steam from the shower). Tonight the alarm goes off. How confident should you be that there is a fire?", "obs": "B"}], "medium": [{"text": "On any given night, the chance of a fire in your building is about {prior1in}. The smoke alarm fails to go off during {np%} of fires, and it goes off on {q%} of nights without a fire. Tonight the alarm goes off. How confident should you be that there is a fire?", "obs": "B"}]}, "priors": ["1/100", "1/50", "1/25", "1/20"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/50", "1/25", "1/20", "1/10"]}, {"id": "S04", "title": "Leona's coat", "H": "Leona is a Maine Coon", "E": "Leona has a shaggy coat, a bushy tail and tufted ears", "notE": "Leona doesn't have a shaggy coat, a bushy tail and tufted ears", "templates": {"easy": [{"text": "{prior%} of the cats at the shelter are Maine Coons. {p%} of Maine Coons have a heavy, shaggy coat, a long bushy tail and large tufted ears, and so do {q%} of the other cats. Leona, a cat from the shelter, has all three. How confident should you be that Leona is a Maine Coon?", "obs": "B"}], "medium": [{"text": "About {prior1in} cats at the shelter is a Maine Coon. Only {np%} of Maine Coons are missing at least one of three features (a heavy, shaggy coat, a long bushy tail and large tufted ears), while {q%} of the other cats have all three. Leona, a cat from the shelter, has all three. How confident should you be that Leona is a Maine Coon?", "obs": "B"}]}, "priors": ["1/10", "1/20", "1/5", "1/4", "1/50"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S05", "title": "Breathalyzer", "H": "The driver is over the limit", "E": "The breathalyzer reads over the limit", "notE": "The breathalyzer reads under the limit", "templates": {"easy": [{"text": "At a late-night checkpoint, {prior%} of drivers are over the legal alcohol limit. The roadside breathalyzer reads \"over\" for {p%} of drivers who are over the limit and for {q%} of drivers who are under it. A driver's breathalyzer reads \"over\". How confident should the officer be that the driver is over the limit?", "obs": "B"}], "hard": [{"text": "At a late-night checkpoint, {prior%} of drivers are over the legal alcohol limit. The roadside breathalyzer misses {np%} of drivers who are over the limit (it reads \"under\" for them) and reads \"under\" for {nq%} of drivers who really are under it. A driver's breathalyzer reads \"under\". How confident should the officer be that the driver is over the limit anyway?", "obs": "notB"}]}, "priors": ["1/20", "1/10", "3/20", "1/5", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S06", "title": "Birdwatcher", "H": "The bird is a cerulean warbler", "E": "The birdwatcher says it is a cerulean warbler", "notE": "The birdwatcher says it is not a cerulean warbler", "templates": {"medium": [{"text": "Cerulean warblers are uncommon here: only {prior%} of the small blue birds seen in this park are cerulean warblers. A birdwatcher is right {r%} of the time when she says whether a small blue bird is a cerulean warbler, whichever kind of bird it is. She says the bird she just saw is a cerulean warbler. How confident should you be that it is?", "obs": "B"}], "hard": [{"text": "Cerulean warblers are uncommon here: about {prior1in} small blue birds seen in this park is a cerulean warbler. A birdwatcher is right {r%} of the time when she says whether a small blue bird is a cerulean warbler, whichever kind of bird it is. She says the bird she just saw is a cerulean warbler. How confident should you be that it is?", "obs": "B"}]}, "priors": ["1/5", "1/10", "1/20", "1/4"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": []}, {"id": "S07", "title": "Weather forecast", "H": "It will rain tomorrow", "E": "The forecast says rain", "notE": "The forecast doesn't say rain", "templates": {"easy": [{"text": "In your city it rains on {prior%} of days. On days before it rains, the forecast says rain {p%} of the time; on days before it stays dry, the forecast says rain {q%} of the time. Tonight the forecast says rain for tomorrow. How confident should you be that it will rain?", "obs": "B"}], "hard": [{"text": "In your city it rains on {prior%} of days. On days before it rains, the forecast fails to predict the rain {np%} of the time; on days before it stays dry, the forecast correctly says no rain {nq%} of the time. Tonight the forecast does not say rain for tomorrow. How confident should you be that it will rain anyway?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "3/10", "2/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S08", "title": "Airport scanner", "H": "The bag contains a prohibited item", "E": "The scanner raises an alarm", "notE": "The scanner doesn't raise an alarm", "templates": {"easy": [{"text": "{prior%} of the bags going through an airport scanner contain a prohibited item. The scanner raises an alarm for {p%} of bags with a prohibited item and for {q%} of bags without one. The scanner raises an alarm for your bag. How confident should the agent be that it contains a prohibited item?", "obs": "B"}], "medium": [{"text": "About {prior1in} bags going through an airport scanner contains a prohibited item. The scanner raises an alarm for {p%} of bags with a prohibited item, and it stays quiet for {nq%} of bags without one. The scanner raises an alarm for your bag. How confident should the agent be that it contains a prohibited item?", "obs": "B"}]}, "priors": ["1/20", "1/25", "1/50", "1/10"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S09", "title": "Plagiarism checker", "H": "The essay is plagiarized", "E": "The checker flags the essay", "notE": "The checker doesn't flag the essay", "templates": {"easy": [{"text": "{prior%} of the essays submitted in a large course are plagiarized. A plagiarism checker flags {p%} of plagiarized essays and {q%} of original ones. The checker flags an essay. How confident should the instructor be that it is plagiarized?", "obs": "B"}], "medium": [{"text": "{prior%} of the essays submitted in a large course are plagiarized. A plagiarism checker misses {np%} of plagiarized essays, and it wrongly flags {q%} of original ones. The checker flags an essay. How confident should the instructor be that it is plagiarized?", "obs": "B"}]}, "priors": ["1/20", "1/10", "3/20", "1/5"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S10", "title": "Factory machines", "H": "The widget was made by Machine A", "E": "The widget is defective", "notE": "The widget is not defective", "templates": {"medium": [{"text": "A factory has two machines. Machine A makes {prior%} of the widgets and Machine B makes the rest. {p%} of Machine A's widgets are defective, and {q%} of Machine B's are. A widget picked at random turns out to be defective. How confident should you be that Machine A made it?", "obs": "B"}], "hard": [{"text": "A factory has two machines. Machine A makes {prior%} of the widgets and Machine B makes the rest. {p%} of Machine A's widgets are defective, and {q%} of Machine B's are. A widget picked at random turns out to work fine. How confident should you be that Machine A made it?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "3/5", "7/10"], "ps": ["1/20", "2/25", "1/10", "3/20", "1/5"], "qs": ["1/100", "1/50", "3/100", "1/25"]}, {"id": "S11", "title": "Lie detector", "H": "The suspect is lying", "E": "The lie detector says the suspect is lying", "notE": "The lie detector says the suspect is telling the truth", "templates": {"easy": [{"text": "In a certain kind of investigation, {prior%} of the people questioned are lying. A lie detector says \"lying\" for {p%} of people who are lying and for {q%} of people who are telling the truth. The lie detector says a suspect is lying. How confident should the investigator be that the suspect is lying?", "obs": "B"}], "medium": [{"text": "In a certain kind of investigation, {prior%} of the people questioned are lying. A lie detector is right {r%} of the time, whether the person is lying or telling the truth. The lie detector says a suspect is lying. How confident should the investigator be that the suspect is lying?", "obs": "B"}]}, "priors": ["1/10", "1/5", "3/10"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}, {"id": "S12", "title": "The car won't start", "H": "The battery is weak", "E": "The car starts", "notE": "The car doesn't start", "templates": {"medium": [{"text": "On cold mornings, {prior%} of the cars in your neighborhood have a weak battery. A car with a weak battery starts only {p%} of the time, while {q%} of cars without a weak battery start. This morning is cold, and your car doesn't start. How confident should you be that the battery is weak?", "obs": "notB"}], "hard": [{"text": "On cold mornings, about {prior1in} cars in your neighborhood has a weak battery. A car with a weak battery fails to start {np%} of the time, while {q%} of cars without a weak battery start. This morning is cold, and your car doesn't start. How confident should you be that the battery is weak?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "1/4", "1/20"], "ps": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"], "qs": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"]}, {"id": "S13", "title": "Two coins", "H": "You picked the biased coin", "E": "The coin lands heads", "notE": "The coin lands tails", "templates": {"easy": [{"text": "A bag holds coins: {prior%} of them are biased and the rest are fair. A biased coin lands heads {p%} of the time; a fair coin lands heads 50% of the time. You pick a coin from the bag at random, flip it, and it lands heads. How confident should you be that you picked a biased coin?", "obs": "B"}], "hard": [{"text": "A bag holds coins: {prior%} of them are biased and the rest are fair. A biased coin lands heads {p%} of the time; a fair coin lands heads 50% of the time. You pick a coin from the bag at random, flip it, and it lands tails. How confident should you be that you picked a biased coin?", "obs": "notB"}]}, "priors": ["1/10", "1/5", "3/10", "2/5", "1/2"], "ps": ["13/20", "7/10", "3/4", "4/5", "17/20", "9/10"], "qs": ["1/2"]}, {"id": "S14", "title": "Screening test", "H": "The applicant is qualified", "E": "The applicant passes the screening test", "notE": "The applicant fails the screening test", "templates": {"easy": [{"text": "{prior%} of the people applying for a job are qualified for it. {p%} of qualified applicants pass a screening test, and so do {q%} of unqualified ones. An applicant passes the test. How confident should the employer be that the applicant is qualified?", "obs": "B"}], "hard": [{"text": "{prior%} of the people applying for a job are qualified for it. {np%} of qualified applicants fail a screening test, and {nq%} of unqualified ones fail it too. An applicant fails the test. How confident should the employer be that the applicant is qualified anyway?", "obs": "notB"}]}, "priors": ["1/5", "3/10", "2/5", "1/2"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/10", "3/20", "1/5", "1/4", "3/10", "2/5"]}, {"id": "S15", "title": "Yellow leaves", "H": "The plant has root rot", "E": "The plant's leaves are yellow", "notE": "The plant's leaves are not yellow", "templates": {"easy": [{"text": "At a garden center, {prior%} of the potted plants have root rot. {p%} of plants with root rot have yellow leaves, and so do {q%} of plants without it. A plant you like has yellow leaves. How confident should you be that it has root rot?", "obs": "B"}], "medium": [{"text": "At a garden center, about {prior1in} potted plants has root rot. Only {np%} of plants with root rot keep green leaves, while {q%} of healthy plants have yellow leaves. A plant you like has yellow leaves. How confident should you be that it has root rot?", "obs": "B"}]}, "priors": ["1/10", "1/20", "1/5", "1/8"], "ps": ["7/10", "3/4", "4/5", "17/20", "9/10", "19/20"], "qs": ["1/20", "1/10", "3/20", "1/5", "1/4", "3/10"]}], "problems": [{"id": "W01", "difficulty": "hard", "title": "The forged painting", "text": "An auction house knows that 5% of the old paintings it is offered are forgeries. Titanium white, a pigment invented in the twentieth century, turns up in 40% of forgeries, and in no genuine painting from that period. The lab finds titanium white in a painting. How confident should the auction house be that the painting is a forgery?", "H": "The painting is a forgery", "E": "The lab finds titanium white in the painting", "notE": "The lab doesn't find titanium white in the painting", "prior": "1/20", "p": "2/5", "q": "0/1", "obs": "B"}, {"id": "W02", "difficulty": "hard", "title": "The forged painting, again", "text": "An auction house knows that 5% of the old paintings it is offered are forgeries. Titanium white, a pigment invented in the twentieth century, turns up in 40% of forgeries, and in no genuine painting from that period. The lab finds no titanium white in a painting. How confident should the auction house be that the painting is a forgery?", "H": "The painting is a forgery", "E": "The lab finds titanium white in the painting", "notE": "The lab doesn't find titanium white in the painting", "prior": "1/20", "p": "2/5", "q": "0/1", "obs": "notB"}, {"id": "W03", "difficulty": "medium", "title": "The rare disease", "text": "About 1 in 1,000 people have a rare disease. A test for it comes back positive for 99% of people who have it, and for 5% of people who don't. Your test comes back positive. How confident should you be that you have the disease?", "H": "You have the disease", "E": "Your test comes back positive", "notE": "Your test comes back negative", "prior": "1/1000", "p": "99/100", "q": "1/20", "obs": "B"}, {"id": "W04", "difficulty": "hard", "title": "The weather app", "text": "It rains on 1 day in 10 in your town. Your weather app is right 90% of the time, whether or not it is going to rain. Tonight the app says it will rain tomorrow. How confident should you be that it will rain?", "H": "It will rain tomorrow", "E": "The app says it will rain tomorrow", "notE": "The app says it won't rain tomorrow", "prior": "1/10", "p": "9/10", "q": "1/10", "obs": "B"}, {"id": "W05", "difficulty": "hard", "title": "The left-handed suspect", "text": "A detective knows that one of the ten people at the party stole the necklace, and has no reason to suspect any of them more than the others. The thief left a smudge showing they are left-handed. Ines is left-handed. If Ines is the thief, she is certainly left-handed; if she isn't, there is a 10% chance she is left-handed, as for anyone. How confident should the detective be that Ines is the thief?", "H": "Ines is the thief", "E": "Ines is left-handed", "notE": "Ines is not left-handed", "prior": "1/10", "p": "1/1", "q": "1/10", "obs": "B"}, {"id": "W06", "difficulty": "hard", "title": "The irrelevant clue", "text": "A detective knows that one of the ten people at the party stole the necklace, and has no reason to suspect any of them more than the others. Ines is wearing a red scarf. Exactly 30% of the guests are wearing red scarves, and a thief is no more or less likely than anyone else to wear one: 30% of thieves would be wearing one. How confident should the detective be that Ines is the thief?", "H": "Ines is the thief", "E": "Ines is wearing a red scarf", "notE": "Ines is not wearing a red scarf", "prior": "1/10", "p": "3/10", "q": "3/10", "obs": "B"}, {"id": "W07", "difficulty": "hard", "title": "The flagged email", "text": "30% of the emails you receive are spam. Your filter catches 95% of spam emails, but it also wrongly flags 2% of genuine ones. An email arrives and is not flagged. How confident should you be that it is spam?", "H": "The email is spam", "E": "The filter flags the email", "notE": "The filter doesn't flag the email", "prior": "3/10", "p": "19/20", "q": "1/50", "obs": "notB"}, {"id": "W08", "difficulty": "medium", "title": "The coin toss witness", "text": "Ana tossed a fair coin out of your sight. Ben saw it and tells you it landed heads, but Ben is accurate only 70% of the time, whether the coin landed heads or tails. How confident should you be that it landed heads?", "H": "The coin landed heads", "E": "Ben says the coin landed heads", "notE": "Ben says the coin landed tails", "prior": "1/2", "p": "7/10", "q": "3/10", "obs": "B"}, {"id": "W09", "difficulty": "hard", "title": "Counting cases", "text": "Of 1,000 people screened for a disease, 20 have it. Of those 20, 18 test positive. Of the 980 who don't have it, 49 also test positive. Someone from this group tests positive. How confident should they be that they have the disease?", "H": "The person has the disease", "E": "The person tests positive", "notE": "The person tests negative", "prior": "1/50", "p": "9/10", "q": "1/20", "obs": "B"}, {"id": "W10", "difficulty": "hard", "title": "The ghost", "text": "Your friend Dana says she saw a ghost last night. You are fairly sure ghosts don't exist: before she told you anything, your credence that she would see one last night was 1 in a million. Dana is very honest and careful: if she had really seen a ghost she would certainly tell you, and if she hadn't, there is only a 1 in 100 chance she would mistakenly say she had. How confident should you be that Dana saw a ghost?", "H": "Dana saw a ghost", "E": "Dana says she saw a ghost", "notE": "Dana doesn't say she saw a ghost", "prior": "1/1000000", "p": "1/1", "q": "1/100", "obs": "B"}, {"id": "W11", "difficulty": "medium", "title": "Leona at the vet", "text": "1 in 8 cats brought to a certain vet is a Maine Coon. 9 out of 10 Maine Coons weigh more than 12 pounds, but only 1 in 5 other cats does. Leona, one of the cats brought to this vet, weighs more than 12 pounds. How confident should the vet be that Leona is a Maine Coon?", "H": "Leona is a Maine Coon", "E": "Leona weighs more than 12 pounds", "notE": "Leona weighs 12 pounds or less", "prior": "1/8", "p": "9/10", "q": "1/5", "obs": "B"}, {"id": "W12", "difficulty": "hard", "title": "The quiet alarm", "text": "On any given night, the chance of a break-in at a store is 1 in 200. The alarm goes off during 95% of break-ins, and on 1% of quiet nights. Last night the alarm did not go off. How confident should the owner be that there was a break-in?", "H": "There was a break-in", "E": "The alarm went off", "notE": "The alarm didn't go off", "prior": "1/200", "p": "19/20", "q": "1/100", "obs": "notB"}, {"id": "W13", "difficulty": "hard", "title": "The interview", "text": "A third of the candidates who reach the final interview get the job offer. Candidates who will get the offer are asked to meet the team 80% of the time; those who won't, only 20% of the time. Your friend reached the final interview, and the interviews are now over: she was never asked to meet the team. How confident should she be that she'll get the offer?", "H": "Your friend will get the offer", "E": "Your friend is asked to meet the team", "notE": "Your friend isn't asked to meet the team", "prior": "1/3", "p": "4/5", "q": "1/5", "obs": "notB"}, {"id": "W14", "difficulty": "medium", "title": "The fair coin", "text": "Two coins sit on a table: one is fair, and one is two-headed. You pick one at random and flip it. It lands heads. How confident should you be that you picked the two-headed coin?", "H": "You picked the two-headed coin", "E": "The coin lands heads", "notE": "The coin lands tails", "prior": "1/2", "p": "1/1", "q": "1/2", "obs": "B"}, {"id": "W15", "difficulty": "hard", "title": "The second opinion", "text": "Of the patients a specialist sees, 40% have the condition she treats. Her first test comes back positive for 75% of patients with the condition and for 25% of those without it. A patient's first test comes back negative. How confident should the specialist be that the patient has the condition?", "H": "The patient has the condition", "E": "The patient's first test comes back positive", "notE": "The patient's first test comes back negative", "prior": "2/5", "p": "3/4", "q": "1/4", "obs": "notB"}]};
+  const DIFFS = ["easy", "medium", "hard"];
+
+  // ---------- numbers ----------
+  const pctStr = (q) => { const v = rmul(q, Rq(100n)); return v.d === 1n ? `${v.n}%` : `${+rnum(v).toFixed(4)}%`; };
+  const oneIn = (q) => `1 in ${q.d}`;
+  function post(pr, p, q, obs) {
+    const pe = obs === "B" ? p : rsub(R1, p), qe = obs === "B" ? q : rsub(R1, q);
+    const num = rmul(pe, pr), den = radd(num, rmul(qe, rsub(R1, pr)));
+    return den.n === 0n ? null : rdiv(num, den);
+  }
+  const close = (x, v) => { const t = rnum(v); return t >= 0.05 ? Math.abs(x - t) <= 0.005 : Math.abs(x - t) <= 0.05 * t + 1e-12; };
+  function distractors(pr, p, q, obs) {
+    const pe = obs === "B" ? p : rsub(R1, p), qe = obs === "B" ? q : rsub(R1, q);
+    const top = rmul(pe, pr), pE = radd(top, rmul(qe, rsub(R1, pr)));
+    const d = { lik: pe, top, pE };
+    if (obs === "notB") d.wrongE = post(pr, p, q, "B");
+    return d;
+  }
+  const clash = (pr, p, q, obs) => { const v = post(pr, p, q, obs); return Object.values(distractors(pr, p, q, obs)).some((x) => x && close(rnum(x), v)); };
+
+  // ---------- problems ----------
+  const POOL = { easy: [], medium: [], hard: [] };
+  DATA.scenarios.forEach((sc) => Object.entries(sc.templates).forEach(([d, ts]) => ts.forEach((t, ti) => POOL[d].push({ kind: "s", sc, t, ti, key: `${sc.id}.${d}.${ti}` }))));
+  DATA.problems.forEach((pb) => POOL[pb.difficulty].push({ kind: "w", pb, key: pb.id }));
+
+  function fill(t, v) {
+    const m = (q, txt) => `<mark class="qv" data-q="${q}">${esc(txt)}</mark>`;
+    const how = {};
+    let s = esc(t.text);
+    const rep = (ph, q, txt, note) => { if (s.includes(esc(ph))) { s = s.split(esc(ph)).join(m(q, txt)); how[q] = note; } };
+    rep("{prior%}", "prior", pctStr(v.prior), "stated directly");
+    rep("{prior1in}", "prior", oneIn(v.prior), `“${oneIn(v.prior)}” is ${rstr(v.prior)}`);
+    rep("{p%}", "p", pctStr(v.p), "stated directly");
+    rep("{np%}", "p", pctStr(rsub(R1, v.p)), `1 − ${pctStr(rsub(R1, v.p))} = ${pctStr(v.p)}`);
+    rep("{q%}", "q", pctStr(v.q), "stated directly");
+    rep("{nq%}", "q", pctStr(rsub(R1, v.q)), `1 − ${pctStr(rsub(R1, v.q))} = ${pctStr(v.q)}`);
+    if (s.includes(esc("{r%}"))) {
+      s = s.split(esc("{r%}")).join(m("pq", pctStr(v.p)));
+      how.p = `right ${pctStr(v.p)} of the time, so P(E | H) = ${pctStr(v.p)}`;
+      how.q = `wrong ${pctStr(rsub(R1, v.p))} of the time, so P(E | ¬H) = ${pctStr(v.q)}`;
+    }
+    return { html: s, how };
+  }
+  function instance(entry, nums) {
+    if (entry.kind === "w") {
+      const pb = entry.pb;
+      return { key: entry.key, title: pb.title, html: esc(pb.text), how: {}, H: pb.H, E: pb.E, notE: pb.notE, prior: R(pb.prior), p: R(pb.p), q: R(pb.q), obs: pb.obs, diff: pb.difficulty };
+    }
+    const { sc, t } = entry;
+    const rel = t.text.includes("{r%}"), unit = t.text.includes("{prior1in}");
+    let v = nums;
+    if (!v) {
+      const priors = sc.priors.map(R).filter((x) => !unit || x.n === 1n);
+      for (let k = 0; k < 400; k++) {
+        const pr = priors[Math.floor(Math.random() * priors.length)];
+        const p = R(sc.ps[Math.floor(Math.random() * sc.ps.length)]);
+        const q = rel ? rsub(R1, p) : R(sc.qs[Math.floor(Math.random() * sc.qs.length)]);
+        const pv = post(pr, p, q, t.obs);
+        if (!pv || clash(pr, p, q, t.obs) || rnum(pv) > 0.995 || rnum(pv) < 0.001) continue;
+        v = { prior: pr, p, q }; break;
+      }
+    }
+    const f = fill(t, v);
+    return { key: entry.key, title: sc.title, html: f.html, how: f.how, H: sc.H, E: sc.E, notE: sc.notE, prior: v.prior, p: v.p, q: v.q, obs: t.obs, diff: entry.key.split(".")[1] };
+  }
+
+  // ---------- state ----------
+  const state = { diff: DIFFS.includes(store.get("pl-by-diff")) ? store.get("pl-by-diff") : "easy", mode: "practice", step: 0 };
+  let prob = null, work = null, recent = [];
+  let tally = (() => { try { return JSON.parse(store.get("pl-by-tally")) || { n: 0, ok: 0 }; } catch (e) { return { n: 0, ok: 0 }; } })();
+  const fmt = () => (store.get("pl-fmt") === "d" ? "d" : "f");
+  const show = (q) => (fmt() === "d" ? String(+rnum(q).toFixed(4)) : rstr(q));
+  const showA = (q) => show(q) + (fmt() === "f" && q.d !== 1n ? ` ≈ ${+rnum(q).toFixed(4)}` : "");
+  const fresh = () => ({ ev: null, pH: "", pEH: "", pEnH: "", post: "", marks: {}, msgs: {}, checks: 0, done: false, shown: false, s2ok: false });
+
+  function newProblem() {
+    const pool = POOL[state.diff];
+    let cand = pool.filter((e) => !recent.includes(e.key));
+    if (!cand.length) cand = pool;
+    const e = cand[Math.floor(Math.random() * cand.length)];
+    recent = [e.key, ...recent].slice(0, Math.min(6, pool.length - 1));
+    prob = instance(e); work = fresh(); state.step = 0;
+  }
+
+  // ---------- rendering ----------
+  function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
+  function setVerdict(badge, cls, text) {
+    const v = $("verdict"); v.innerHTML = "";
+    if (badge) v.append(el("span", "badge " + cls, esc(badge)));
+    if (text) v.append(el("span", "verdict-text", text));
+  }
+  const evLbl = (ev) => (ev === "notE" ? "¬E" : "E");
+  const truth = () => ({ ev: prob.obs === "B" ? "E" : "notE", post: post(prob.prior, prob.p, prob.q, prob.obs) });
+
+  function render() {
+    segSync("diffSeg", state.diff); segSync("modeSeg", state.mode); segSync("fmtSeg", fmt());
+    $("practice").hidden = state.mode !== "practice"; $("view").hidden = state.mode === "practice";
+    $("stepper").hidden = $("stepcap").hidden = state.mode !== "step";
+    $("modeNote").textContent = { practice: "Work through the three steps, then click Check.", answers: "The worked solution, the book’s way.", step: "The method one step at a time. Use ▶ or the arrow keys." }[state.mode];
+    $("tally").textContent = tally.n ? `All right on the first check: ${tally.ok} of ${tally.n} problems` : "";
+    $("story").innerHTML = prob.html;
+    $("story").querySelectorAll("mark").forEach((m) => m.classList.remove("on"));
+    $("dict").innerHTML = `<span class="dk">Dictionary</span> <b>H</b> = ${esc(prob.H)} · <b>E</b> = ${esc(prob.E)}`;
+    if (state.mode === "practice") renderPractice();
+    else if (state.mode === "answers") renderAnswers();
+    else renderStep();
+    writeHash();
+  }
+
+  function renderPractice() {
+    const T = truth();
+    segSync("evSeg", work.ev);
+    $("evSeg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.v === work.ev)));
+    $("postLbl").textContent = `P(H | ${work.ev ? evLbl(work.ev) : "…"}) =`;
+    ["pH", "pEH", "pEnH", "post"].forEach((k) => {
+      const inp = $(k); if (document.activeElement !== inp) inp.value = work[k];
+      inp.classList.toggle("ok", work.marks[k] === true); inp.classList.toggle("bad", work.marks[k] === false);
+      inp.disabled = work.shown;
+    });
+    $("post").disabled = work.shown || !work.ev;
+    const msg = (id, k) => { $(id).textContent = work.msgs[k] || ""; $(id).className = "smsg" + (work.marks[k] === false ? " bad" : work.marks[k] === true ? " ok" : ""); };
+    msg("m1", "ev"); msg("mH", "pH"); msg("mEH", "pEH"); msg("mEnH", "pEnH"); msg("mPost", "post");
+    $("evSeg").classList.toggle("bad", work.marks.ev === false); $("evSeg").classList.toggle("ok", work.marks.ev === true);
+    $("check").disabled = work.shown; $("show").disabled = work.shown;
+    $("next").hidden = !(work.done || work.shown);
+    updateEikBtn();
+    if (work.shown) {
+      setVerdict("Answer shown", "muted", "Try another, or step through this one.");
+      $("practice").querySelector(".worked")?.remove();
+      $("practice").append(workedBox(true));
+    } else {
+      $("practice").querySelector(".worked")?.remove();
+      if (work.done) setVerdict("Correct", "good", `P(H | ${evLbl(T.ev)}) = ${showA(T.post)}`);
+      else if (work.checks) setVerdict("Not yet", "bad", "Fix the marked answers and check again.");
+      else setVerdict(null, null, "Follow the book’s method: what you learned, the prior and likelihoods, then the posterior.");
+    }
+  }
+
+  // ---------- checking ----------
+  function same(raw, q) { const v = parseR(raw); if (!v) return null; return req(v, q) || Math.abs(rnum(v) - rnum(q)) <= 0.0005; }
+  function check() {
+    if (work.shown) return;
+    const T = truth();
+    work.marks = {}; work.msgs = {};
+    let stage = 0, allRight = true;
+    // step 1
+    if (!work.ev) { work.msgs.ev = "Start here: did the story tell you E, or ¬E?"; work.marks.ev = false; allRight = false; }
+    else if (work.ev !== T.ev) { work.marks.ev = false; work.msgs.ev = `Look again at what the story says was observed, and compare it with E = “${prob.E}”.`; allRight = false; }
+    else { work.marks.ev = true; stage = 1; }
+    // step 2
+    if (stage === 1) {
+      const want = { pH: prob.prior, pEH: prob.p, pEnH: prob.q };
+      let ok2 = true;
+      for (const k of ["pH", "pEH", "pEnH"]) {
+        const raw = work[k].trim();
+        if (!raw) { work.marks[k] = false; work.msgs[k] = "Missing."; ok2 = false; continue; }
+        const r = same(raw, want[k]);
+        if (r === null) { work.marks[k] = false; work.msgs[k] = "Type a probability: a fraction, a decimal or a percentage."; ok2 = false; continue; }
+        work.marks[k] = r;
+        if (!r) {
+          ok2 = false;
+          if (k !== "pH" && same(raw, rsub(R1, want[k]))) work.msgs[k] = `That’s ${k === "pEH" ? "P(¬E | H)" : "P(¬E | ¬H)"}. The likelihoods are always about E.`;
+          else if (k === "pH" && same(raw, rsub(R1, want.pH))) work.msgs[k] = "That’s P(¬H).";
+          else if (k === "pEH" && same(raw, want.pEnH)) work.msgs[k] = "That’s P(E | ¬H): the likelihood if H is false.";
+          else if (k === "pEnH" && same(raw, want.pEH)) work.msgs[k] = "That’s P(E | H): the likelihood if H is true.";
+        }
+      }
+      if (ok2) { stage = 2; work.s2ok = true; } else allRight = false;
+    }
+    // step 3
+    if (stage === 2) {
+      const raw = work.post.trim();
+      const v = parseR(raw);
+      if (!raw) { work.marks.post = false; work.msgs.post = "Now the posterior."; allRight = false; }
+      else if (!v) { work.marks.post = false; work.msgs.post = "Type a probability: a fraction, a decimal or a percentage."; allRight = false; }
+      else if (req(v, T.post) || close(rnum(v), T.post)) { work.marks.post = true; work.done = true; }
+      else {
+        work.marks.post = false; allRight = false;
+        const d = distractors(prob.prior, prob.p, prob.q, prob.obs), x = rnum(v), L = evLbl(T.ev);
+        if (d.wrongE && close(x, d.wrongE)) work.msgs.post = "That’s P(H | E). You learned ¬E: use P(¬E | H) = 1 − P(E | H) and P(¬E | ¬H) = 1 − P(E | ¬H).";
+        else if (close(x, d.lik)) work.msgs.post = `That’s the likelihood P(${L} | H), not the posterior. You’ve left out the prior: this is the base-rate fallacy.`;
+        else if (close(x, d.top)) work.msgs.post = `That’s only the top of Bayes’ theorem, P(${L} | H) × P(H). Divide by P(${L}).`;
+        else if (close(x, d.pE)) work.msgs.post = `That’s P(${L}), the probability of the evidence: the bottom of the fraction.`;
+        else work.msgs.post = "Not quite. Check the numerator and the denominator against the LTP form of Bayes’ theorem.";
+      }
+    } else if (work.post.trim()) work.msgs.post = "";
+    work.checks++;
+    if (work.checks === 1) { tally.n++; if (allRight && work.done) tally.ok++; store.set("pl-by-tally", JSON.stringify(tally)); }
+    render();
+  }
+
+  // ---------- worked solution ----------
+  function quantities() {
+    const how = prob.how;
+    const line = (lab, q, k) => `<li><span class="ql">${lab} =</span> <b>${show(q)}</b>${how[k] && how[k] !== "stated directly" ? ` <span class="hw">(${esc(how[k])})</span>` : ""}</li>`;
+    return `<ul class="qty">${line("P(H)", prob.prior, "prior")}${line("P(E | H)", prob.p, "p")}${line("P(E | ¬H)", prob.q, "q")}</ul>`;
+  }
+  function solution() {
+    const T = truth(), L = evLbl(T.ev);
+    const pe = T.ev === "E" ? prob.p : rsub(R1, prob.p), qe = T.ev === "E" ? prob.q : rsub(R1, prob.q), nH = rsub(R1, prob.prior);
+    let s = "";
+    if (T.ev === "notE") s += `<p>You learned ¬E, so first the complements: P(¬E | H) = 1 − ${show(prob.p)} = ${show(pe)} and P(¬E | ¬H) = 1 − ${show(prob.q)} = ${show(qe)}.</p>`;
+    const top = rmul(pe, prob.prior), bot = radd(top, rmul(qe, nH));
+    s += `<p class="eq">P(H | ${L}) = P(${L} | H)P(H) / [P(${L} | H)P(H) + P(${L} | ¬H)P(¬H)]</p>`;
+    s += `<p class="eq">= (${show(pe)} × ${show(prob.prior)}) / (${show(pe)} × ${show(prob.prior)} + ${show(qe)} × ${show(nH)}) = ${show(top)} / ${show(bot)} = <b>${showA(T.post)}</b></p>`;
+    return s;
+  }
+  function workedBox(withStep) {
+    const T = truth();
+    const box = el("div", "worked");
+    box.innerHTML = `<p><span class="lbl">Learned</span> ${evLbl(T.ev)}: ${esc(T.ev === "E" ? prob.E : prob.notE)}.</p>${quantities()}${solution()}`;
+    const xl = el("div", "xlinks");
+    const b = el("button", "btn small", "Show eikosogram →"); b.type = "button"; b.onclick = toEik; xl.append(b);
+    if (withStep) { const s = el("button", "btn small", "Step through this one"); s.type = "button"; s.onclick = () => { state.mode = "step"; state.step = 0; render(); }; xl.append(s); }
+    box.append(xl);
+    return box;
+  }
+  function renderAnswers() {
+    setVerdict("Answer", "neutral", "");
+    $("story").querySelectorAll("mark").forEach((m) => m.classList.add("on"));
+    const v = $("view"); v.innerHTML = ""; v.append(workedBox(false));
+  }
+
+  // ---------- step through ----------
+  function steps() {
+    const T = truth(), L = evLbl(T.ev);
+    const pe = T.ev === "E" ? prob.p : rsub(R1, prob.p), qe = T.ev === "E" ? prob.q : rsub(R1, prob.q), nH = rsub(R1, prob.prior);
+    const top = rmul(pe, prob.prior), bot = radd(top, rmul(qe, nH));
+    const how = (k) => (prob.how[k] && prob.how[k] !== "stated directly" ? ` (${prob.how[k]})` : "");
+    const S = [
+      { cap: `The dictionary: H = “${prob.H}”, E = “${prob.E}”.`, show: [] },
+      { cap: T.ev === "E" ? `What did we learn? The story reports E: “${prob.E}”.` : `What did we learn? The story reports ¬E: “${prob.notE}”.`, show: ["ev"] },
+      { cap: `The prior: P(H) = ${show(prob.prior)}${how("prior")}.`, show: ["ev", "pH"], mark: ["prior"] },
+      { cap: `The likelihood of E if H is true: P(E | H) = ${show(prob.p)}${how("p")}.`, show: ["ev", "pH", "pEH"], mark: ["p", "pq"] },
+      { cap: `The likelihood of E if H is false: P(E | ¬H) = ${show(prob.q)}${how("q")}.`, show: ["ev", "pH", "pEH", "pEnH"], mark: ["q", "pq"] }
+    ];
+    if (T.ev === "notE") S.push({ cap: `We learned ¬E, so we need P(¬E | H) = 1 − ${show(prob.p)} = ${show(pe)} and P(¬E | ¬H) = 1 − ${show(prob.q)} = ${show(qe)}.`, show: ["ev", "pH", "pEH", "pEnH"] });
+    S.push({ cap: `Top of Bayes’ theorem: P(${L} | H) × P(H) = ${show(pe)} × ${show(prob.prior)} = ${show(top)}.`, show: ["ev", "pH", "pEH", "pEnH"] });
+    S.push({ cap: `Bottom (LTP): P(${L} | H)P(H) + P(${L} | ¬H)P(¬H) = ${show(top)} + ${show(qe)} × ${show(nH)} = ${show(bot)}.`, show: ["ev", "pH", "pEH", "pEnH"] });
+    S.push({ cap: `Posterior: P(H | ${L}) = ${show(top)} / ${show(bot)} = ${showA(T.post)}.`, show: ["ev", "pH", "pEH", "pEnH", "post"], final: true });
+    return S;
+  }
+  function renderStep() {
+    const S = steps(); state.step = Math.max(0, Math.min(state.step, S.length - 1));
+    const s = S[state.step], T = truth();
+    $("stCount").textContent = `${state.step + 1} / ${S.length}`;
+    $("stepcap").textContent = s.cap;
+    $("stFirst").disabled = $("stPrev").disabled = state.step === 0;
+    $("stNext").disabled = $("stLast").disabled = state.step === S.length - 1;
+    setVerdict("Step through", "neutral", "");
+    (s.mark || []).forEach((k) => $("story").querySelectorAll(`mark[data-q="${k}"]`).forEach((m) => m.classList.add("on")));
+    const v = $("view"); v.innerHTML = "";
+    const L = evLbl(T.ev), has = (k) => s.show.includes(k);
+    const row = (lab, val) => `<li><span class="ql">${lab} =</span> ${val}</li>`;
+    v.append(el("ul", "qty", [
+      row("Learned", has("ev") ? `<b>${L}</b>` : "?"),
+      row("P(H)", has("pH") ? `<b>${show(prob.prior)}</b>` : "?"),
+      row("P(E | H)", has("pEH") ? `<b>${show(prob.p)}</b>` : "?"),
+      row("P(E | ¬H)", has("pEnH") ? `<b>${show(prob.q)}</b>` : "?"),
+      row(`P(H | ${has("ev") ? L : "…"})`, has("post") ? `<b>${showA(T.post)}</b>` : "?")
+    ].join("")));
+    if (s.final) { const xl = el("div", "xlinks"); const b = el("button", "btn small", "Show eikosogram →"); b.type = "button"; b.onclick = toEik; xl.append(b); v.append(xl); }
+  }
+  const stepTo = (n) => { state.step = n; render(); };
+  $("stFirst").onclick = () => stepTo(0); $("stPrev").onclick = () => stepTo(state.step - 1);
+  $("stNext").onclick = () => stepTo(state.step + 1); $("stLast").onclick = () => stepTo(999);
+  document.addEventListener("keydown", (e) => {
+    if (window.LL.active !== "bayes" || state.mode !== "step") return;
+    if (e.target.closest("input, textarea")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); stepTo(state.step + 1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); stepTo(state.step - 1); }
+  });
+
+  // ---------- eikosogram ----------
+  // the student's own three numbers, once they are all filled in with probabilities
+  function studentVals() {
+    const v = ["pH", "pEH", "pEnH"].map((k) => parseR(work[k]));
+    return v.every((q) => q && q.n <= q.d) ? v : null;
+  }
+  function toEik() {
+    const mine = state.mode === "practice" && !work.shown ? studentVals() : null;
+    const [pA, pBgA, pBgNotA] = mine || [prob.prior, prob.p, prob.q];
+    LL.go("eik", { t: `H = ${prob.H}; E = ${prob.E}`, a: "H", na: "¬H", b: "E", nb: "¬E", bg: 0, post: 1, pA: rstr(pA), pBgA: rstr(pBgA), pBgNotA: rstr(pBgNotA), n: fmt() });
+  }
+  function updateEikBtn() { $("eikBtn").hidden = !(work.shown || studentVals()); }
+
+  // ---------- controls ----------
+  $("evSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b || work.shown) return; work.ev = b.dataset.v; delete work.marks.ev; work.msgs.ev = ""; render(); });
+  ["pH", "pEH", "pEnH", "post"].forEach((k) => {
+    $(k).addEventListener("input", () => { work[k] = $(k).value; $(k).classList.remove("ok", "bad"); updateEikBtn(); });
+    $(k).addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); check(); } });
+  });
+  $("check").onclick = check;
+  $("show").onclick = () => {
+    const T = truth();
+    Object.assign(work, { shown: true, ev: T.ev, pH: rstr(prob.prior), pEH: rstr(prob.p), pEnH: rstr(prob.q), post: rstr(T.post), marks: {}, msgs: {} });
+    render();
+  };
+  $("next").onclick = () => { newProblem(); render(); };
+  $("newBtn").onclick = () => { newProblem(); render(); };
+  $("eikBtn").onclick = toEik;
+  $("diffSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.diff = b.dataset.v; store.set("pl-by-diff", state.diff); newProblem(); render(); });
+  $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.v; state.step = 0; render(); });
+  $("fmtSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; store.set("pl-fmt", b.dataset.v); render(); });
+  function applySize(v) { document.documentElement.style.setProperty("--tsize-by", v + "px"); segSync("sizeSeg", v); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  applySize("18");
+
+  // ---------- URL state ----------
+  function writeHash() {
+    if (!window.LL || LL.active !== "bayes") return;
+    const p = new URLSearchParams({ tab: "bayes", id: prob.key, pr: rstr(prob.prior), p: rstr(prob.p), q: rstr(prob.q), m: state.mode });
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (!window.LL || LL.tabOfHash() !== "bayes") return false;
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (["practice", "answers", "step"].includes(p.get("m"))) state.mode = p.get("m");
+    const id = p.get("id"); if (!id) return false;
+    const entry = Object.values(POOL).flat().find((e) => e.key === id); if (!entry) return false;
+    let nums = null;
+    if (entry.kind === "s") {
+      const pr = R(p.get("pr") || ""), pp = R(p.get("p") || ""), qq = R(p.get("q") || "");
+      if (!pr || !pp || !qq) return false;
+      nums = { prior: pr, p: pp, q: qq };
+    }
+    if (prob && prob.key === id && (!nums || (req(prob.prior, nums.prior) && req(prob.p, nums.p) && req(prob.q, nums.q)))) return true;
+    prob = instance(entry, nums); work = fresh(); state.step = 0;
+    state.diff = prob.diff;
+    return true;
+  }
+  if (!readHash()) newProblem();
+  render();
+  window.addEventListener("hashchange", () => { if (readHash()) render(); });
+  window.LL_hooks.bayes = { writeHash: () => writeHash() };
+  window.LL_test = window.LL_test || {};
+  window.LL_test.bayes = { get prob() { return prob; }, POOL, instance, post, rstr, truth: () => truth() };
+};
+
+</script>
+<script>
+
+window.initEik = () => {
+  "use strict";
+  const NS = "http://www.w3.org/2000/svg";
+  const MIN = 0, MAX = 1;
+  const FONT = "IBM Plex Sans, Helvetica Neue, Helvetica, Arial, sans-serif";
+  const MONO = "IBM Plex Mono, SF Mono, Menlo, Consolas, monospace";
+  const DEFAULTS = { title: "Probability Eikosogram", a: "H", notA: "not H", b: "E", notB: "not E", transparentBg: false, posterior: false, pA: 0.5, pBgA: 0.5, pBgNotA: 0.5 };
+  const LIGHT = { bg: "#ffffff", ink: "#14202e", muted: "#5a6778", hStrong: "#6e9bf2", hSoft: "#d9e5fc", nStrong: "#f0a848", nSoft: "#fbe8cc", onStrong: "#14202e", onSoft: "#14202e", divider: "#14202e", handle: "#ffffff", accent: "#2c5cc9", focus: "#2c5cc9" };
+
+  const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+  const state = { ...DEFAULTS };
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  // Numbers are shown as fractions (the default) or as percentages.
+  let fmtMode = "f";
+  // Recover the fraction behind a value (1/3 from 0.3333…), if there is one with a small denominator.
+  function toFrac(v, maxDen) {
+    if (!Number.isFinite(v) || v < 0) return null;
+    let h0 = 0, h1 = 1, k0 = 1, k1 = 0, x = v;
+    for (let i = 0; i < 40; i++) {
+      const a = Math.floor(x), h2 = a * h1 + h0, k2 = a * k1 + k0;
+      if (k2 > maxDen) break;
+      h0 = h1; h1 = h2; k0 = k1; k1 = k2;
+      if (Math.abs(h1 / k1 - v) < 1e-9) return [h1, k1];
+      const f = x - a; if (f < 1e-12) break; x = 1 / f;
+    }
+    return k1 && Math.abs(h1 / k1 - v) < 1e-9 ? [h1, k1] : null;
+  }
+  const fracStr = ([n, d]) => (d === 1 ? String(n) : `${n}/${d}`);
+  const pctStr = (v) => `${(v * 100).toFixed(1)}%`;
+  const pct = (v) => {
+    if (!Number.isFinite(v)) return "undefined";
+    if (fmtMode === "d") return pctStr(v);
+    const f = toFrac(v, 10000);
+    return f ? fracStr(f) : `≈${v.toFixed(3)}`;
+  };
+  // The value in an input box (and in links): exact fraction when there is a simple one.
+  const prob = (v) => { if (fmtMode === "d") return v.toFixed(3); const f = toFrac(v, 1000); return f ? fracStr(f) : v.toFixed(3); };
+  const linkVal = (v) => { const f = toFrac(v, 1000); return f ? fracStr(f) : v.toFixed(4); };
+  // Accepts 1/3, 0.25, .25, 25%.
+  function parseProb(raw) {
+    const t = String(raw ?? "").trim();
+    let m;
+    if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/))) return +m[2] > 0 ? +m[1] / +m[2] : NaN;
+    if ((m = t.match(/^(\d*\.?\d+)\s*%$/))) return +m[1] / 100;
+    if (/^\d*\.?\d+$/.test(t)) return +t;
+    return NaN;
+  }
+  const cleanProb = (v, fb) => { const n = parseProb(v); return Number.isFinite(n) ? clamp(n, MIN, MAX) : fb; };
+  // Slider, drag and arrow-key values snap to hundredths with fractions, thousandths with decimals.
+  const snap = (v) => (fmtMode === "f" ? Math.round(v * 100) / 100 : Math.round(v * 1000) / 1000);
+
+  function metrics(s = state) {
+    const tl = s.pA * s.pBgA, bl = s.pA * (1 - s.pBgA);
+    const tr = (1 - s.pA) * s.pBgNotA, br = (1 - s.pA) * (1 - s.pBgNotA);
+    const pB = tl + tr, pNB = bl + br;
+    // A conditional probability is undefined when the condition has probability 0.
+    return { tl, bl, tr, br, pA: s.pA, pNA: 1 - s.pA, pB, pNB, pAgB: pB > 0 ? tl / pB : NaN, pAgNB: pNB > 0 ? bl / pNB : NaN };
+  }
+
+  // ---------- Scene: builds persistent SVG nodes, updates attributes ----------
+  function mk(tag, attrs, parent) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function setA(n, attrs) { for (const k in attrs) n.setAttribute(k, attrs[k]); }
+  const textW = (str, size, mono) => String(str).length * size * (mono ? 0.6 : 0.56);
+
+  class Scene {
+    constructor(svg, interactive) {
+      this.svg = svg; this.interactive = interactive; this.geom = null;
+      const g = (cls) => mk("g", cls ? { class: cls } : {}, svg);
+      this.bg = mk("rect", { x: 0, y: 0 }, svg);
+      this.title = mk("text", { "text-anchor": "middle", "font-family": FONT, "font-weight": 600 }, svg);
+      const cells = g();
+      this.cells = ["tl", "bl", "tr", "br"].map((k) => mk("rect", { "data-drag": k.endsWith("l") ? "cl" : "cr" }, cells));
+      const labels = g();
+      this.cellLab = ["tl", "bl", "tr", "br"].map(() => ({
+        name: mk("text", { "text-anchor": "middle", "font-family": FONT, "font-weight": 500 }, labels),
+        val: mk("text", { "text-anchor": "middle", "font-family": MONO, "font-weight": 500 }, labels)
+      }));
+      this.heads = [0, 1].map(() => {
+        const t = mk("text", { "text-anchor": "middle", "font-family": FONT }, labels);
+        const n = mk("tspan", { "font-weight": 600 }, t);
+        const v = mk("tspan", { "font-family": MONO, "font-weight": 500 }, t);
+        return { t, n, v };
+      });
+      const lines = g();
+      this.frame = mk("rect", { fill: "none", "stroke-width": 2, rx: 2 }, lines);
+      this.lines = {
+        v: mk("line", { "stroke-width": 2, "stroke-linecap": "round" }, lines),
+        lh: mk("line", { "stroke-width": 2, "stroke-linecap": "round" }, lines),
+        rh: mk("line", { "stroke-width": 2, "stroke-linecap": "round" }, lines)
+      };
+      // posterior bar
+      this.post = g();
+      this.postCap = mk("text", { "font-family": FONT, "font-weight": 600, "text-anchor": "start" }, this.post);
+      this.postCapV = mk("tspan", { "font-family": MONO, "font-weight": 500 }, this.postCap);
+      this.postH = mk("rect", {}, this.post);
+      this.postN = mk("rect", {}, this.post);
+      this.postHt = mk("text", { "text-anchor": "middle", "font-family": MONO, "font-weight": 500 }, this.post);
+      this.postNt = mk("text", { "text-anchor": "middle", "font-family": MONO, "font-weight": 500 }, this.post);
+
+      if (interactive) {
+        const hits = g();
+        const hit = (kind, cursor, label) => mk("line", {
+          stroke: "transparent", "stroke-width": 26, "data-drag": kind, style: `cursor:${cursor}`,
+          tabindex: 0, role: "slider", "aria-label": label, "aria-valuemin": 0, "aria-valuemax": 1
+        }, hits);
+        this.hits = { v: hit("v", "col-resize", "Column divider"), lh: hit("lh", "row-resize", "Left row divider"), rh: hit("rh", "row-resize", "Right row divider") };
+        this.handles = ["hl", "hr"].map((k) => {
+          const hg = mk("g", { "data-drag": k, style: "cursor:move" }, hits);
+          mk("circle", { r: 22, fill: "transparent" }, hg);
+          const ring = mk("circle", { r: 11, "stroke-width": 2 }, hg);
+          const dot = mk("circle", { r: 4 }, hg);
+          return { hg, ring, dot };
+        });
+      }
+    }
+
+    update(W, H, s, pal, opts) {
+      const m = metrics(s);
+      const svg = this.svg;
+      setA(svg, { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
+
+      const base = Math.round(clamp(Math.min(W, H * 1.45) / 38, 13, 30) * (opts.scale || 1) * 10) / 10;
+      const nameSize = Math.max(11, Math.round(base * 0.64));
+      const headSize = Math.max(12, Math.round(base * 0.74));
+      const titleSize = Math.round(base * 1.15);
+      const padX = opts.export ? 48 : 14;
+      const padTop = opts.export ? 28 : 6;
+      const titleH = opts.showTitle && s.title.trim() ? titleSize * 2 : 0;
+      const headH = headSize * 2.1;
+      const postH = s.posterior ? Math.max(70, base * 3.6) : 0;
+      const padBottom = opts.export ? 36 : 14;
+
+      const x0 = padX, y0 = padTop + titleH + headH;
+      const w = W - padX * 2, h = Math.max(80, H - y0 - postH - padBottom);
+      const midX = x0 + w * m.pA;
+      const lY = y0 + h * (1 - s.pBgA), rY = y0 + h * (1 - s.pBgNotA); // top edges of the E (bottom) cells
+      this.geom = { x0, y0, w, h };
+
+      setA(this.bg, { width: W, height: H, fill: opts.transparent ? "none" : pal.bg });
+      this.bg.style.display = opts.export ? "" : "none";
+
+      // title
+      if (titleH) {
+        setA(this.title, { x: W / 2, y: padTop + titleSize, "font-size": titleSize, fill: pal.ink });
+        this.title.textContent = s.title;
+        this.title.style.display = "";
+      } else this.title.style.display = "none";
+
+      // cells
+      const rects = [
+        [x0, lY, midX - x0, y0 + h - lY, pal.hStrong, true],   // H & E    (bottom left)
+        [x0, y0, midX - x0, lY - y0, pal.hSoft, false],         // H & ¬E   (top left)
+        [midX, rY, x0 + w - midX, y0 + h - rY, pal.nStrong, true], // ¬H & E (bottom right)
+        [midX, y0, x0 + w - midX, rY - y0, pal.nSoft, false]    // ¬H & ¬E  (top right)
+      ];
+      const vals = [m.tl, m.bl, m.tr, m.br];
+      rects.forEach(([x, y, rw, rh, fill, top], i) => {
+        const dim = s.posterior && !top;
+        setA(this.cells[i], { x, y, width: Math.max(0, rw), height: Math.max(0, rh), fill, "fill-opacity": dim ? 0.35 : 1 });
+        if (this.interactive) this.cells[i].style.cursor = "move";
+        this.placeCellLabel(this.cellLab[i], x, y, rw, rh, top ? s.b : s.notB, pct(vals[i]), base, nameSize, top ? pal.onStrong : pal.onSoft, dim);
+      });
+
+      // column headers: centered when they fit, otherwise pinned to the outer edge
+      const cols = [[x0, midX - x0, s.a, m.pA, "start"], [midX, x0 + w - midX, s.notA, m.pNA, "end"]];
+      const vs = Math.round(headSize * 0.9), gap = Math.round(headSize * 0.45);
+      const place = (withPct) => cols.map(([x, cw, name, p, edge]) => {
+        const tw = textW(name, headSize) + (withPct ? gap + textW(pct(p), vs, true) : 0);
+        if (tw + 8 <= cw) return { anchor: "middle", x: x + cw / 2, l: x + cw / 2 - tw / 2, r: x + cw / 2 + tw / 2 };
+        return edge === "start" ? { anchor: "start", x: x0, l: x0, r: x0 + tw } : { anchor: "end", x: x0 + w, l: x0 + w - tw, r: x0 + w };
+      });
+      let pos = place(true), withPct = true;
+      if (pos[0].r + 12 > pos[1].l) { pos = place(false); withPct = false; }
+      const clash = pos[0].r + 12 > pos[1].l;
+      cols.forEach(([x, cw, name, p], i) => {
+        const hd = this.heads[i];
+        setA(hd.t, { x: pos[i].x, y: y0 - headSize * 0.7, "font-size": headSize, fill: pal.ink, "text-anchor": pos[i].anchor });
+        hd.n.textContent = name;
+        setA(hd.v, { fill: pal.muted, "font-size": vs, dx: gap });
+        hd.v.textContent = withPct ? pct(p) : "";
+        // on a clash, keep only the wider column's header
+        const wider = (midX - x0) >= (x0 + w - midX) ? 0 : 1;
+        hd.t.style.display = clash && i !== wider ? "none" : "";
+      });
+
+      // frame & dividers
+      setA(this.frame, { x: x0, y: y0, width: w, height: h, stroke: pal.divider });
+      const f = opts.focus;
+      const lineAttrs = (k) => ({ stroke: f === k ? pal.focus : pal.divider, "stroke-width": f === k ? 4 : 2 });
+      setA(this.lines.v, { x1: midX, y1: y0, x2: midX, y2: y0 + h, ...lineAttrs("v") });
+      setA(this.lines.lh, { x1: x0, y1: lY, x2: midX, y2: lY, ...lineAttrs("lh") });
+      setA(this.lines.rh, { x1: midX, y1: rY, x2: x0 + w, y2: rY, ...lineAttrs("rh") });
+
+      if (this.interactive) {
+        setA(this.hits.v, { x1: midX, y1: y0, x2: midX, y2: y0 + h, "aria-valuenow": prob(m.pA), "aria-valuetext": `P(${s.a}) = ${pct(m.pA)}`, "aria-label": `Column divider, P(${s.a})` });
+        setA(this.hits.lh, { x1: x0, y1: lY, x2: midX, y2: lY, "aria-valuenow": prob(s.pBgA), "aria-valuetext": `P(${s.b}|${s.a}) = ${pct(s.pBgA)}`, "aria-label": `Left row divider, P(${s.b}|${s.a})` });
+        setA(this.hits.rh, { x1: midX, y1: rY, x2: x0 + w, y2: rY, "aria-valuenow": prob(s.pBgNotA), "aria-valuetext": `P(${s.b}|${s.notA}) = ${pct(s.pBgNotA)}`, "aria-label": `Right row divider, P(${s.b}|${s.notA})` });
+        const hr = clamp(base * 0.5, 9, 13);
+        [[midX - Math.min(hr + 6, (midX - x0) / 2), lY], [midX + Math.min(hr + 6, (x0 + w - midX) / 2), rY]].forEach(([cx, cy], i) => {
+          const hd = this.handles[i];
+          hd.hg.setAttribute("transform", `translate(${cx} ${cy})`);
+          setA(hd.ring, { r: hr, fill: pal.handle, stroke: pal.divider });
+          setA(hd.dot, { r: hr * 0.36, fill: i === 0 ? pal.hStrong : pal.nStrong });
+        });
+      }
+
+      // posterior bar
+      if (s.posterior) {
+        this.post.style.display = "";
+        const by = y0 + h + postH * 0.52, bh = Math.max(20, postH * 0.36);
+        const undef = !Number.isFinite(m.pAgB);
+        const wH = undef ? 0 : w * m.pAgB;
+        const capSize = nameSize;
+        setA(this.postCap, { x: x0, y: by - capSize * 0.55, "font-size": capSize, fill: pal.ink });
+        const capText = undef ? `P(${s.b}) = 0, so P(${s.a}|${s.b}) is ` : `Within ${s.b}: P(${s.a}|${s.b}) = `;
+        this.postCap.firstChild && this.postCap.firstChild.nodeType === 3 ? (this.postCap.firstChild.nodeValue = capText) : this.postCap.insertBefore(document.createTextNode(capText), this.postCapV);
+        this.postCapV.textContent = pct(m.pAgB);
+        setA(this.postCapV, { fill: pal.accent });
+        setA(this.postH, { x: x0, y: by, width: Math.max(0, wH), height: bh, fill: pal.hStrong });
+        setA(this.postN, { x: x0 + wH, y: by, width: Math.max(0, w - wH), height: bh, fill: pal.nStrong });
+        this.postH.style.display = this.postN.style.display = undef ? "none" : "";
+        const vs = Math.round(nameSize * 1.05);
+        const put = (t, cx, cw, str, fill) => {
+          setA(t, { x: cx + cw / 2, y: by + bh / 2 + vs * 0.36, "font-size": vs, fill });
+          t.textContent = str;
+          t.style.display = textW(str, vs, true) + 8 <= cw ? "" : "none";
+        };
+        put(this.postHt, x0, wH, `${s.a} ${pct(m.pAgB)}`, pal.onStrong);
+        put(this.postNt, x0 + wH, w - wH, `${s.notA} ${pct(1 - m.pAgB)}`, pal.onStrong);
+        if (undef) this.postHt.style.display = this.postNt.style.display = "none";
+      } else this.post.style.display = "none";
+    }
+
+    placeCellLabel(lab, x, y, cw, ch, name, value, base, nameSize, fill, dim) {
+      const cx = x + cw / 2, cy = y + ch / 2;
+      const op = dim ? 0.45 : 1;
+      for (const size of [base, Math.round(base * 0.74), 11]) {
+        const vw = textW(value, size, true);
+        if (vw + 10 > cw) continue;
+        const ns = Math.min(nameSize, Math.round(size * 0.7));
+        const block = ns + 4 + size;
+        if (ns >= 11 && ch >= block + 10 && textW(name, ns) + 10 <= cw) {
+          const top = cy - block / 2;
+          setA(lab.name, { x: cx, y: top + ns * 0.8, "font-size": ns, fill, opacity: op * 0.85 });
+          lab.name.textContent = name; lab.name.style.display = "";
+          setA(lab.val, { x: cx, y: top + ns + 4 + size * 0.8, "font-size": size, fill, opacity: op });
+          lab.val.textContent = value; lab.val.style.display = "";
+          return;
+        }
+        if (ch >= size + 6) {
+          lab.name.style.display = "none";
+          setA(lab.val, { x: cx, y: cy + size * 0.36, "font-size": size, fill, opacity: op });
+          lab.val.textContent = value; lab.val.style.display = "";
+          return;
+        }
+      }
+      lab.name.style.display = "none"; lab.val.style.display = "none";
+    }
+  }
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const svg = $("svg"), box = $("diagramBox");
+  const scene = new Scene(svg, true);
+  const fields = { title: $("f-title"), a: $("f-a"), notA: $("f-na"), b: $("f-b"), notB: $("f-nb") };
+  const probKeys = ["pA", "pBgA", "pBgNotA"];
+  const ctl = Object.fromEntries(probKeys.map((k) => [k, { rg: $("rg-" + k), inp: $("in-" + k) }]));
+  let focusKind = null, drag = null, textScale = 1;
+
+  function palette() {
+    const cs = getComputedStyle(document.documentElement);
+    const v = (n) => cs.getPropertyValue(n).trim();
+    return { bg: v("--surface"), ink: v("--ink"), muted: v("--muted"), hStrong: v("--h-strong"), hSoft: v("--h-soft"), nStrong: v("--n-strong"), nSoft: v("--n-soft"), onStrong: v("--on-strong"), onSoft: v("--on-soft"), divider: v("--divider"), handle: v("--handle"), accent: v("--accent"), focus: v("--focus") };
+  }
+
+  const L = (s) => ({
+    pA: `P(${s.a})`, pBgA: `P(${s.b}|${s.a})`, pBgNotA: `P(${s.b}|${s.notA})`,
+    pB: `P(${s.b})`, pAgB: `P(${s.a}|${s.b})`, pAgNB: `P(${s.a}|${s.notB})`
+  });
+
+  function renderDiagram() {
+    const r = svg.getBoundingClientRect();
+    if (r.width < 10 || r.height < 10) return;
+    scene.update(Math.round(r.width), Math.round(r.height), state, palette(), { focus: focusKind, scale: textScale });
+  }
+
+  // Pointer and slider events can arrive faster than the screen refreshes, so draw at most once per frame.
+  // (The timer is a fallback for when frames are suspended, e.g. in a background tab.)
+  let frame = 0, frameTimer = 0;
+  function render() {
+    if (frame) return;
+    const run = () => { cancelAnimationFrame(frame); clearTimeout(frameTimer); frame = 0; renderNow(); };
+    frame = requestAnimationFrame(run); frameTimer = setTimeout(run, 100);
+  }
+  function renderNow() {
+    const m = metrics(), lab = L(state);
+    for (const k of probKeys) {
+      const { rg, inp } = ctl[k];
+      rg.step = fmtMode === "f" ? "0.01" : "0.001";
+      rg.value = String(state[k]);
+      rg.style.setProperty("--fill", `${((state[k] - MIN) / (MAX - MIN)) * 100}%`);
+      if (document.activeElement !== inp) inp.value = prob(state[k]);
+    }
+    document.querySelectorAll("[data-l]").forEach((n) => {
+      const k = n.dataset.l;
+      n.textContent = lab[k] ?? state[k] ?? n.textContent;
+    });
+    $("k-pA").textContent = lab.pA; $("k-pB").textContent = lab.pB; $("k-pAgB").textContent = lab.pAgB;
+    const readout = (id, v) => {
+      const el = $(id); el.textContent = pct(v);
+      if (fmtMode === "f" && Number.isFinite(v) && v > 0 && v < 1) {
+        const a = document.createElement("span"); a.className = "approx"; a.textContent = `≈ ${pctStr(v)}`; el.append(a);
+      }
+    };
+    readout("r-pA", m.pA); readout("r-pB", m.pB); readout("r-pAgB", m.pAgB);
+    $("t-pAgNB").textContent = `If ${state.notB}`;
+    readout("r-pAgNB", m.pAgNB); $("k-pAgNB").textContent = lab.pAgNB;
+    $("postLabel").textContent = lab.pAgB;
+    $("titleOut").textContent = state.title || " ";
+
+
+    const S = $("sentence");
+    S.innerHTML = "";
+    const b = (t) => { const e = document.createElement("b"); e.textContent = t; return e; };
+    if (!Number.isFinite(m.pAgB)) {
+      S.append(b(state.b), ` has probability 0, so ${lab.pAgB} is undefined: there is no way to conditionalize on it.`);
+      renderDiagram(); scheduleHash(); return;
+    }
+    const d = m.pAgB - m.pA;
+    const verb = Math.abs(d) < 0.0005 ? "leaves" : d > 0 ? "raises" : "lowers";
+    S.append("Learning ", b(state.b), ` ${verb} ${lab.pA} `, verb === "leaves" ? "unchanged at " : "from ", b(pct(m.pA)));
+    if (verb !== "leaves") S.append(" to ", b(pct(m.pAgB)));
+    S.append(".");
+
+    renderDiagram();
+    scheduleHash();
+  }
+
+  // ---------- inputs ----------
+  for (const k of probKeys) {
+    const { rg, inp } = ctl[k];
+    rg.addEventListener("input", () => { state[k] = snap(cleanProb(rg.value, state[k])); render(); });
+    inp.addEventListener("input", () => {
+      const n = parseProb(inp.value);
+      if (Number.isFinite(n) && n >= MIN && n <= MAX) { state[k] = n; render(); }
+    });
+    inp.addEventListener("change", () => { state[k] = cleanProb(inp.value, state[k]); inp.value = prob(state[k]); render(); });
+  }
+  for (const [k, node] of Object.entries(fields)) {
+    node.addEventListener("input", () => { state[k] = k === "title" ? node.value : (node.value.trim() || DEFAULTS[k]); render(); });
+  }
+  $("f-bg").addEventListener("change", (e) => { state.transparentBg = e.target.checked; writeHash(); });
+  $("f-post").addEventListener("change", (e) => { state.posterior = e.target.checked; render(); });
+  window.addEventListener("keydown", (e) => {
+    if (window.LL && LL.active === "eik" && (e.key === "p" || e.key === "P") && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) {
+      state.posterior = !state.posterior; $("f-post").checked = state.posterior; render();
+    }
+  });
+
+  function syncFields() {
+    for (const [k, node] of Object.entries(fields)) node.value = state[k];
+    $("f-bg").checked = state.transparentBg;
+    $("f-post").checked = state.posterior;
+  }
+
+  // ---------- drag ----------
+  function move(e) {
+    if (!drag) return;
+    const r = svg.getBoundingClientRect(), g = scene.geom;
+    const c = (v) => clamp(snap(v), MIN, MAX);
+    if (drag.kind === "cl" || drag.kind === "cr") {
+      const dx = (e.clientX - drag.sx) / g.w, dy = (e.clientY - drag.sy) / g.h;
+      state.pA = c(drag.s0.pA + dx);
+      if (drag.kind === "cl") state.pBgA = c(drag.s0.pBgA - dy);
+      else state.pBgNotA = c(drag.s0.pBgNotA - dy);
+    } else {
+      const px = c((e.clientX - r.left - g.x0) / g.w), py = c(1 - (e.clientY - r.top - g.y0) / g.h);
+      if (drag.kind === "v") state.pA = px;
+      else if (drag.kind === "lh") state.pBgA = py;
+      else if (drag.kind === "rh") state.pBgNotA = py;
+      else if (drag.kind === "hl") { state.pA = px; state.pBgA = py; }
+      else if (drag.kind === "hr") { state.pA = px; state.pBgNotA = py; }
+    }
+    render();
+  }
+  svg.addEventListener("pointerdown", (e) => {
+    const t = e.target.closest("[data-drag]");
+    if (!t) return;
+    const kind = t.getAttribute("data-drag");
+    drag = { kind, sx: e.clientX, sy: e.clientY, s0: { ...state } };
+    svg.setPointerCapture(e.pointerId);
+    if (t.focus && kind in scene.hits) t.focus({ preventScroll: true });
+    e.preventDefault();
+    if (kind !== "cl" && kind !== "cr") move(e);
+  });
+  svg.addEventListener("pointermove", move);
+  const end = () => { if (drag) { drag = null; writeHash(); } };
+  svg.addEventListener("pointerup", end);
+  svg.addEventListener("pointercancel", end);
+  svg.addEventListener("lostpointercapture", end);
+
+  // keyboard on dividers
+  for (const [kind, node] of Object.entries(scene.hits)) {
+    node.addEventListener("focus", () => { focusKind = kind; renderDiagram(); });
+    node.addEventListener("blur", () => { focusKind = null; renderDiagram(); });
+    node.addEventListener("keydown", (e) => {
+      const key = kind === "v" ? "pA" : kind === "lh" ? "pBgA" : "pBgNotA";
+      const step = e.shiftKey ? 0.1 : 0.01;
+      let v = state[key];
+      if (["ArrowRight", "ArrowUp"].includes(e.key)) v += step;
+      else if (["ArrowLeft", "ArrowDown"].includes(e.key)) v -= step;
+      else if (e.key === "Home") v = MIN;
+      else if (e.key === "End") v = MAX;
+      else return;
+      e.preventDefault();
+      state[key] = clamp(snap(v), MIN, MAX);
+      render();
+    });
+  }
+
+  new ResizeObserver(() => renderDiagram()).observe(box);
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", renderDiagram);
+  new MutationObserver(renderDiagram).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // ---------- export ----------
+  const EXP_W = 1200, EXP_H = 800;
+  function exportSvgString() {
+    const node = document.createElementNS(NS, "svg");
+    node.setAttribute("xmlns", NS);
+    const sc = new Scene(node, false);
+    sc.update(EXP_W, EXP_H, state, LIGHT, { export: true, showTitle: true, transparent: state.transparentBg });
+    node.querySelectorAll("[style]").forEach((n) => { if (n.style.display === "none") n.remove(); else n.removeAttribute("style"); });
+    return `<?xml version="1.0" encoding="UTF-8"?>\n` + new XMLSerializer().serializeToString(node);
+  }
+  function fileBase() {
+    return (state.title || "eikosogram").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "eikosogram";
+  }
+  function download(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function pngBlob() {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(new Blob([exportSvgString()], { type: "image/svg+xml;charset=utf-8" }));
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = EXP_W * 2; c.height = EXP_H * 2;
+        const ctx = c.getContext("2d");
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob((b) => (b ? resolve(b) : reject(new Error("PNG failed"))), "image/png");
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("render failed")); };
+      img.src = url;
+    });
+  }
+  const statusNode = $("status");
+  function say(msg) {
+    statusNode.textContent = msg;
+    clearTimeout(say.t); say.t = setTimeout(() => (statusNode.textContent = ""), 3000);
+  }
+  $("svgBtn").addEventListener("click", () => { download(fileBase() + ".svg", new Blob([exportSvgString()], { type: "image/svg+xml" })); say("SVG downloaded."); });
+  $("pngBtn").addEventListener("click", async () => {
+    try { download(fileBase() + ".png", await pngBlob()); say("PNG downloaded."); } catch { say("Couldn’t make the PNG in this browser. Try SVG."); }
+  });
+  $("copyImgBtn").addEventListener("click", async () => {
+    try {
+      if (!window.ClipboardItem) throw new Error();
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob() })]);
+      say("Image copied. Paste it into your slide.");
+    } catch { say("This browser won’t copy images. Use Download PNG instead."); }
+  });
+  $("copySvgBtn").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(exportSvgString()); say("SVG code copied."); }
+    catch { say("Couldn’t reach the clipboard here."); }
+  });
+  $("linkBtn").addEventListener("click", async () => {
+    writeHash();
+    try { await navigator.clipboard.writeText(location.href); say("Link copied. It opens with this exact diagram."); }
+    catch { say("Couldn’t reach the clipboard here."); }
+  });
+  $("resetBtn").addEventListener("click", () => {
+    Object.assign(state, DEFAULTS); syncFields(); render(); say("Reset to 50 / 50 / 50.");
+  });
+
+  if (framed) {
+    // Downloads and URL state don't work inside the hosted viewer.
+    $("svgBtn").hidden = true; $("pngBtn").hidden = true; $("linkBtn").hidden = true;
+    $("copyImgBtn").classList.add("primary");
+  }
+
+  // ---------- URL state (local file only) ----------
+  // Browsers limit how often a page may rewrite its URL (Safari throws after ~100 calls in 30 s),
+  // so it is written once things settle rather than on every drag step.
+  let hashTimer = 0;
+  function scheduleHash() { clearTimeout(hashTimer); hashTimer = setTimeout(writeHash, drag ? 400 : 150); }
+  window.addEventListener("pagehide", () => writeHash());
+  function writeHash() {
+    clearTimeout(hashTimer);
+    if (framed || !window.LL || LL.active !== "eik") return;
+    const p = new URLSearchParams({
+      tab: "eik", t: state.title, a: state.a, na: state.notA, b: state.b, nb: state.notB,
+      bg: state.transparentBg ? 1 : 0, post: state.posterior ? 1 : 0,
+      pA: linkVal(state.pA), pBgA: linkVal(state.pBgA), pBgNotA: linkVal(state.pBgNotA), n: fmtMode
+    });
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (framed || !location.hash.includes("=") || !window.LL || LL.tabOfHash() !== "eik") return;
+    const p = new URLSearchParams(location.hash.slice(1));
+    state.title = p.get("t") ?? state.title;
+    state.a = p.get("a") || state.a; state.notA = p.get("na") || state.notA;
+    state.b = p.get("b") || state.b; state.notB = p.get("nb") || state.notB;
+    state.transparentBg = p.get("bg") === "1"; state.posterior = p.get("post") === "1";
+    for (const k of probKeys) state[k] = cleanProb(p.get(k), state[k]);
+    if (["f", "d"].includes(p.get("n"))) fmtMode = p.get("n");
+  }
+  // fraction / decimal switch, remembered per browser
+  try { const v = localStorage.getItem("eik-fmt"); if (v === "f" || v === "d") fmtMode = v; } catch (e) { /* ignore */ }
+  const syncFmt = () => $("fmtSeg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === fmtMode)));
+  $("fmtSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    fmtMode = b.dataset.v; syncFmt();
+    try { localStorage.setItem("eik-fmt", fmtMode); } catch (err) { /* ignore */ }
+    for (const k of probKeys) ctl[k].inp.value = prob(state[k]);
+    render();
+  });
+
+  // text size + theme (the theme is shared with the other apps)
+  const segSync = (id, val) => $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val))));
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  function applySize(v) {
+    textScale = +v; document.documentElement.style.setProperty("--dscale", v);
+    segSync("sizeSeg", v); store.set("eik-size", v); renderDiagram();
+  }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  const savedSize = store.get("eik-size");
+  applySize(["0.85", "1", "1.25", "1.55"].includes(savedSize) ? savedSize : "1");
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", v);
+    segSync("themeSeg", v); store.set("ttb-theme2", v);
+  }
+  $("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  const savedTheme = store.get("ttb-theme2");
+  if (savedTheme && savedTheme !== "auto") applyTheme(savedTheme); else segSync("themeSeg", "auto");
+
+  readHash();
+  syncFmt();
+  syncFields();
+  renderNow();
+  if (document.fonts?.ready) document.fonts.ready.then(renderDiagram);
+  window.addEventListener("hashchange", () => { if (window.LL && LL.tabOfHash() === "eik") { readHash(); syncFmt(); syncFields(); renderNow(); } });
+  window.LL_hooks.eik = { writeHash: () => writeHash(), shown: () => renderDiagram() };
+};
+
+</script>
+<script>
+window.LL_hooks = {};
+window.LL = (() => {
+  "use strict";
+  const TABS = ["table", "bayes", "eik"];
+  const PANEL = { table: "tableApp", bayes: "bayesApp", eik: "eikApp" };
+  const INIT = { table: "initTable", bayes: "initBayes", eik: "initEik" };
+  const SIZE_SEG = { table: "st-sizeSeg", bayes: "by-sizeSeg", eik: "sizeSeg" };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const started = {};
+  let navigating = false;
+  const api = { active: null };
+
+  api.tabOfHash = (h = location.hash) => {
+    const p = new URLSearchParams(h.replace(/^#/, ""));
+    let t = p.get("tab");
+    if (t === "eikosogram" || t === "eikosograms") t = "eik";
+    if (!t && p.has("pA")) t = "eik"; // links made by Eikosogram Studio
+    return TABS.includes(t) ? t : null;
+  };
+
+  function sync(id, v) { const s = document.getElementById(id); if (s) s.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(v)))); }
+
+  // shared size: one S/M/L/XL control, mapped onto each tool's own scale
+  let sizeIdx = +(store.get("pl-size") ?? 1);
+  if (!(sizeIdx >= 0 && sizeIdx <= 3)) sizeIdx = 1;
+  function applySize(tab) {
+    const seg = document.getElementById(SIZE_SEG[tab]);
+    const b = seg && seg.querySelectorAll("button")[sizeIdx];
+    if (b && started[tab]) b.click();
+  }
+  document.getElementById("ll-sizeSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    sizeIdx = +b.dataset.v; store.set("pl-size", sizeIdx); sync("ll-sizeSeg", sizeIdx);
+    TABS.forEach(applySize);
+  });
+  sync("ll-sizeSeg", sizeIdx);
+
+  // shared theme
+  function applyTheme(v) {
+    if (v === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", v);
+    store.set("ttb-theme2", v);
+    ["ll-themeSeg", "themeSeg"].forEach((id) => sync(id, v));
+  }
+  document.getElementById("ll-themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyTheme(b.dataset.v); });
+  applyTheme(store.get("ttb-theme2") || "auto");
+
+  function show(tab) {
+    api.active = tab;
+    TABS.forEach((t) => {
+      document.getElementById(PANEL[t]).hidden = t !== tab;
+      const btn = document.getElementById("ll-tab-" + t);
+      btn.setAttribute("aria-selected", String(t === tab));
+      btn.tabIndex = t === tab ? 0 : -1;
+    });
+    if (!started[tab]) {
+      started[tab] = true;
+      window[INIT[tab]]();
+      applySize(tab);
+      sync("ll-themeSeg", store.get("ttb-theme2") || "auto");
+    } else if (window.LL_hooks[tab] && window.LL_hooks[tab].shown) {
+      requestAnimationFrame(() => window.LL_hooks[tab].shown());
+    }
+    const h = window.LL_hooks[tab];
+    if (h && h.writeHash) h.writeHash();
+    else if (api.tabOfHash() !== tab) { try { history.replaceState(null, "", `${location.pathname}${location.search}#tab=${tab}`); } catch (e) { /* ignore */ } }
+    store.set("pl-tab", tab);
+  }
+
+  // jump to a tool with state, e.g. go("table", { k: "formula", f: "A ∧ B", m: "answers" })
+  api.go = (tab, params = {}) => {
+    const p = new URLSearchParams({ tab });
+    Object.entries(params).forEach(([k, v]) => (Array.isArray(v) ? v.forEach((x) => p.append(k, x)) : p.set(k, v)));
+    api.goHash(p.toString());
+    window.scrollTo({ top: 0 });
+  };
+  api.goHash = (h) => {
+    const tab = api.tabOfHash("#" + h) || "table";
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${h}`); } catch (e) { /* ignore */ }
+    if (started[tab]) { navigating = true; window.dispatchEvent(new HashChangeEvent("hashchange")); navigating = false; }
+    show(tab);
+  };
+
+  const tabsEl = document.getElementById("ll-tabs");
+  tabsEl.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b && b.dataset.tab !== api.active) show(b.dataset.tab); });
+  tabsEl.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const i = TABS.indexOf(api.active), n = TABS[(i + (e.key === "ArrowRight" ? 1 : 2)) % 3];
+    show(n); document.getElementById("ll-tab-" + n).focus();
+  });
+
+  api.start = () => {
+    const saved = store.get("pl-tab");
+    show(api.tabOfHash() || (TABS.includes(saved) ? saved : "table"));
+    // a pasted link with a different tab
+    window.addEventListener("hashchange", () => { if (navigating) return; const t = api.tabOfHash(); if (t && t !== api.active) setTimeout(() => show(t), 0); });
+  };
+  return api;
+})();
+
+LL.start();
+</script>
+</body>
+</html>
