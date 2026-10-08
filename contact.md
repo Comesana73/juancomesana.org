@@ -6,7 +6,7 @@ permalink: /contact/
 
 <div class="content content--center" markdown="1">
 
-## Contact
+# Contact
 
 <a class="contact-email" href="#" data-user="juan.comesana" data-domain="rutgers.edu">Email Juan</a>
 

@@ -4,35 +4,34 @@ description: "Schedule, registration, travel, lodging, and participant informati
 permalink: /rec/rec-26/
 ---
 
-<div class="content content--center" markdown="1">
+<div class="content content--center content--wide" markdown="1">
+
+<a class="back-link" href="{{ '/rec/' | relative_url }}">← Rutgers Epistemology Conference</a>
 
 # REC 2026
 
-The 2026 edition of the Rutgers Epistemology Conference will take place May 1 and 2 at [*The Heldrich*](https://www.theheldrich.com). The REC is a pre-read conference. The papers will be posted here. The winner of the 2026 Young Epistemologist Prize is Conner Schultz, from Florida International University. The commentators will be [Selim Berker](https://philosophy.fas.harvard.edu/people/selim-berker), [Rachel Fraser](https://www.rachelelizabethfraser.com), [Sarah McGrath](https://philosophy.princeton.edu/people/sarah-mcgrath), and [Kurt Sylvan](https://www.kurtlsylvan.com). The schedule is the following:
+<p class="prose" style="margin-bottom:56px" markdown="1">The 2026 edition of the Rutgers Epistemology Conference will take place May 1 and 2 at [*The Heldrich*](https://www.theheldrich.com). The REC is a pre-read conference. The papers will be posted here. The winner of the 2026 Young Epistemologist Prize is Conner Schultz, from Florida International University. The commentators will be [Selim Berker](https://philosophy.fas.harvard.edu/people/selim-berker), [Rachel Fraser](https://www.rachelelizabethfraser.com), [Sarah McGrath](https://philosophy.princeton.edu/people/sarah-mcgrath), and [Kurt Sylvan](https://www.kurtlsylvan.com). The schedule is the following:</p>
 
-## Friday, May 1
+<div class="schedule">
+  <div class="schedule__day">
+    <h2>Friday, May 1</h2>
+    <div class="slot"><div class="slot__time">1:30-3:00</div><div class="slot__body"><a class="slot__who" href="https://philosophy.ucla.edu/person/pamela-hieronymi/">Pamela Hieronymi</a><a class="slot__title" href="{{ '/assets/papers/hieronymi-morally-bad-beliefs.pdf' | relative_url }}">Morally Bad Beliefs</a><a class="slot__handout" href="{{ '/assets/papers/hieronymi-morally-bad-beliefs-handout.pdf' | relative_url }}">Handout</a></div></div>
+    <div class="slot"><div class="slot__time">3:30-5:00</div><div class="slot__body"><a class="slot__who" href="https://liberalarts.utexas.edu/philosophy/faculty/jtb538">John Bengson</a><a class="slot__title" href="{{ '/assets/papers/bengson-loving-understanding.pdf' | relative_url }}">Loving Understanding</a><a class="slot__handout" href="{{ '/assets/papers/bengson-loving-understanding-handout.pdf' | relative_url }}">Handout</a></div></div>
+    <div class="slot slot--plain"><div class="slot__time">6:00-7:30</div><div class="slot__body">Dinner</div></div>
+    <div class="slot"><div class="slot__time">7:30-9:00</div><div class="slot__body"><a class="slot__who" href="https://grosen.scholar.princeton.edu">Gideon Rosen</a><a class="slot__title" href="{{ '/assets/papers/rosen-anti-ockhamism-in-metaphysics.pdf' | relative_url }}">Anti-Ockhamism in Metaphysics</a></div></div>
+    <div class="slot slot--plain"><div class="slot__time">9:00-11:00</div><div class="slot__body">Reception</div></div>
+  </div>
+  <div class="schedule__day">
+    <h2>Saturday, May 2</h2>
+    <div class="slot slot--plain"><div class="slot__time">7:30-9:30</div><div class="slot__body">Breakfast</div></div>
+    <div class="slot"><div class="slot__time">10:00-11:30</div><div class="slot__body"><a class="slot__who" href="https://philosophy.osu.edu/people/smithies.2">Declan Smithies</a><a class="slot__title" href="{{ '/assets/papers/smithies-valenced-experience.pdf' | relative_url }}">Valenced Experience and the Epistemology of Value</a><a class="slot__handout" href="{{ '/assets/papers/smithies-valenced-experience-handout.pdf' | relative_url }}">Handout</a></div></div>
+    <div class="slot slot--plain"><div class="slot__time">12:00-1:00</div><div class="slot__body">Lunch</div></div>
+    <div class="slot"><div class="slot__time">1:30-3:00</div><div class="slot__body"><a class="slot__who" href="https://www.connerschultz.com">Conner Schultz</a><span class="tag-yep">YEP</span><a class="slot__title" href="{{ '/assets/papers/schultz-epistemic-insurance-policies.pdf' | relative_url }}">Epistemic Insurance Policies</a></div></div>
+    <div class="slot"><div class="slot__time">3:30-5:00</div><div class="slot__body"><a class="slot__who" href="https://sites.google.com/site/sarahkpaul/">Sarah Paul</a><a class="slot__title" href="{{ '/assets/papers/paul-attempts-as-inquiry.pdf' | relative_url }}">Attempts as Inquiry</a></div></div>
+  </div>
+</div>
 
-**1:30-3:00** [Pamela Hieronymi](https://philosophy.ucla.edu/person/pamela-hieronymi/), “[Morally Bad Beliefs]({{ '/assets/papers/hieronymi-morally-bad-beliefs.pdf' | relative_url }})” ([handout]({{ '/assets/papers/hieronymi-morally-bad-beliefs-handout.pdf' | relative_url }}))
-
-**3:30-5:00** [John Bengson](https://liberalarts.utexas.edu/philosophy/faculty/jtb538), “[Loving Understanding]({{ '/assets/papers/bengson-loving-understanding.pdf' | relative_url }})” ([handout]({{ '/assets/papers/bengson-loving-understanding-handout.pdf' | relative_url }}))
-
-**6:00-7:30** Dinner
-
-**7:30-9:00** [Gideon Rosen](https://grosen.scholar.princeton.edu), “[Anti-Ockhamism in Metaphysics]({{ '/assets/papers/rosen-anti-ockhamism-in-metaphysics.pdf' | relative_url }})”
-
-**9:00-11:00** Reception
-
-## Saturday, May 2
-
-**7:30-9:30** Breakfast
-
-**10:00-11:30** [Declan Smithies](https://philosophy.osu.edu/people/smithies.2), “[Valenced Experience and the Epistemology of Value]({{ '/assets/papers/smithies-valenced-experience.pdf' | relative_url }})” ([handout]({{ '/assets/papers/smithies-valenced-experience-handout.pdf' | relative_url }}))
-
-**12:00-1:00** Lunch
-
-**1:30-3:00** [Conner Schultz](https://www.connerschultz.com) (YEP), “[Epistemic Insurance Policies]({{ '/assets/papers/schultz-epistemic-insurance-policies.pdf' | relative_url }})”
-
-**3:30-5:00** [Sarah Paul](https://sites.google.com/site/sarahkpaul/), “[Attempts as Inquiry]({{ '/assets/papers/paul-attempts-as-inquiry.pdf' | relative_url }})”
+<div class="prose" markdown="1">
 
 ## Registration
 
@@ -46,13 +45,15 @@ If you are a graduate student or a postdoc and would like to attend the conferen
 
 ## How to get there
 
-**Plane & Train:** If you are flying, it is best to fly into Newark Airport. It is about 25 miles from The Heldrich. The best way to get from the airport to New Brunswick is via NJ Transit. The train stops at the airport and it is a 25 min train ride from the airport to New Brunswick. When you arrive at Newark Airport, follow the signs to the monorail “airtrain”. The airtrain will take you to the NJ transit train stop. Trains run from Newark Airport to New Brunswick about every half hour. A oneway ticket Newark Airport – New Brunswick is about $20. You can buy tickets at the vending machines at the Newark Airport train station or on the mobile app NJ Transit. The Heldrich is a 5 min walk from the New Brunswick train station.
+**Plane & Train:** If you are flying, it is best to fly into Newark Airport. It is about 25 miles from The Heldrich. The best way to get from the airport to New Brunswick is via NJ Transit. The train stops at the airport and it is a 25 min train ride from the airport to New Brunswick. When you arrive at Newark Airport, follow the signs to the monorail “airtrain”. The airtrain will take you to the NJ transit train stop. Trains run from Newark Airport to New Brunswick about every half hour. A one-way ticket Newark Airport – New Brunswick is about $20. You can buy tickets at the vending machines at the Newark Airport train station or on the mobile app NJ Transit. The Heldrich is a 5 min walk from the New Brunswick train station.
 
 **Train:** The best way to get to New Brunswick from New York or Philadelphia is via NJ Transit. The Heldrich is a 5 min walk from the New Brunswick train station.
 
 ## Returning participants
 
-Robert Audi, Aliosha Barranco Lopez, Jordan Bridges, Kieran Britt, Tali Bromberg, Jazlyn Carteya, Yan Chen, John Cho, Tez Clark, Will Combs, Joe Cruz, Charles Doremieux, Adam Elga, Esther Goh, Ayala Haddad, Allan Hazlett, Pamela Hieronymi, Michele Odisseas Impagnatiello, Imane Jerid, David Kaspar, Tim Kearl, Thomas Kelly, Ethan Kemp, Gabrielle Kerbel, Hilary Kornblith, Noah Lemos, Haley Linscott, Adrian Liu, Miriam Schleifer McCormick, Noah McKay, Shmuel Mintz, Ram Neta, Noam Nizri, Desmond Pylon, Yangming Qin, Z Quanbeck, Luke Quinton, Mark Richard, Kelley L. Ross, Paulina Rumm, Itamar Weinshtock Saadon, Josh Schechter, Tony Sharra, David Sosa, Kai Teng, Gabriela Vergara Pérez, Jonathan Vogel, Brian Weatherson, Kelsey Wengert, Christopher Willard-Kyle, Pacy Yan, Aurora Yu, Zed Zhang.
+<p class="participants">Robert Audi, Aliosha Barranco Lopez, Jordan Bridges, Kieran Britt, Tali Bromberg, Jazlyn Carteya, Yan Chen, John Cho, Tez Clark, Will Combs, Joe Cruz, Charles Doremieux, Adam Elga, Esther Goh, Ayala Haddad, Allan Hazlett, Pamela Hieronymi, Michele Odisseas Impagnatiello, Imane Jerid, David Kaspar, Tim Kearl, Thomas Kelly, Ethan Kemp, Gabrielle Kerbel, Hilary Kornblith, Noah Lemos, Haley Linscott, Adrian Liu, Miriam Schleifer McCormick, Noah McKay, Shmuel Mintz, Ram Neta, Noam Nizri, Desmond Pylon, Yangming Qin, Z Quanbeck, Luke Quinton, Mark Richard, Kelley L. Ross, Paulina Rumm, Itamar Weinshtock Saadon, Josh Schechter, Tony Sharra, David Sosa, Kai Teng, Gabriela Vergara Pérez, Jonathan Vogel, Brian Weatherson, Kelsey Wengert, Christopher Willard-Kyle, Pacy Yan, Aurora Yu, Zed Zhang.</p>
+
+</div>
 
 ## Photos
 

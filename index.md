@@ -5,7 +5,9 @@ description: "Juan Comesaña is Professor and Director of Graduate Studies in th
 
 <section class="hero">
   <img class="hero__image" src="{{ '/assets/images/juan-comesana.webp' | relative_url }}" alt="Juan Comesaña">
-  <div markdown="1">
+  <div class="hero__text" markdown="1">
+<h1>Juan Comesaña</h1>
+
 I am Professor and Director of Graduate Studies in the [Philosophy Department](https://philosophy.rutgers.edu) at Rutgers.
 
 I specialize in Epistemology, but I am interested (and occasionally publish) in other areas as well.

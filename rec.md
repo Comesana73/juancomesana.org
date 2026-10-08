@@ -5,7 +5,7 @@ permalink: /rec/
 image: /assets/images/rec-gathering.webp
 ---
 
-<div class="content content--center rec-page">
+<div class="content content--center content--wide rec-page">
 
 <div class="rec-title-group">
   <img class="rec-icon" src="{{ '/assets/images/rec-icon.webp' | relative_url }}" alt="" aria-hidden="true">
