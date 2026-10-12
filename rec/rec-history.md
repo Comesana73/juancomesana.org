@@ -189,6 +189,10 @@ permalink: /rec/rec-history/
       <h3>Speakers</h3>
       <p>Alex Byrne, Anil Gupta, Jonathan Kvanvig, María Lasonen-Aarnio, Susanna Rinard, Alex Worsnip (YEP).</p>
     </div>
+    <div>
+      <h3>Commentators</h3>
+      <p>Heather Battaly, John Bengson, Annalisa Coliva, Thomas Kelly.</p>
+    </div>
   </div>
 </article>
 
