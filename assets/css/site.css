@@ -431,8 +431,8 @@ details[open] .summary__toggle::before { transform: rotate(90deg); }
 .lightbox[hidden] { display: none; }
 .lightbox__image {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
-  max-height: 84vh;
-  max-width: min(88vw, 1200px);
+  max-height: 92vh;
+  max-width: 94vw;
 }
 .lightbox__close, .lightbox__prev, .lightbox__next {
   background: transparent;
