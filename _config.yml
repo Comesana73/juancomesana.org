@@ -26,3 +26,7 @@ defaults:
       path: "private"
     values:
       sitemap: false
+  - scope:
+      path: "frame"
+    values:
+      sitemap: false
