@@ -22,3 +22,7 @@ defaults:
     values:
       layout: default
       image: /assets/images/juan-comesana.webp
+  - scope:
+      path: "private"
+    values:
+      sitemap: false
