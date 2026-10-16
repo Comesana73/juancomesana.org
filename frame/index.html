@@ -18,12 +18,14 @@
 <style>
 :root{
   --gap:20px; --panel-w:500px; --panel-h:43vh;
+  /* keep clear of the iPadOS status bar (the page runs under it: black-translucent) */
+  --safe-t:env(safe-area-inset-top, 0px); --top:calc(var(--gap) + var(--safe-t));
   --text:#fff; --dim:rgba(255,255,255,.66); --faint:rgba(255,255,255,.42);
   --glass:rgba(12,16,22,.52); --tile:rgba(255,255,255,.065);
   --rain:#5ab0ff; --warm:#ffd36a; --alert:#e5484d;
   /* the box the artwork (or radar) sits in; the clock lives below it */
   --clock-b:calc(var(--gap) + 4px);
-  --art-t:34px; --art-l:34px; --art-b:200px; --art-r:calc(var(--panel-w) + var(--gap) * 2 + 34px);
+  --art-t:calc(34px + var(--safe-t)); --art-l:34px; --art-b:200px; --art-r:calc(var(--panel-w) + var(--gap) * 2 + 34px);
   --ease:cubic-bezier(.2,.8,.2,1);
 }
 body.compact{--art-r:34px}
@@ -78,7 +80,7 @@ body.radar #caption{opacity:0}
 #caption{transition:opacity 1s}
 
 /* ---------- weather panel ---------- */
-#panel{position:fixed;top:var(--gap);right:var(--gap);bottom:var(--gap);width:var(--panel-w);box-sizing:border-box;
+#panel{position:fixed;top:var(--top);right:var(--gap);bottom:var(--gap);width:var(--panel-w);box-sizing:border-box;
   padding:20px 24px 14px;border-radius:28px;background:var(--glass);border:1px solid rgba(255,255,255,.08);
   -webkit-backdrop-filter:blur(30px) saturate(150%);backdrop-filter:blur(30px) saturate(150%);
   display:flex;flex-direction:column;gap:14px;overflow:hidden;
@@ -115,7 +117,7 @@ body.compact #panel{transform:translateX(calc(100% + 60px));opacity:0;pointer-ev
 .bar b{position:absolute;top:-2px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
 .foot{font-size:11px;color:var(--faint);display:flex;justify-content:space-between;gap:10px}
 
-#chip{position:fixed;top:var(--gap);right:var(--gap);display:flex;align-items:center;gap:8px;padding:8px 16px 8px 10px;border-radius:999px;
+#chip{position:fixed;top:var(--top);right:var(--gap);display:flex;align-items:center;gap:8px;padding:8px 16px 8px 10px;border-radius:999px;
   background:var(--glass);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);font-size:26px;font-weight:300;
   opacity:0;transform:translateY(-12px);transition:opacity .6s,transform .6s;pointer-events:none}
 body.compact #chip{opacity:1;transform:none}
@@ -124,11 +126,14 @@ body.compact #chip{opacity:1;transform:none}
 #gear{position:fixed;right:calc(var(--art-r) - 6px);bottom:calc(var(--clock-b) + 6px);width:44px;height:44px;border-radius:50%;border:0;
   background:rgba(0,0,0,.25);opacity:.3;display:grid;place-items:center;z-index:5;transition:right .7s var(--ease),bottom .7s var(--ease)}
 #gear:active{opacity:.9}
-#toast{position:fixed;left:50%;top:var(--gap);transform:translate(-50%,-80px);background:rgba(20,24,30,.92);padding:10px 18px;border-radius:999px;
+#toast{position:fixed;left:50%;top:var(--top);transform:translate(-50%,-80px);background:rgba(20,24,30,.92);padding:10px 18px;border-radius:999px;
   font-size:15px;transition:transform .4s;z-index:60}
 #toast.on{transform:translate(-50%,0)}
-#sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:1000}
-#sheet.on{display:flex}
+#sheet,#fcSheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:1000}
+#sheet.on,#fcSheet.on{display:flex}
+.nws{cursor:pointer}
+.fc-p{margin:14px 0 0;font-size:16px;line-height:1.5;color:rgba(255,255,255,.86)}
+.fc-p b{display:block;color:#fff;font-weight:600;margin-bottom:2px}
 .card{width:min(580px,92vw);max-height:88vh;overflow:auto;background:#1b1e24;border-radius:22px;padding:22px 24px 18px;box-sizing:border-box;
   -webkit-user-select:text;user-select:text}
 .card h2{margin:0 0 4px;font-size:22px;font-weight:600}
@@ -188,6 +193,14 @@ label.chk{display:flex;gap:10px;align-items:center;font-size:15px;margin-top:4px
 </button>
 <div id="toast"></div>
 
+<div id="fcSheet">
+  <div class="card">
+    <h2>Forecast</h2>
+    <p id="fcSub"></p>
+    <div id="fcBody"></div>
+    <div class="done"><button class="btn" id="fcDone">Done</button></div>
+  </div>
+</div>
 <div id="sheet">
   <div class="card">
     <h2>Frame settings</h2>
@@ -387,7 +400,7 @@ async function refreshNWS() {
     ]);
     const prev = wx.nws || {};
     wx.nws = {
-      periods: fc ? fc.properties.periods.slice(0, 2).map(p => ({ name: p.name, text: p.detailedForecast })) : (prev.periods || []),
+      periods: fc ? fc.properties.periods.slice(0, 8).map(p => ({ name: p.name, text: p.detailedForecast })) : (prev.periods || []),
       alerts: al ? al.features.map(a => ({ event: a.properties.event, ends: a.properties.ends || a.properties.expires })) : (prev.alerts || [])
     };
     save('frame-wx', wx); renderWeather();
@@ -730,6 +743,17 @@ function openSheet() {
 }
 function closeSheet() { $('#sheet').classList.remove('on'); }
 
+// tap the forecast text in the panel to read the full NWS forecast
+function openForecast() {
+  const per = (wx && wx.nws && wx.nws.periods) || [];
+  if (!per.length) return;
+  $('#fcSub').textContent = `National Weather Service · ${S.place}`;
+  $('#fcBody').innerHTML = per.map(p => `<p class="fc-p"><b>${esc(p.name)}</b>${esc(p.text)}</p>`).join('');
+  $('#fcSheet').classList.add('on'); $('#fcSheet .card').scrollTop = 0;
+  clearTimeout(openForecast.h); openForecast.h = setTimeout(closeForecast, 120e3);   // back to the frame on its own
+}
+function closeForecast() { clearTimeout(openForecast.h); $('#fcSheet').classList.remove('on'); }
+
 function setLocation(lat, lon, place) {
   S.lat = lat; S.lon = lon; S.place = place; saveSettings();
   $('#curPlace').textContent = place; $('#cityResults').innerHTML = '';
@@ -739,6 +763,9 @@ function setLocation(lat, lon, place) {
 function wireSettings() {
   $('#collection').innerHTML = Object.entries(COLLECTIONS).map(([k, c]) => `<option value="${k}">${esc(c.name)}</option>`).join('');
   $('#gear').addEventListener('click', openSheet);
+  $('#nws').addEventListener('click', openForecast);
+  $('#fcSheet').addEventListener('click', e => { if (e.target.id === 'fcSheet') closeForecast(); });
+  $('#fcDone').addEventListener('click', closeForecast);
   $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
   $('#doneBtn').addEventListener('click', closeSheet);
   $('#collection').addEventListener('change', e => { S.collection = e.target.value; saveSettings(); history = []; histPos = -1; nextArt(1); });
@@ -781,7 +808,7 @@ function wireGestures() {
   let sx = 0, sy = 0, st = 0;
   document.body.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; st = Date.now(); keepAwake(); });
   document.body.addEventListener('pointerup', e => {
-    if (e.target.closest('#panel,#sheet,#gear,#toast')) return;
+    if (e.target.closest('#panel,#sheet,#fcSheet,#gear,#toast')) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) { if (!radar.on) nextArt(dx < 0 ? 1 : -1); return; }
     if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && Date.now() - st < 600) {
