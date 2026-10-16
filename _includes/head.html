@@ -8,6 +8,9 @@
 {%- assign og_image = page.image | default: "/assets/images/juan-comesana.webp" | absolute_url -%}
 
 <meta charset="utf-8">
+<!-- CSP: inline <script> is blocked; put page scripts in /assets/js/site.js. New external hosts must be added here. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://gc.zgo.at; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://juancomesana.goatcounter.com; connect-src 'self' https://juancomesana.goatcounter.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ full_title }}</title>
 <meta name="description" content="{{ meta_description | strip_html | normalize_whitespace | escape }}">
@@ -34,4 +37,4 @@
 
 <!-- Analytics: GoatCounter (no cookies, no personal data collected) -->
 <script data-goatcounter="https://juancomesana.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+        async src="https://gc.zgo.at/count.js"></script>
