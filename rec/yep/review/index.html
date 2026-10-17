@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="referrer" content="no-referrer">
-<!-- The page may only talk to Google's Apps Script servers. Inline scripts are needed
-     because the role's interface arrives from the server after the link is checked. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com; img-src data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<!-- The page may only talk to Google's Apps Script servers, plus cdnjs for the pinned PDF
+     reader (loaded with integrity checks). Inline scripts are needed because the role's
+     interface arrives from the server after the link is checked. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com https://cdnjs.cloudflare.com; worker-src blob:; img-src data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>YEP Review</title>
 <style>
   :root { --bg: #fbfaf8; --text: #1d1d1f; --muted: #6b6b70; }
