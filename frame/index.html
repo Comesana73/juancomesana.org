@@ -74,6 +74,8 @@ body.night #radar{filter:brightness(.8)}
 #time small{font-size:26px;font-weight:300;letter-spacing:0;margin-left:8px;opacity:.85}
 #clockMeta{min-width:0;padding-bottom:6px}
 #date{font-size:25px;font-weight:400;opacity:.94}
+#bins{font-size:17px;font-weight:500;color:var(--warm);margin-top:4px}
+#bins:empty{display:none}
 #caption{font-size:15px;line-height:1.35;opacity:.72;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #caption i{font-style:italic;opacity:1}
 body.radar #caption{opacity:0}
@@ -170,7 +172,7 @@ label.chk{display:flex;gap:10px;align-items:center;font-size:15px;margin-top:4px
 </div>
 <div id="empty" hidden></div>
 
-<div id="clock"><div id="time">--:--</div><div id="clockMeta"><div id="date"></div><div id="caption"></div></div></div>
+<div id="clock"><div id="time">--:--</div><div id="clockMeta"><div id="date"></div><div id="bins"></div><div id="caption"></div></div></div>
 
 <aside id="panel">
   <div class="col colA">
@@ -263,6 +265,36 @@ function tickClock() {
   const dp = (parts.find(p => p.type === 'dayPeriod') || {}).value || '';
   $('#time').innerHTML = `${esc(hm)}<small>${esc(dp)}</small>`;
   $('#date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  $('#bins').textContent = binsTomorrow(now);
+}
+
+/* ======================= trash & recycling reminder ======================= */
+// Princeton, NJ municipal collection for our street (princetonnj.gov → Trash Collection / Recycling in Princeton).
+// Trash: every Tuesday (Interstate Waste Services). Recycling: every other Monday (Mercer County), on the dates
+// the town publishes each year. Update both lists every January.
+const TRASH_DAY = 2;                                                   // Tuesday
+const TRASH_MOVED = { '2026-09-08': '2026-09-09' };                    // holiday weeks: scheduled date → actual date
+const RECYCLING = ['2026-01-12','2026-01-26','2026-02-09','2026-02-23','2026-03-09','2026-03-23','2026-04-06','2026-04-20',
+  '2026-05-04','2026-05-18','2026-06-01','2026-06-15','2026-06-29','2026-07-13','2026-07-27','2026-08-10','2026-08-24',
+  '2026-09-12','2026-09-21','2026-10-05','2026-10-19','2026-11-02','2026-11-16','2026-11-30','2026-12-14','2026-12-28'];
+
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function isTrashDay(d) {
+  const k = ymd(d);
+  if (Object.values(TRASH_MOVED).includes(k)) return true;
+  return d.getDay() === TRASH_DAY && !(k in TRASH_MOVED);
+}
+function isRecyclingDay(d) {
+  const k = ymd(d), last = RECYCLING[RECYCLING.length - 1];
+  if (k <= last) return RECYCLING.includes(k);
+  // past the published list: keep the two-week rhythm until next year's dates are added
+  const days = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(last + 'T00:00')) / 864e5);
+  return days % 14 === 0;
+}
+function binsTomorrow(now) {
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const what = [isTrashDay(t) && 'Trash', isRecyclingDay(t) && 'Recycling'].filter(Boolean);
+  return what.length ? `Tomorrow: ${what.join(' & ')}` : '';
 }
 
 
