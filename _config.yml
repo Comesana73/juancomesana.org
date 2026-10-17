@@ -30,3 +30,7 @@ defaults:
       path: "frame"
     values:
       sitemap: false
+  - scope:
+      path: "rec/yep/review"
+    values:
+      sitemap: false

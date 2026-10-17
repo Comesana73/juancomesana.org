@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<!-- The page may only talk to Google's Apps Script servers. Inline scripts are needed
+     because the role's interface arrives from the server after the link is checked. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com; img-src data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>YEP Review</title>
+<style>
+  :root { --bg: #fbfaf8; --text: #1d1d1f; --muted: #6b6b70; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161618; --text: #ececee; --muted: #9a9aa2; } }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  .notice { max-width: 520px; margin: 15vh auto 0; padding: 0 16px; }
+  .notice p { color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="app"><div class="notice"><p>Loading…</p></div></div>
+<script>
+/*
+ * YEP Review loader. This is the only public part of the app: it reads the private code
+ * from the link (after #, which browsers never send to a server) and asks the app's
+ * Google Apps Script backend for the page. The backend checks the code and returns only
+ * the screens for that person's role; without a valid code nothing comes back.
+ */
+(function () {
+  var API = 'https://script.google.com/macros/s/AKfycbz8R_17ZuTS0ts1Liru1el87hw4-_ArQIIOTNlCQxFX1rZ16Cxbav9d-O9Esaeb_f8z/exec';
+  var app = document.getElementById('app');
+
+  // Pasting a different link into an open tab only changes the part after #; start over.
+  window.addEventListener('hashchange', function () {
+    location.reload();
+  });
+
+  function notice(title, text) {
+    app.innerHTML = '<div class="notice"><h1></h1><p></p></div>';
+    app.querySelector('h1').textContent = title;
+    app.querySelector('p').textContent = text;
+  }
+
+  var m = /(?:^#|&)t=([a-f0-9]{64})(?:&|$)/.exec(location.hash);
+  if (!m) {
+    notice('This link isn’t valid', 'It may be incomplete. Please use the full link the organizers emailed you.');
+    return;
+  }
+  window.YEP = { token: m[1], api: API };
+
+  fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ token: m[1], action: 'page', args: {} }),
+    credentials: 'omit',
+    redirect: 'follow'
+  })
+    .then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    })
+    .then(function (res) {
+      if (!res || !res.ok) {
+        notice('This link isn’t valid', 'It may be out of date. Please use the most recent link the organizers emailed you, or ask them for a new one.');
+        return;
+      }
+      document.title = res.data.title;
+      app.innerHTML = res.data.html;
+      // Scripts inserted with innerHTML don't run; recreate them, in order.
+      Array.prototype.forEach.call(app.querySelectorAll('script'), function (old) {
+        var s = document.createElement('script');
+        s.text = old.textContent;
+        old.parentNode.replaceChild(s, old);
+      });
+    })
+    .catch(function () {
+      notice('Couldn’t load the page', 'Check your internet connection and reload. If it keeps happening, tell the organizers.');
+    });
+})();
+</script>
+</body>
+</html>
