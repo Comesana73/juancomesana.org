@@ -6,21 +6,28 @@
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="referrer" content="no-referrer">
 <!-- The page may only talk to Google's Apps Script servers, plus cdnjs for the pinned PDF
-     reader (loaded with integrity checks). Inline scripts are needed because the role's
+     reader (loaded with integrity checks) and Google Fonts for the typeface. Inline scripts are needed because the role's
      interface arrives from the server after the link is checked. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com https://cdnjs.cloudflare.com; worker-src blob:; img-src data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://script.google.com https://script.googleusercontent.com https://cdnjs.cloudflare.com; worker-src blob:; img-src data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>YEP Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap">
 <style>
-  :root { --bg: #fbfaf8; --text: #1d1d1f; --muted: #6b6b70; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #161618; --text: #ececee; --muted: #9a9aa2; } }
-  body { margin: 0; background: var(--bg); color: var(--text);
-         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
-  .notice { max-width: 520px; margin: 15vh auto 0; padding: 0 16px; }
-  .notice p { color: var(--muted); }
+  :root { --ground: #F3F4F6; --surface: #FFFFFF; --border: #E5E7EB; --text: #111827; --muted: #4B5563; --accent: #2448B8; --on-accent: #FFFFFF; --track: #E5E7EB; --subtle: #F9FAFB; }
+  @media (prefers-color-scheme: dark) { :root { --ground: #0F1115; --surface: #171A21; --border: #2A2F3A; --text: #E8EAEE; --muted: #A3AAB6; --accent: #8EA6FF; --on-accent: #0B1533; --track: #2A2F3A; --subtle: #1C2028; } }
+  body { margin: 0; background: var(--ground); color: var(--text);
+         font-family: Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; }
+  .notice { max-width: 480px; margin: 12vh auto 0; padding: 0 16px; }
+  .notice-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; box-shadow: 0 1px 2px rgba(17,24,39,.04); }
+  .mark { width: 36px; height: 36px; border-radius: 9px; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; font-weight: 700; margin-bottom: 18px; }
+  .notice h1 { font-size: 22px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .notice p { color: var(--muted); margin: 0; }
+  .skel { display: block; height: 12px; border-radius: 6px; margin-top: 12px; background: linear-gradient(90deg, var(--track), var(--subtle), var(--track)); background-size: 200% 100%; animation: shimmer 1.3s ease-in-out infinite; }
+  @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+  @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
 </style>
 </head>
 <body>
-<div id="app"><div class="notice"><p>Loading…</p></div></div>
+<div id="app"><div class="notice"><div class="notice-card" aria-busy="true"><div class="mark" aria-hidden="true">Y</div><p>Loading YEP Review…</p><span class="skel" style="width:80%"></span><span class="skel" style="width:55%"></span></div></div></div>
 <script>
 /*
  * YEP Review loader. This is the only public part of the app: it reads the private code
@@ -38,7 +45,7 @@
   });
 
   function notice(title, text) {
-    app.innerHTML = '<div class="notice"><h1></h1><p></p></div>';
+    app.innerHTML = '<div class="notice"><div class="notice-card"><div class="mark" aria-hidden="true">Y</div><h1></h1><p></p></div></div>';
     app.querySelector('h1').textContent = title;
     app.querySelector('p').textContent = text;
   }
