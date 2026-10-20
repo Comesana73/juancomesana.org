@@ -3968,15 +3968,10 @@ function PR_FACTORY() {
         const inner = rng.chance(0.5) ? A(l, m) : O(l, m);
         const dm = inner.k === "a" ? O(negOf(l), negOf(m)) : A(negOf(l), negOf(m));
         if (rng.chance(0.5)) { givens = [u(N(inner))]; goal = u(dm); } else { givens = [u(dm)]; goal = u(N(inner)); }
-      } else if (rng.chance(0.35)) {
-        // double negation
+      } else {
+        // double negation (absorption dropped, Juan Oct 20)
         const l = V(a);
         if (rng.chance(0.5)) { givens = [u(l)]; goal = u(N(N(l))); } else { givens = [u(N(N(l)))]; goal = u(l); }
-      } else {
-        // absorption: F ∨ (F ∧ G) and F ∧ (F ∨ G) are equivalent to F
-        const l = V(a), m = V(b);
-        const f = rng.chance(0.5) ? O(l, A(l, m)) : A(l, O(l, m));
-        if (rng.chance(0.6)) { givens = [u(l)]; goal = u(f); } else { givens = [u(f)]; goal = u(l); }
       }
     } else {
       const s = rng.int(4);
