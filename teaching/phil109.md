@@ -20,7 +20,7 @@ permalink: /teaching/phil109/
   </article>
   <article class="app">
     <h2><a href="{{ '/apps/probability-lab/' | relative_url }}">Probability Lab</a></h2>
-    <p>Stochastic truth tables (calculating probabilities and conditionalizing), Bayes' theorem word problems worked the book's way, and eikosograms: an interactive picture of how evidence moves a prior to a posterior.</p>
+    <p>Stochastic truth tables (calculating probabilities and conditionalizing), probability problems solved step by step from the axioms, definitions and theorems (with hints), Bayes' theorem word problems worked the book's way, and eikosograms: an interactive picture of how evidence moves a prior to a posterior.</p>
   </article>
   <article class="app">
     <h2><a href="{{ '/apps/decisions-games-lab/' | relative_url }}">Decisions &amp; Games Lab</a></h2>

@@ -534,6 +534,97 @@
   #tableApp .tt tfoot td.psv .pq { color: var(--faint); }
   #tableApp .tt tfoot input.sumin { width: 5.2em; padding: 0.15em 0.3em; font-size: 1em; text-align: center; }
   #tableApp .tt tfoot .qm { margin-left: 0.25em; }
+  /* ================= Problems tab ================= */
+  #problemsApp { --tsize-pr: 18px; }
+  #problemsApp .pr-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  #problemsApp .pr-statement { font-size: var(--tsize-pr); line-height: 1.55; max-width: 70ch; text-wrap: pretty; }
+  #problemsApp .pr-statement .q { font-weight: 600; }
+  #problemsApp .pr-goal { font-size: 0.95rem; color: var(--muted); }
+  #problemsApp .pr-goal b { color: var(--ink); font-family: var(--logic); font-weight: 600; }
+  #problemsApp .pr-goal .now { color: var(--accent); }
+  #problemsApp .fm { font-family: var(--logic); }
+  #problemsApp .fm.click { cursor: pointer; border-radius: 3px; }
+  #problemsApp .fm.click:hover { background: var(--accent-soft); color: var(--accent); }
+  #problemsApp .pr-builder.active-f .fm.click, #problemsApp .pr-builder.active-g .fm.click { text-decoration: underline dotted var(--faint); }
+
+  /* the list, numbered like the book's proofs */
+  #problemsApp .pr-listwrap { border: 1px solid var(--line); border-radius: 8px; }
+  #problemsApp table.pr-list { width: 100%; border-collapse: collapse; font-size: calc(var(--tsize-pr) * 0.86); }
+  #problemsApp table.pr-list td { padding: 6px 10px; vertical-align: top; border-top: 1px solid var(--line); }
+  #problemsApp table.pr-list tr:first-child td { border-top: 0; }
+  #problemsApp table.pr-list td.n { width: 2.6em; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 0.9em; }
+  #problemsApp table.pr-list td.s { font-family: var(--logic); }
+  #problemsApp table.pr-list td.s .cmp { display: block; font-size: 0.82em; color: var(--muted); }
+  #problemsApp table.pr-list td.j { color: var(--muted); font-size: 0.86em; white-space: nowrap; }
+  #problemsApp table.pr-list tr.given td { background: var(--surface-2); }
+  #problemsApp table.pr-list tr.added td.s { font-weight: 500; }
+  #problemsApp table.pr-list tr.goalline td.s { color: var(--good); font-weight: 600; }
+  #problemsApp table.pr-list tr.hl td { box-shadow: inset 3px 0 0 var(--accent); }
+  #problemsApp table.pr-list tr.hl td + td { box-shadow: none; }
+  #problemsApp table.pr-list tr.new td { background: var(--accent-softer); }
+  #problemsApp .pr-after { font-size: 0.95rem; }
+  #problemsApp .pr-after b { color: var(--good); }
+
+  /* hints */
+  #problemsApp .pr-hints { border: 1px solid var(--line); border-radius: 8px; background: var(--accent-softer); padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; font-size: 0.92rem; max-width: 80ch; }
+  #problemsApp .pr-hints .hl { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+  #problemsApp .pr-hints p { font-family: var(--logic); }
+
+  /* the step builder */
+  #problemsApp .pr-builder { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; }
+  #problemsApp .pr-brow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #problemsApp .pr-brow label, #problemsApp .pr-slot label, #problemsApp .pr-valrow label { font-family: var(--logic); font-weight: 500; }
+  #problemsApp select#pr-rule { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); max-width: 100%; min-width: 0; }
+  #problemsApp .pr-form { font-family: var(--logic); color: var(--muted); font-size: 0.92rem; }
+  #problemsApp .pr-slots { display: flex; gap: 10px 18px; flex-wrap: wrap; }
+  #problemsApp .pr-slot { display: flex; align-items: center; gap: 8px; }
+  #problemsApp input.pr-fin { width: 11em; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font-family: var(--logic); font-size: 1rem; }
+  #problemsApp input.pr-fin.active { border-color: var(--accent); }
+  #problemsApp input.pr-fin.bad { border-color: var(--bad); }
+  #problemsApp .pr-keys { display: flex; gap: 4px; flex-wrap: wrap; }
+  #problemsApp .pr-keys button { min-width: 2.2em; padding: 3px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-family: var(--logic); cursor: pointer; }
+  #problemsApp .pr-keys button:hover { border-color: var(--accent); color: var(--accent); }
+  #problemsApp .pr-keys .sep { width: 8px; }
+  #problemsApp .pr-slotmsg { font-size: 0.84rem; color: var(--bad); }
+  #problemsApp .pr-slotmsg:empty { display: none; }
+  #problemsApp .pr-inst { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--surface-2); }
+  #problemsApp .pr-sym { font-family: var(--logic); color: var(--muted); }
+  #problemsApp .pr-num { font-family: var(--logic); font-size: 1.05rem; overflow-wrap: anywhere; }
+  #problemsApp .pr-num .kv { font-family: var(--mono); color: var(--accent); }
+  #problemsApp .pr-num .box { display: inline-block; padding: 0 6px; border: 1.5px dashed var(--accent); border-radius: 5px; }
+  #problemsApp .pr-num .box2 { display: inline-block; padding: 0 6px; border: 1.5px dashed var(--faint); border-radius: 5px; color: var(--muted); }
+  #problemsApp .pr-valrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  #problemsApp .pr-choices { display: flex; gap: 8px; flex-wrap: wrap; }
+  #problemsApp .pr-choices:empty { display: none; }
+  #problemsApp .pr-choices .btn { font-family: var(--logic); }
+  #problemsApp .smsg { font-size: 0.88rem; color: var(--muted); max-width: 75ch; }
+  #problemsApp .smsg:empty { display: none; }
+  #problemsApp .smsg.bad { color: var(--bad); } #problemsApp .smsg.ok { color: var(--good); }
+
+  /* answer only */
+  #problemsApp .pr-answer { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; }
+  #problemsApp .pr-yn { display: flex; gap: 8px; }
+  #problemsApp .pr-yn .btn { min-width: 5em; }
+
+  /* your own problem */
+  #pr-probCard .pr-own { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+  #pr-probCard .pr-own label { font-size: 0.78rem; color: var(--muted); }
+  #pr-probCard .pr-own textarea, #pr-probCard .pr-own input { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); font-family: var(--logic); font-size: 0.92rem; resize: vertical; }
+  #pr-probCard .pr-own .note { font-size: 0.78rem; color: var(--muted); }
+  #pr-probCard .pr-own code { font-family: var(--mono); font-size: 0.95em; }
+  #pr-probCard .pr-ownErr { margin: 0; padding-left: 1.1em; font-size: 0.82rem; color: var(--bad); }
+  #pr-probCard .pr-ownErr:empty { display: none; }
+  #problemsApp .help ol { margin: 8px 0 0; padding-left: 1.3em; font-size: 0.84rem; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+  #problemsApp .help code { font-family: var(--mono); }
+
+  @media (max-width: 979px) { #pr-probCard { order: 1; } #problemsApp .stage { order: 2; } #pr-modeCard { order: 3; } #pr-help { order: 4; } }
+  @media (max-width: 640px) {
+    #problemsApp table.pr-list td.j { white-space: normal; min-width: 7em; }
+    #problemsApp input.pr-fin { width: 9em; }
+    #problemsApp .pr-body { padding: 12px; }
+  }
+  html.presenting #problemsApp .pr-body { zoom: 1.3; }
+  html.presenting #pr-stepcap { font-size: 1.3rem; padding: 14px 20px; }
 </style>
 </head>
 <body>
@@ -542,7 +633,7 @@
     <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
     <div>
       <h1>Probability Lab</h1>
-      <p>Stochastic tables, Bayes’ theorem, eikosograms</p>
+      <p>Stochastic tables, probability problems, Bayes’ theorem, eikosograms</p>
     </div>
   </div>
   <div class="top-controls">
@@ -559,6 +650,7 @@
 <button type="button" class="btn small" id="ll-presentExit" hidden>Exit <kbd>Esc</kbd></button>
 <nav class="tabs" role="tablist" aria-label="Probability Lab tools" id="ll-tabs">
   <button type="button" role="tab" data-tab="table" id="ll-tab-table" aria-controls="tableApp">Stochastic tables</button>
+  <button type="button" role="tab" data-tab="problems" id="ll-tab-problems" aria-controls="problemsApp">Problems</button>
   <button type="button" role="tab" data-tab="bayes" id="ll-tab-bayes" aria-controls="bayesApp">Bayes</button>
   <button type="button" role="tab" data-tab="eik" id="ll-tab-eik" aria-controls="eikApp">Eikosograms</button>
 </nav>
@@ -649,6 +741,131 @@
         <button class="btn" type="button" id="st-next" hidden>Next →</button>
       </div>
       <div class="st-feedback" id="st-feedback" aria-live="polite"></div>
+    </section>
+  </main>
+</div>
+</div>
+<div id="problemsApp" hidden>
+<div hidden><div class="seg" id="pr-sizeSeg"><button type="button" data-v="16">S</button><button type="button" data-v="18">M</button><button type="button" data-v="21">L</button><button type="button" data-v="26">XL</button></div></div>
+<div class="app">
+  <aside class="panel" aria-label="Problem and options">
+    <section class="card" id="pr-probCard" aria-labelledby="pr-probHead">
+      <h2 id="pr-probHead">Problem</h2>
+      <div class="genrow">
+        <span class="lbl" id="pr-diffLbl">Random problem</span>
+        <div class="seg" role="group" aria-labelledby="pr-diffLbl" id="pr-diffSeg">
+          <button type="button" data-v="easy">Easy</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="hard">Hard</button>
+        </div>
+        <button type="button" class="btn" id="pr-newBtn">New problem</button>
+      </div>
+      <div class="genrow">
+        <span class="lbl">Your own problem</span>
+        <button type="button" class="btn" id="pr-ownBtn">Enter your own</button>
+      </div>
+      <div class="pr-own" id="pr-own" hidden>
+        <label for="pr-ownGivens">Givens, one per line</label>
+        <textarea id="pr-ownGivens" rows="6" spellcheck="false" autocomplete="off" placeholder="P(H) = 1/2&#10;P(H | F) = 1/2&#10;F, G indep&#10;K equiv ~M"></textarea>
+        <label for="pr-ownGoal">Goal</label>
+        <input id="pr-ownGoal" spellcheck="false" autocomplete="off" placeholder="P(H & G)">
+        <p class="note">Givens: <code>P(H) = 1/2</code>, <code>P(H | F) = 1/2</code>, <code>F indep G</code> (one way), <code>F, G indep</code> (both ways), <code>F, G exclusive</code>, <code>K equiv ~M</code>. Goal: <code>P(H &amp; G)</code>, <code>P(K | J)</code>, <code>indep? R, S</code> or <code>exclusive? X, Y</code>.</p>
+        <ul class="pr-ownErr" id="pr-ownErr"></ul>
+        <div class="buildrow"><button type="button" class="btn primary" id="pr-ownApply">Use this problem</button><button type="button" class="btn" id="pr-ownCancel">Cancel</button></div>
+      </div>
+      <div class="opt">
+        <span id="pr-fmtLbl">Show probabilities as</span>
+        <div class="seg full" role="group" aria-labelledby="pr-fmtLbl" id="pr-fmtSeg">
+          <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="pr-modeCard" aria-labelledby="pr-modeHead">
+      <h2 id="pr-modeHead">Mode</h2>
+      <div class="seg full" role="group" aria-label="Mode" id="pr-modeSeg">
+        <button type="button" data-v="practice">Practice</button><button type="button" data-v="step">Step through</button><button type="button" data-v="answers">Show answers</button>
+      </div>
+      <div class="opt" id="pr-subRow">
+        <span id="pr-subLbl">In Practice, answer with</span>
+        <div class="seg full" role="group" aria-labelledby="pr-subLbl" id="pr-subSeg">
+          <button type="button" data-v="steps">Steps</button><button type="button" data-v="answer">Answer only</button>
+        </div>
+      </div>
+      <p class="status-text" id="pr-modeNote"></p>
+      <p class="tally" id="pr-tally"></p>
+    </section>
+
+    <details class="card help" id="pr-help">
+      <summary>The method</summary>
+      <p>As in §5.4 of the book:</p>
+      <ol>
+        <li>Check what your goal is and note what’s involved in it.</li>
+        <li>Check what you already have, and note anything that involves the same elements.</li>
+        <li>Find the axioms, definitions and theorems about the kinds of things you’re looking for or already have.</li>
+        <li>If you have everything else in one of them, solve for your goal.</li>
+        <li>If not, repeat with what you’re missing as your new goal.</li>
+      </ol>
+      <p>Each step uses one rule. Pick it, fill in φ and ψ (type, or click a formula in the list or the goal), and type the value of the one quantity you don’t have yet. Commutative variants are the same: P(G ∧ F) is P(F ∧ G).</p>
+      <p>Formulas: <code>~</code> or ¬, <code>&amp;</code> or ∧, <code>v</code> or ∨. Probabilities can be typed as fractions (3/10), decimals (0.3) or percentages (30%).</p>
+      <p><b>Hint</b> shows one more step of the method each time you click it.</p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <section class="card result">
+      <div class="result-head">
+        <div class="verdict" id="pr-verdict" aria-live="polite"></div>
+        <div class="actions">
+          <button class="btn small" type="button" id="pr-hintBtn">Hint</button>
+          <button class="btn small" type="button" id="pr-next" hidden>Next →</button>
+          <div class="stepper" id="pr-stepper" hidden>
+            <button class="btn small" type="button" id="pr-stFirst" aria-label="Back to start">⏮</button>
+            <button class="btn small" type="button" id="pr-stPrev" aria-label="Previous step">◀</button>
+            <span class="count" id="pr-stCount">0 / 0</span>
+            <button class="btn small primary" type="button" id="pr-stNext" aria-label="Next step">▶</button>
+            <button class="btn small" type="button" id="pr-stLast" aria-label="Show all">⏭</button>
+          </div>
+        </div>
+      </div>
+      <div class="stepcap" id="pr-stepcap" hidden></div>
+      <div class="pr-body">
+        <p class="pr-statement" id="pr-statement"></p>
+        <p class="pr-goal" id="pr-goal"></p>
+        <div class="pr-hints" id="pr-hints" aria-live="polite" hidden></div>
+        <div class="scrollx pr-listwrap"><table class="pr-list" id="pr-list"><tbody></tbody></table></div>
+        <p class="pr-after" id="pr-after" hidden></p>
+
+        <div class="pr-builder" id="pr-builder">
+          <div class="pr-brow">
+            <label for="pr-rule">Rule</label>
+            <select id="pr-rule"></select>
+          </div>
+          <p class="pr-form" id="pr-form"></p>
+          <div class="pr-slots">
+            <div class="pr-slot"><label for="pr-f">φ =</label><input id="pr-f" class="pr-fin" autocomplete="off" spellcheck="false" autocapitalize="characters"></div>
+            <div class="pr-slot" id="pr-gwrap"><label for="pr-g">ψ =</label><input id="pr-g" class="pr-fin" autocomplete="off" spellcheck="false" autocapitalize="characters"></div>
+          </div>
+          <div class="pr-keys" id="pr-keys" aria-label="Insert a symbol"></div>
+          <p class="pr-slotmsg" id="pr-slotmsg"></p>
+          <div class="pr-inst" id="pr-inst" hidden>
+            <p class="pr-sym" id="pr-sym"></p>
+            <p class="pr-num" id="pr-num"></p>
+            <div class="pr-valrow" id="pr-valrow"><label for="pr-val" id="pr-valLbl"></label><input id="pr-val" class="ain" autocomplete="off" spellcheck="false" inputmode="decimal"></div>
+            <div class="pr-choices" id="pr-choices"></div>
+          </div>
+          <div class="buildrow">
+            <button type="button" class="btn primary" id="pr-add">Add step</button>
+            <button type="button" class="btn" id="pr-undo">Undo</button>
+            <button type="button" class="btn" id="pr-clear">Clear</button>
+          </div>
+          <p class="smsg" id="pr-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="pr-answer" id="pr-answer" hidden>
+          <div class="pr-valrow" id="pr-ansNum"><label for="pr-ans" id="pr-ansLbl"></label><input id="pr-ans" class="ain" autocomplete="off" spellcheck="false" inputmode="decimal"><button type="button" class="btn primary" id="pr-check">Check</button></div>
+          <div class="pr-yn" id="pr-ansYN"><button type="button" class="btn" data-v="yes" id="pr-yes">Yes</button><button type="button" class="btn" data-v="no" id="pr-no">No</button></div>
+          <p class="smsg" id="pr-ansMsg" aria-live="polite"></p>
+        </div>
+      </div>
     </section>
   </main>
 </div>
@@ -2630,13 +2847,2346 @@ window.initEik = () => {
 
 </script>
 <script>
+// Probability Lab — Problems tab engine: formulas, rule instances, solver, generator.
+// The PARSER placeholder below is replaced at build time by the shared Logic Lab parser (parse, normalize, ParseError).
+// Wrapped in a named function so a Web Worker can be built from its source (Function.prototype.toString).
+function PR_FACTORY() {
+  "use strict";
+  const BIN = {
+    and:  { sym: "∧", assoc: true,  f: (a, b) => a && b, name: "conjunction" },
+    or:   { sym: "∨", assoc: true,  f: (a, b) => a || b, name: "disjunction" },
+    imp:  { sym: "→", assoc: false, f: (a, b) => !a || b, name: "conditional" },
+    iff:  { sym: "↔", assoc: false, f: (a, b) => a === b, name: "biconditional" },
+    nand: { sym: "↑", assoc: false, f: (a, b) => !(a && b), name: "NAND" },
+    nor:  { sym: "↓", assoc: false, f: (a, b) => !(a || b), name: "NOR" }
+  };
+  const MAX_LETTERS = 8;
+
+  class ParseError extends Error {
+    constructor(message, pos, len) { super(message); this.pos = pos; this.len = Math.max(1, len || 1); }
+  }
+
+  // Replace ASCII shortcuts with logic symbols as the user types.
+  function normalize(s) {
+    return s
+      .replace(/<->|<=>|≡/g, "↔")
+      .replace(/->|=>|⊃/g, "→")
+      .replace(/[~!]/g, "¬")
+      .replace(/[&^]/g, "∧")
+      .replace(/\|/g, "∨")
+      // a lowercase v between formulas is "or", with or without spaces: A v B, AvB, (A)v¬B
+      .replace(/(^|[\s)A-Z0-9₀-₉'])v(?=[\s(¬A-Z~!])/g, "$1∨");
+  }
+
+  function tokenize(src) {
+    const out = [];
+    let i = 0;
+    while (i < src.length) {
+      const ch = src[i];
+      if (/\s/.test(ch)) { i++; continue; }
+      const push = (t) => { out.push({ ...t, pos: i, len: t.len || 1 }); i += t.len || 1; };
+      if (ch === "(" || ch === "[") { push({ t: "lp" }); continue; }
+      if (ch === ")" || ch === "]") { push({ t: "rp" }); continue; }
+      if (ch === "¬") { push({ t: "not" }); continue; }
+      const binBy = { "∧": "and", "∨": "or", "→": "imp", "↔": "iff", "↑": "nand", "↓": "nor" };
+      if (binBy[ch]) { push({ t: "bin", op: binBy[ch] }); continue; }
+      if (ch === "⊤") { push({ t: "const", val: true }); continue; }
+      if (ch === "⊥") { push({ t: "const", val: false }); continue; }
+      // A sentence letter is ONE capital letter, optionally followed by digits or primes (A, B, A1, P₂, A').
+      // So "AB" is two letters (and the parser reports the missing connective), and "AvB" is A ∨ B.
+      if (/[A-Z]/.test(ch)) {
+        let j = i + 1;
+        while (j < src.length && /[0-9₀-₉']/.test(src[j])) j++;
+        out.push({ t: "var", name: src.slice(i, j), pos: i, len: j - i }); i = j; continue;
+      }
+      if (ch === "v") { push({ t: "bin", op: "or" }); continue; }
+      if (/[a-z]/.test(ch)) throw new ParseError(`Sentence letters are capitals: write “${ch.toUpperCase()}”, not “${ch}”.`, i, 1);
+      if (/[0-9]/.test(ch)) throw new ParseError(`Sentence letters start with a letter; “${ch}” can’t start one.`, i, 1);
+      throw new ParseError(`“${ch}” isn’t a symbol the builder knows.`, i, 1);
+    }
+    return out;
+  }
+
+  function parse(src) {
+    const toks = tokenize(src);
+    if (!toks.length) return null;
+    let k = 0;
+    let nextId = 0;
+    const peek = () => toks[k];
+    const endPos = src.replace(/\s+$/, "").length;
+    const describe = (t) => t.t === "var" ? t.name : t.t === "bin" ? BIN[t.op].sym : t.t === "not" ? "¬" : t.t === "lp" ? "(" : t.t === "rp" ? ")" : (t.val ? "⊤" : "⊥");
+
+    function atom() {
+      const t = peek();
+      if (!t) throw new ParseError("The formula stops too early: something is missing at the end.", endPos, 1);
+      if (t.t === "var") { k++; return { type: "var", name: t.name, id: nextId++, pos: t.pos }; }
+      if (t.t === "const") { k++; return { type: "const", val: t.val, id: nextId++, pos: t.pos }; }
+      if (t.t === "lp") {
+        k++;
+        const inner = expr();
+        const c = peek();
+        if (!c || c.t !== "rp") {
+          if (!c) throw new ParseError("A “(” is never closed.", t.pos, 1);
+          throw new ParseError(`Expected “)” here, found “${describe(c)}”.`, c.pos, c.len);
+        }
+        k++;
+        inner.parens = true;
+        return inner;
+      }
+      if (t.t === "not") { return unary(); }
+      if (t.t === "rp") throw new ParseError("There’s a “)” with nothing before it to close.", t.pos, 1);
+      throw new ParseError(`“${describe(t)}” needs a formula on its left.`, t.pos, t.len);
+    }
+    function unary() {
+      const t = peek();
+      if (t && t.t === "not") {
+        k++;
+        const arg = unary();
+        return { type: "not", arg, id: nextId++, pos: t.pos };
+      }
+      return atom();
+    }
+    function expr() {
+      let left = unary();
+      let first = null;
+      while (peek() && peek().t === "bin") {
+        const t = peek();
+        if (first && (t.op !== first.op || !BIN[t.op].assoc)) {
+          const a = BIN[first.op].sym, b = BIN[t.op].sym;
+          throw new ParseError(
+            t.op === first.op
+              ? `Two “${b}” in a row without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`
+              : `Mixing “${a}” and “${b}” without parentheses is ambiguous. Group them, e.g. (A ${a} B) ${b} C or A ${a} (B ${b} C).`,
+            t.pos, t.len);
+        }
+        first = first || t;
+        k++;
+        const right = unary();
+        left = { type: "bin", op: t.op, left, right, id: nextId++, pos: t.pos };
+      }
+      return left;
+    }
+
+    const ast = expr();
+    if (k < toks.length) {
+      const t = toks[k];
+      if (t.t === "rp") throw new ParseError("This “)” doesn’t match any “(”.", t.pos, 1);
+      const prev = toks[k - 1];
+      throw new ParseError(`A connective is missing between “${describe(prev)}” and “${describe(t)}”.`, t.pos, t.len);
+    }
+    return ast;
+  }
+
+  function lettersOf(node, acc) {
+    if (node.type === "var") { if (!acc.includes(node.name)) acc.push(node.name); }
+    else if (node.type === "not") lettersOf(node.arg, acc);
+    else if (node.type === "bin") { lettersOf(node.left, acc); lettersOf(node.right, acc); }
+    return acc;
+  }
+  function height(node) {
+    if (node.type === "var" || node.type === "const") return (node.h = 0);
+    if (node.type === "not") return (node.h = 1 + height(node.arg));
+    return (node.h = 1 + Math.max(height(node.left), height(node.right)));
+  }
+  function evaluate(node, env, out) {
+    let v;
+    if (node.type === "var") v = env[node.name];
+    else if (node.type === "const") v = node.val;
+    else if (node.type === "not") v = !evaluate(node.arg, env, out);
+    else v = BIN[node.op].f(evaluate(node.left, env, out), evaluate(node.right, env, out));
+    out[node.id] = v;
+    return v;
+  }
+  const kids = (n) => n.type === "not" ? [n.arg] : n.type === "bin" ? [n.left, n.right] : [];
+  const isLeaf = (n) => n.type === "var" || n.type === "const";
+
+  // Printed form, as a list of tokens that remember their node.
+  // Textbook conventions: outer parentheses dropped, ¬ binds to what follows,
+  // and a chain of one associative connective is written without inner parentheses.
+  function printTokens(node, top = true) {
+    if (node.type === "var") return [{ text: node.name, node, kind: "leaf" }];
+    if (node.type === "const") return [{ text: node.val ? "⊤" : "⊥", node, kind: "leaf" }];
+    if (node.type === "not") return [{ text: "¬", node, kind: "conn" }, ...printTokens(node.arg, false)];
+    const leftChain = node.left.type === "bin" && node.left.op === node.op && BIN[node.op].assoc && !node.left.parens;
+    const inner = [
+      ...(leftChain ? printTokens(node.left, true) : printTokens(node.left, false)),
+      { text: BIN[node.op].sym, node, kind: "conn", bin: true },
+      ...printTokens(node.right, false)
+    ];
+    return top ? inner : [{ text: "(", kind: "paren" }, ...inner, { text: ")", kind: "paren" }];
+  }
+  const textOf = (toks) => toks.map((t) => (t.bin ? ` ${t.text} ` : t.text)).join("");
+  const canon = (node) => textOf(printTokens(node, true));
+
+  // ---------- small exact rationals ----------
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
+  const Q = (n, d = 1) => { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d) || 1; return { n: n / g, d: d / g }; };
+  const qadd = (a, b) => Q(a.n * b.d + b.n * a.d, a.d * b.d);
+  const qsub = (a, b) => Q(a.n * b.d - b.n * a.d, a.d * b.d);
+  const qmul = (a, b) => Q(a.n * b.n, a.d * b.d);
+  const qdiv = (a, b) => Q(a.n * b.d, a.d * b.n);
+  const qeq = (a, b) => a.n === b.n && a.d === b.d;
+  const qnum = (a) => a.n / a.d;
+  const qstr = (a) => (a.d === 1 ? String(a.n) : `${a.n}/${a.d}`);
+  const Q0 = Q(0), Q1 = Q(1);
+
+  // ---------- seeded RNG ----------
+  function rngOf(seed) {
+    let s = (seed >>> 0) || 1;
+    const f = () => { s = (s + 0x6d2b79f5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    f.int = (n) => Math.floor(f() * n);
+    f.pick = (arr) => arr[Math.floor(f() * arr.length)];
+    f.chance = (p) => f() < p;
+    f.shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(f() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    f.wpick = (pairs) => { let t = 0; pairs.forEach((p) => (t += p[1])); let x = f() * t; for (const p of pairs) { x -= p[1]; if (x < 0) return p[0]; } return pairs[pairs.length - 1][0]; };
+    return f;
+  }
+
+  // ---------- formulas ----------
+  // {k:'v',n} | {k:'n',a} | {k:'a'|'o'|'i'|'e',a,b} | {k:'t'} | {k:'f'}
+  // constructors are memoized, so each formula is built (and its key computed) once
+  const FC = new Map();
+  const memo = (id, mk) => { let f = FC.get(id); if (!f) { if (FC.size > 200000) FC.clear(); f = mk(); FC.set(id, f); } return f; };
+  // the memo id is the exact structure (not the commutative key), so F ∧ G and G ∧ F stay distinct objects
+  const sid = (f) => (f._s !== undefined ? f._s : (f._s = f.k === "v" ? f.n : f.k === "n" ? "¬" + sid(f.a) : isBin(f) ? "(" + sid(f.a) + f.k + sid(f.b) + ")" : f.k));
+  const V = (n) => memo("v" + n, () => ({ k: "v", n }));
+  const N = (a) => memo("n" + sid(a), () => ({ k: "n", a }));
+  const A = (a, b) => memo("a" + sid(a) + "\u0001" + sid(b), () => ({ k: "a", a, b }));
+  const O = (a, b) => memo("o" + sid(a) + "\u0001" + sid(b), () => ({ k: "o", a, b }));
+  const SYM = { a: "∧", o: "∨", i: "→", e: "↔" };
+  const isBin = (f) => f.k === "a" || f.k === "o" || f.k === "i" || f.k === "e";
+  function fromTT(node) {
+    if (!node) return null;
+    if (node.type === "var") return V(node.name);
+    if (node.type === "const") return { k: node.val ? "t" : "f" };
+    if (node.type === "not") return N(fromTT(node.arg));
+    const op = { and: "a", or: "o", imp: "i", iff: "e" }[node.op];
+    if (!op) throw new ParseError("Use ¬, ∧, ∨, → or ↔ here.", node.pos || 0, 1);
+    return { k: op, a: fromTT(node.left), b: fromTT(node.right) };
+  }
+  function parseF(src) { return fromTT(parse(normalize(String(src)))); }
+  const flat = (f, op) => (f.k === op ? [...flat(f.a, op), ...flat(f.b, op)] : [f]);
+  // canonical key: commutative/associative ∧ and ∨ sorted, so P(G ∧ F) is P(F ∧ G)
+  function key(f) {
+    if (f._k !== undefined) return f._k;
+    return (f._k = key0(f));
+  }
+  function key0(f) {
+    switch (f.k) {
+      case "v": return f.n;
+      case "t": return "⊤";
+      case "f": return "⊥";
+      case "n": return "¬" + keyIn(f.a);
+      case "a": case "o": return flat(f, f.k).map(keyIn).sort().join(SYM[f.k]);
+      default: return keyIn(f.a) + SYM[f.k] + keyIn(f.b);
+    }
+  }
+  const keyIn = (f) => (isBin(f) ? "(" + key(f) + ")" : key(f));
+  // textbook printing: outer parentheses dropped, chains of one ∧/∨ unbracketed
+  function show(f) {
+    switch (f.k) {
+      case "v": return f.n;
+      case "t": return "⊤";
+      case "f": return "⊥";
+      case "n": return "¬" + showIn(f.a);
+      case "a": case "o": return flat(f, f.k).map(showIn).join(` ${SYM[f.k]} `);
+      default: return showIn(f.a) + ` ${SYM[f.k]} ` + showIn(f.b);
+    }
+  }
+  const showIn = (f) => (isBin(f) ? "(" + show(f) + ")" : show(f));
+  function lettersOfF(f, acc = []) {
+    if (f.k === "v") { if (!acc.includes(f.n)) acc.push(f.n); }
+    else if (f.k === "n") lettersOfF(f.a, acc);
+    else if (isBin(f)) { lettersOfF(f.a, acc); lettersOfF(f.b, acc); }
+    return acc;
+  }
+  const conns = (f) => (f.k === "n" ? 1 + conns(f.a) : isBin(f) ? 1 + conns(f.a) + conns(f.b) : 0);
+  const negOf = (f) => (f.k === "n" ? f.a : N(f)); // the complementary literal (only used on literals)
+  const isLit = (f) => f.k === "v" || (f.k === "n" && f.a.k === "v");
+
+  // ---------- problem context ----------
+  // givens: {t:'u',f,v} {t:'c',f,g,v} {t:'ind',f,g,both} {t:'exc',f,g} {t:'eqv',f,g}
+  // goal:   {t:'u',f} {t:'c',f,g} {t:'ind',f,g} {t:'exc',f,g}
+  const uK = (f) => "u:" + key(f);
+  const cK = (f, g) => "c:" + key(f) + "|" + key(g);
+  const iK = (f, g) => "I:" + key(f) + ">" + key(g);
+  const xK = (f, g) => { const a = key(f), b = key(g); return "X:" + (a < b ? a + "," + b : b + "," + a); };
+  const zK = (g) => "Z:" + key(g);
+  const isReal = (k) => k[0] !== "Z";
+
+  function makeCtx(prob) {
+    const letters = prob.letters.slice();
+    const n = letters.length, R = 1 << n;
+    const full = R >= 32 ? 0xffffffff : (1 << R) - 1;
+    const lmask = {};
+    letters.forEach((L, i) => { let m = 0; for (let r = 0; r < R; r++) if (!((r >> (n - 1 - i)) & 1)) m |= 1 << r; lmask[L] = m >>> 0; });
+    const mcache = new Map();
+    const mask = (f) => {
+      const k = key(f); if (mcache.has(k)) return mcache.get(k);
+      let m;
+      switch (f.k) {
+        case "v": m = lmask[f.n]; if (m === undefined) throw new Error("letter " + f.n); break;
+        case "t": m = full; break;
+        case "f": m = 0; break;
+        case "n": m = ~mask(f.a) & full; break;
+        case "a": m = mask(f.a) & mask(f.b); break;
+        case "o": m = mask(f.a) | mask(f.b); break;
+        case "i": m = (~mask(f.a) | mask(f.b)) & full; break;
+        case "e": m = ~(mask(f.a) ^ mask(f.b)) & full; break;
+      }
+      m >>>= 0; mcache.set(k, m); return m;
+    };
+    let poss = full;
+    const stipLines = [];
+    prob.givens.forEach((g, i) => {
+      if (g.t === "exc") { poss &= ~(mask(g.f) & mask(g.g)); stipLines.push(i); }
+      if (g.t === "eqv") { poss &= ~(mask(g.f) ^ mask(g.g)); stipLines.push(i); }
+    });
+    poss >>>= 0;
+    const ctx = { prob, letters, n, R, full, poss, mask, stipLines, disp: new Map(), forms: new Map(), own: !!prob.own };
+    ctx.name = (f) => { const k = key(f); if (!ctx.disp.has(k)) ctx.disp.set(k, show(f)); if (!ctx.forms.has(k)) ctx.forms.set(k, f); return ctx.disp.get(k); };
+    // semantic tests over the possible rows, and whether they hold as a matter of logic alone
+    ctx.taut = (f) => ((mask(f) & poss) >>> 0) === poss;
+    ctx.contra = (f) => ((mask(f) & poss) >>> 0) === 0;
+    ctx.same = (f, g) => (((mask(f) ^ mask(g)) & poss) >>> 0) === 0;
+    ctx.excl = (f, g) => ((mask(f) & mask(g) & poss) >>> 0) === 0;
+    ctx.logical = { taut: (f) => mask(f) === full, contra: (f) => mask(f) === 0, same: (f, g) => mask(f) === mask(g), excl: (f, g) => (mask(f) & mask(g)) === 0 };
+    // register display names: givens first (the form first written), then the goal
+    const nameAll = (f) => { ctx.name(f); if (f.k === "n") nameAll(f.a); else if (isBin(f)) { nameAll(f.a); nameAll(f.b); } };
+    prob.givens.forEach((g) => { nameAll(g.f); if (g.g) nameAll(g.g); });
+    nameAll(prob.goal.f); if (prob.goal.g) nameAll(prob.goal.g);
+    ctx.rowOf = (r) => Object.fromEntries(letters.map((L, i) => [L, !((r >> (n - 1 - i)) & 1)]));
+    ctx.firstRow = (m) => { m = (m & poss) >>> 0; for (let r = 0; r < R; r++) if ((m >> r) & 1) return r; return -1; };
+    return ctx;
+  }
+
+  // the items a given line puts on the list
+  function givenItems(g) {
+    switch (g.t) {
+      case "u": return [[uK(g.f), g.v]];
+      case "c": return [[cK(g.f, g.g), g.v]];
+      case "ind": return g.both ? [[iK(g.f, g.g), true], [iK(g.g, g.f), true]] : [[iK(g.f, g.g), true]];
+      case "exc": return [[xK(g.f, g.g), true]];
+      default: return [];
+    }
+  }
+  function goalKey(goal) {
+    return goal.t === "u" ? uK(goal.f) : goal.t === "c" ? cK(goal.f, goal.g) : goal.t === "ind" ? iK(goal.f, goal.g) : xK(goal.f, goal.g);
+  }
+
+  // ---------- rules ----------
+  const RULES = {
+    norm:   { name: "Normality", cite: "axiom", group: "Axioms", arity: 1, form: "P(φ) = 1, φ a tautology" },
+    add:    { name: "Additivity", cite: "axiom", group: "Axioms", arity: 2, form: "P(φ ∨ ψ) = P(φ) + P(ψ)" },
+    cp:     { name: "Conditional probability", cite: "Def. 4.2", group: "Definitions", arity: 2, form: "P(φ | ψ) = P(φ ∧ ψ) / P(ψ)" },
+    indn:   { name: "Independence", cite: "Def. 5.2", group: "Definitions", arity: 2, form: "P(φ | ψ) = P(φ)" },
+    indf:   { name: "Independence", cite: "Def. 5.2", group: "Definitions", arity: 2, fact: true },
+    excf:   { name: "Mutually exclusive", cite: "Def. 4.1", group: "Definitions", arity: 2, fact: true },
+    exc0:   { name: "Mutually exclusive", cite: "Def. 4.1, Thm 5.1", group: "Definitions", arity: 2, fact: true },
+    contra: { name: "Contradiction", cite: "Thm 5.1", group: "Theorems", arity: 1, form: "P(φ) = 0, φ a contradiction" },
+    comp:   { name: "Complement", cite: "Thm 5.5", group: "Theorems", arity: 1, form: "P(φ) + P(¬φ) = 1" },
+    equiv:  { name: "Equivalence", cite: "Thm 5.6", group: "Theorems", arity: 2, form: "P(φ) = P(ψ)" },
+    ie:     { name: "Inclusion-exclusion", cite: "Thm 5.10", group: "Theorems", arity: 2, form: "P(φ ∨ ψ) = P(φ) + P(ψ) − P(φ ∧ ψ)" },
+    conja:  { name: "Conjunction", cite: "Thm 5.11a", group: "Theorems", arity: 2, form: "P(φ ∧ ψ) = P(φ | ψ) × P(ψ)" },
+    conjb:  { name: "Conjunction", cite: "Thm 5.11b", group: "Theorems", arity: 2, form: "P(φ ∧ ψ) = 0, if P(ψ) = 0" },
+    indc:   { name: "Independent conjunction", cite: "Thm 5.12", group: "Theorems", arity: 2, form: "P(φ ∧ ψ) = P(φ) × P(ψ)" },
+    indcf:  { name: "Independent conjunction", cite: "Thm 5.12", group: "Theorems", arity: 2, fact: true },
+    sym:    { name: "Symmetry of independence", cite: "Thm 5.13", group: "Theorems", arity: 2, fact: true }
+  };
+  const ruleLabel = (r) => `${RULES[r].name} (${RULES[r].cite})`;
+  // tie-break weights for the model solution: the route the book would take
+  const WEIGHT = { ie: 1, cp: 1, conja: 1, add: 1, indc: 1, indn: 1, indf: 1, sym: 1, norm: 1.5, contra: 1.5, excf: 1, exc0: 1, conjb: 1, indcf: 1.02, comp: 1.1, equiv: 1.2 };
+
+  // An instance of a rule at slots f (φ), g (ψ).
+  // Numeric: q = quantities, eq = {lin:[[coef,key]], c} or {prod:[a,b,c]} meaning a = b × c.
+  // Fact: prem = items needed, out = item produced (value from premises).
+  // stat: a proviso judged on the rows; dyn: a proviso needing something on the list.
+  function instantiate(ctx, rule, f, g) {
+    const I = { rule, f, g };
+    const conj = g ? A(f, g) : null, disj = g ? O(f, g) : null;
+    switch (rule) {
+      case "norm": I.q = [uK(f)]; I.eq = { lin: [[1, uK(f)]], c: Q1 }; I.stat = ["taut", f]; break;
+      case "contra": I.q = [uK(f)]; I.eq = { lin: [[1, uK(f)]], c: Q0 }; I.stat = ["contra", f]; break;
+      case "comp": I.q = [uK(f), uK(N(f))]; I.eq = { lin: [[1, uK(f)], [1, uK(N(f))]], c: Q1 }; I.forms = [N(f)]; break;
+      case "equiv": I.q = [uK(f), uK(g)]; I.eq = { lin: [[1, uK(f)], [-1, uK(g)]], c: Q0 }; I.stat = ["same", f, g]; break;
+      case "ie": I.q = [uK(disj), uK(f), uK(g), uK(conj)]; I.eq = { lin: [[1, uK(disj)], [-1, uK(f)], [-1, uK(g)], [1, uK(conj)]], c: Q0 }; I.forms = [disj, conj]; break;
+      case "add": I.q = [uK(disj), uK(f), uK(g)]; I.eq = { lin: [[1, uK(disj)], [-1, uK(f)], [-1, uK(g)]], c: Q0 }; I.stat = ["excl", f, g]; I.forms = [disj]; break;
+      case "cp": I.q = [cK(f, g), uK(conj), uK(g)]; I.eq = { prod: [uK(conj), cK(f, g), uK(g)] }; I.dyn = ["nz", g]; I.forms = [conj]; break;
+      case "conja": I.q = [uK(conj), cK(f, g), uK(g)]; I.eq = { prod: [uK(conj), cK(f, g), uK(g)] }; I.dyn = ["nz", g]; I.forms = [conj]; break;
+      case "conjb": I.q = [uK(conj)]; I.eq = { lin: [[1, uK(conj)]], c: Q0 }; I.dyn = ["zero", g]; I.forms = [conj]; break;
+      case "indc": I.q = [uK(conj), uK(f), uK(g)]; I.eq = { prod: [uK(conj), uK(f), uK(g)] }; I.dyn = ["ind", f, g]; I.forms = [conj]; break;
+      case "indn": I.q = [cK(f, g), uK(f)]; I.eq = { lin: [[1, cK(f, g)], [-1, uK(f)]], c: Q0 }; I.dyn = ["ind", f, g]; break;
+      case "indf": I.fact = true; I.prem = [cK(f, g), uK(f)]; I.out = iK(f, g); break;
+      case "indcf": I.fact = true; I.prem = [uK(conj), uK(f), uK(g)]; I.out = iK(f, g); I.forms = [conj]; break;
+      case "sym": I.fact = true; I.prem = [iK(f, g)]; I.out = iK(g, f); I.dyn2 = [["nz", f], ["nz", g]]; break;
+      case "excf": I.fact = true; I.prem = []; I.out = xK(f, g); I.stat = ["excl", f, g]; break;
+      case "exc0": I.fact = true; I.prem = [uK(conj)]; I.out = xK(f, g); I.forms = [conj]; break;
+      default: throw new Error("rule " + rule);
+    }
+    if (I.q) I.q = [...new Set(I.q)];
+    I.statOk = !I.stat || ctx[I.stat[0]](...I.stat.slice(1));
+    I.statLogical = !I.stat || ctx.logical[I.stat[0]](...I.stat.slice(1));
+    return I;
+  }
+
+  // is P(g) ≠ 0 known from the list? Returns the supporting item key, or null.
+  function nzSource(ctx, known, g) {
+    const k = key(g);
+    const u = known.get("u:" + k);
+    if (u && u.v && !qeq(u.v, Q0)) return "u:" + k;
+    for (const [ik, it] of known) {
+      if (ik[0] === "c" && ik.endsWith("|" + k) && ik.slice(2, ik.length - k.length - 1).length) return ik;
+      if (ik[0] === "I" && ik.endsWith(">" + k) && it.v === true) return ik;
+    }
+    return null;
+  }
+  // dynamic proviso: returns {ok, prem:[keys], why}
+  function dynCheck(ctx, known, I) {
+    const prem = [];
+    const checks = I.dyn ? [I.dyn] : I.dyn2 || [];
+    for (const d of checks) {
+      if (d[0] === "nz") { const s = nzSource(ctx, known, d[1]); if (!s) return { ok: false, why: d }; prem.push(s); }
+      else if (d[0] === "ind") { const k = iK(d[1], d[2]); const it = known.get(k); if (!it || it.v !== true) return { ok: false, why: d }; prem.push(k); }
+      else if (d[0] === "zero") { const k = uK(d[1]); const it = known.get(k); if (!it || !qeq(it.v, Q0)) return { ok: false, why: d }; prem.push(k); }
+    }
+    return { ok: true, prem };
+  }
+  // solve a numeric instance for unknown key x, given values (Map key→{v}); null if it can't be solved
+  function solveFor(I, x, val) {
+    const v = (k) => val(k);
+    if (I.eq.lin) {
+      let cu = 0, rest = I.eq.c;
+      for (const [c, k] of I.eq.lin) { if (k === x) cu += c; else rest = qsub(rest, qmul(Q(c), v(k))); }
+      return cu === 0 ? null : qdiv(rest, Q(cu));
+    }
+    const [a, b, c] = I.eq.prod;
+    if (x === a) return qmul(v(b), v(c));
+    if (x === b) { const d = v(c); return qeq(d, Q0) ? null : qdiv(v(a), d); }
+    if (x === c) { const d = v(b); return qeq(d, Q0) ? null : qdiv(v(a), d); }
+    return null;
+  }
+  // value of a fact instance from its premises, or undefined if it gives no conclusion
+  function factValue(ctx, I, val) {
+    switch (I.rule) {
+      case "indf": return qeq(val(I.prem[0]), val(I.prem[1]));
+      case "indcf": return qeq(val(I.prem[0]), qmul(val(I.prem[1]), val(I.prem[2]))) ? undefined : false;
+      case "sym": return val(I.prem[0]);
+      case "excf": return I.statOk ? true : undefined;
+      case "exc0": return qeq(val(I.prem[0]), Q0) ? undefined : false;
+    }
+  }
+
+  // ---------- the universe of formulas the solver works over ----------
+  function universe(ctx, extra = [], big = false) {
+    const U = new Map();
+    const add = (f) => { const k = key(f); if (!U.has(k)) U.set(k, f); };
+    const addSub = (f) => { add(f); if (f.k === "n") addSub(f.a); else if (isBin(f)) { addSub(f.a); addSub(f.b); } };
+    const lits = [];
+    ctx.letters.forEach((L) => { lits.push(V(L), N(V(L))); });
+    lits.forEach(add);
+    for (let i = 0; i < lits.length; i++) for (let j = i + 1; j < lits.length; j++) {
+      if (lettersOfF(lits[i])[0] === lettersOfF(lits[j])[0]) continue;
+      add(A(lits[i], lits[j])); add(O(lits[i], lits[j]));
+    }
+    if (big) {
+      // besides the solver's formulas, every formula with up to two connectives (what a student might type)
+      const Ls = ctx.letters.map(V);
+      const one = [...lits];
+      for (let i = 0; i < Ls.length; i++) for (let j = i + 1; j < Ls.length; j++) { one.push(A(Ls[i], Ls[j]), O(Ls[i], Ls[j])); }
+      one.forEach(add);
+      one.forEach((x) => { if (conns(x) === 1) add(N(x)); });
+      Ls.forEach((a) => one.forEach((x) => { if (conns(x) === 1 && key(x) !== key(a)) { add(A(a, x)); add(O(a, x)); } }));
+      lits.forEach((x) => lits.forEach((y) => { if (key(x) !== key(y) && conns(x) + conns(y) <= 1) { add(A(x, y)); add(O(x, y)); } }));
+    }
+    const fs = [];
+    ctx.prob.givens.forEach((g) => { fs.push(g.f); if (g.g) fs.push(g.g); });
+    fs.push(ctx.prob.goal.f); if (ctx.prob.goal.g) fs.push(ctx.prob.goal.g);
+    extra.forEach((f) => fs.push(f));
+    fs.forEach(addSub);
+    // the conjunction and disjunction of each pair a problem talks about
+    const pairs = [];
+    ctx.prob.givens.forEach((g) => { if (g.g) pairs.push([g.f, g.g]); });
+    if (ctx.prob.goal.g) pairs.push([ctx.prob.goal.f, ctx.prob.goal.g]);
+    pairs.forEach(([a, b]) => { add(A(a, b)); add(O(a, b)); });
+    // negations, but no double negations unless written
+    [...U.values()].forEach((f) => { if (f.k !== "n") add(N(f)); });
+    for (const [k, f] of U) if (!ctx.forms.has(k)) ctx.forms.set(k, f);
+    return U;
+  }
+
+  // all rule instances over the universe (with Bayes' theorem not among the rules)
+  function allInstances(ctx, U) {
+    const out = [];
+    const sigs = new Set();
+    const push = (I) => {
+      const sig = I.rule + ":" + (I.fact ? I.out + "<" + I.prem.join(",") : I.q.slice().sort().join(",")) + (I.dyn ? "?" + I.dyn.map((x) => (typeof x === "string" ? x : key(x))).join(",") : "");
+      if (sigs.has(sig)) return; sigs.add(sig); out.push(I);
+    };
+    const fs = [...U.values()];
+    const has = (f) => U.has(key(f));
+    for (const f of fs) {
+      if (ctx.taut(f)) push(instantiate(ctx, "norm", f));
+      if (ctx.contra(f)) push(instantiate(ctx, "contra", f));
+      if (has(N(f))) push(instantiate(ctx, "comp", f));
+    }
+    // equivalences: group by mask over the possible rows
+    const groups = new Map();
+    fs.forEach((f) => { const m = (ctx.mask(f) & ctx.poss) >>> 0; if (!groups.has(m)) groups.set(m, []); groups.get(m).push(f); });
+    for (const grp of groups.values()) for (let i = 0; i < grp.length; i++) for (let j = 0; j < grp.length; j++) if (i !== j) push(instantiate(ctx, "equiv", grp[i], grp[j]));
+    // the pairs worth trying: the two sides of each ∧ and ∨ in the universe, and the pairs the problem names
+    const pairs = new Map();
+    const addPair = (f, g) => { if (!has(f) || !has(g)) return; const kf = key(f), kg = key(g); if (kf === kg) return; pairs.set(kf + "#" + kg, [U.get(kf), U.get(kg)]); };
+    for (const h of fs) if (h.k === "a" || h.k === "o") { addPair(h.a, h.b); addPair(h.b, h.a); }
+    (ctx.relList || []).forEach(([f, g]) => { addPair(f, g); addPair(g, f); });
+    for (const [f, g] of pairs.values()) {
+      const hc = has(A(f, g)), hd = has(O(f, g));
+      if (hc && hd) push(instantiate(ctx, "ie", f, g));
+      if (hd && ctx.excl(f, g)) push(instantiate(ctx, "add", f, g));
+      if (hc) {
+        push(instantiate(ctx, "cp", f, g)); push(instantiate(ctx, "conja", f, g));
+        if (ctx.contra(g) || ctx.own) push(instantiate(ctx, "conjb", f, g));   // needs P(g) = 0 on the list
+        push(instantiate(ctx, "indc", f, g));
+        if (ctx.relPair(f, g)) { push(instantiate(ctx, "indcf", f, g)); push(instantiate(ctx, "exc0", f, g)); } // only ever answer a question
+      }
+      if (isLit(f) && isLit(g) || ctx.relPair(f, g)) {
+        push(instantiate(ctx, "indn", f, g)); push(instantiate(ctx, "indf", f, g)); push(instantiate(ctx, "sym", f, g));
+      }
+      if (ctx.excl(f, g) && ctx.relPair(f, g)) push(instantiate(ctx, "excf", f, g));
+    }
+    return out;
+  }
+
+  // ---------- forward closure ----------
+  // start: Map key → value. Returns Map key → {v, round, inst, prem}
+  function closure(ctx, insts, start, maxRounds = 12) {
+    const known = new Map();
+    for (const [k, v] of start) known.set(k, { v, round: 0, given: true });
+    const val = (k) => known.get(k).v;
+    for (let round = 1; round <= maxRounds; round++) {
+      const added = [];
+      for (const I of insts) {
+        if (!I.statOk) continue;
+        if (I.fact) {
+          if (known.has(I.out)) continue;
+          if (!I.prem.every((k) => known.has(k))) continue;
+          const d = dynCheck(ctx, known, I); if (!d.ok) continue;
+          const v = factValue(ctx, I, val);
+          if (v === undefined) continue;
+          added.push([I.out, { v, round, inst: I, prem: [...I.prem, ...d.prem] }]);
+        } else {
+          let unk = null, cnt = 0;
+          for (const k of I.q) if (!known.has(k)) { cnt++; unk = k; }
+          if (cnt !== 1) continue;
+          const d = dynCheck(ctx, known, I); if (!d.ok) continue;
+          const v = solveFor(I, unk, val); if (!v) continue;
+          added.push([unk, { v, round, inst: I, prem: [...I.q.filter((k) => k !== unk), ...d.prem] }]);
+        }
+      }
+      let any = false;
+      for (const [k, it] of added) if (!known.has(k)) { known.set(k, it); any = true; }
+      if (!any) break;
+    }
+    return known;
+  }
+
+  // every way each derivable item can be derived (one hyperedge per instance and unknown)
+  function edgesOf(ctx, insts, known) {
+    const E = new Map();
+    const push = (k, e) => { if (!E.has(k)) E.set(k, []); E.get(k).push(e); };
+    const val = (k) => known.get(k).v;
+    for (const I of insts) {
+      if (!I.statOk) continue;
+      if (I.fact) {
+        if (!known.has(I.out) || known.get(I.out).given) continue;
+        if (!I.prem.every((k) => known.has(k))) continue;
+        const v = factValue(ctx, I, val); if (v === undefined || v !== known.get(I.out).v) continue;
+        const nz = (I.dyn2 || []).map((d) => zK(d[1]));
+        if (nz.some((z) => !E.has(z) && !zDerivable(ctx, known, z))) continue;
+        push(I.out, { inst: I, prem: [...I.prem, ...nz], w: WEIGHT[I.rule] });
+      } else {
+        if (!I.q.every((k) => known.has(k))) continue;
+        for (const x of I.q) {
+          if (known.get(x).given) continue;
+          const v = solveFor(I, x, val); if (!v || !qeq(v, known.get(x).v)) continue;
+          const others = I.q.filter((k) => k !== x);
+          let dp = [];
+          if (I.dyn) {
+            if (I.dyn[0] === "nz") { const z = zK(I.dyn[1]); if (!zDerivable(ctx, known, z)) continue; dp = [z]; }
+            else if (I.dyn[0] === "ind") { const k = iK(I.dyn[1], I.dyn[2]); if (!known.has(k) || known.get(k).v !== true) continue; dp = [k]; }
+            else if (I.dyn[0] === "zero") { const k = uK(I.dyn[1]); if (!known.has(k) || !qeq(known.get(k).v, Q0)) continue; dp = [k]; }
+          }
+          let w = WEIGHT[I.rule];
+          if (I.rule === "cp" && x === I.eq.prod[0]) w += 0.05;      // a conjunction: Thm 5.11a reads more naturally
+          if (I.rule === "conja" && x !== I.eq.prod[0]) w += 0.05;   // a conditional or a marginal: Def. 4.2
+          push(x, { inst: I, x, prem: [...others, ...dp], w });
+        }
+      }
+    }
+    // pseudo-items Z:g, "P(g) ≠ 0 is known"
+    for (const [k, it] of known) {
+      if (k[0] === "u" && !qeq(it.v, Q0)) push("Z:" + k.slice(2), { prem: [k], w: 0 });
+      if (k[0] === "c") push("Z:" + k.slice(k.indexOf("|") + 1), { prem: [k], w: 0 });
+      if (k[0] === "I" && it.v === true) push("Z:" + k.slice(k.indexOf(">") + 1), { prem: [k], w: 0 });
+    }
+    return E;
+  }
+  function zDerivable(ctx, known, z) {
+    const g = z.slice(2);
+    const u = known.get("u:" + g);
+    if (u && !qeq(u.v, Q0)) return true;
+    for (const [k, it] of known) {
+      if (k[0] === "c" && k.endsWith("|" + g)) return true;
+      if (k[0] === "I" && k.endsWith(">" + g) && it.v === true) return true;
+    }
+    return false;
+  }
+
+  // shortest derivation (fewest added lines), ties broken by rule weight
+  function shortest(E, givenSet, goal, maxB = 7, limit = 20000, known = null) {
+    if (givenSet.has(goal)) return { size: 0, chosen: new Map() };
+    if (!E.has(goal)) return null;
+    // an item first reached in closure round r needs at least r lines (itself included)
+    const rnd = (k) => (known && isReal(k) && known.has(k) ? known.get(k).round : 0);
+    if (rnd(goal) > maxB) return null;
+    let best = null, visits = 0;
+    const acyclic = (chosen) => {
+      const state = new Map();
+      const dfs = (k) => {
+        if (givenSet.has(k)) return true;
+        const s = state.get(k); if (s === 1) return false; if (s === 2) return true;
+        state.set(k, 1);
+        const e = chosen.get(k); if (!e) return false;
+        for (const p of e.prem) if (!dfs(p)) return false;
+        state.set(k, 2); return true;
+      };
+      return dfs(goal);
+    };
+    function rec(open, chosen, count, weight, B) {
+      if (++visits > limit) return;
+      if (!open.length) {
+        if (!acyclic(chosen)) return;
+        if (!best || count < best.size || (count === best.size && weight < best.weight - 1e-9)) best = { size: count, weight, chosen: new Map(chosen) };
+        return;
+      }
+      const [x, ...rest] = open;
+      const es = E.get(x) || [];
+      for (const e of es) {
+        const np = [];
+        let add = 0;
+        for (const p of e.prem) {
+          if (givenSet.has(p) || chosen.has(p) || p === x || rest.includes(p) || np.includes(p)) continue;
+          np.push(p); if (isReal(p)) add++;
+        }
+        if (count + add > B) continue;
+        if (best && (count + add > best.size || (count + add === best.size && weight + e.w >= best.weight - 1e-9 && !np.length))) continue;
+        chosen.set(x, e);
+        rec([...rest, ...np], chosen, count + add, weight + e.w, B);
+        chosen.delete(x);
+      }
+    }
+    let exhausted = false;
+    for (let B = 1; B <= maxB && !best; B++) { visits = 0; rec([goal], new Map(), 1, 0, B); if (visits > limit) exhausted = true; }
+    shortest.lastExhausted = exhausted && !best;
+    return best;
+  }
+
+  // ---------- solving a problem ----------
+  function startItems(prob) {
+    const m = new Map();
+    prob.givens.forEach((g) => givenItems(g).forEach(([k, v]) => m.set(k, v)));
+    return m;
+  }
+  function relPairsOf(ctx) {
+    const set = new Set();
+    const addP = (a, b) => { set.add(key(a) + "#" + key(b)); set.add(key(b) + "#" + key(a)); };
+    ctx.prob.givens.forEach((g) => { if (g.g && (g.t === "ind" || g.t === "c")) addP(g.f, g.g); });
+    if (ctx.prob.goal.g) addP(ctx.prob.goal.f, ctx.prob.goal.g);
+    ctx.relPair = (a, b) => set.has(key(a) + "#" + key(b));
+    ctx.relList = [];
+    ctx.prob.givens.forEach((g) => { if (g.g && (g.t === "ind" || g.t === "c")) ctx.relList.push([g.f, g.g]); });
+    if (ctx.prob.goal.g) ctx.relList.push([ctx.prob.goal.f, ctx.prob.goal.g]);
+  }
+  function prepare(prob, extra = [], big = false) {
+    const ctx = makeCtx(prob);
+    relPairsOf(ctx);
+    const U = universe(ctx, extra, big);
+    const insts = allInstances(ctx, U);
+    return { ctx, U, insts };
+  }
+  // solve from the givens plus any extra lines; returns {ctx, known, deriv} (deriv null if underivable)
+  function solve(prob, opts = {}) {
+    const P = opts.prepared || prepare(prob, opts.extraForms || [], !!opts.big);
+    const start = startItems(prob);
+    (opts.extra || []).forEach(([k, v]) => start.set(k, v));
+    const known = closure(P.ctx, P.insts, start);
+    const goal = opts.goal || goalKey(prob.goal);
+    const res = { ...P, known, goal, start };
+    const goals = [goal];
+    if (goal[0] === "I" || goal[0] === "X") { /* fact goals: a value either way */ }
+    if (!known.has(goal)) { res.deriv = null; return res; }
+    if (opts.noDeriv) { res.deriv = true; return res; }
+    const E = edgesOf(P.ctx, P.insts, known);
+    const best = shortest(E, new Set(start.keys()), goal, opts.maxB || 7, opts.limit || 20000, known);
+    res.exhausted = !!(best && best.exhausted) || shortest.lastExhausted;
+    res.E = E;
+    res.deriv = best ? orderLines(P.ctx, best, start, goal, known) : null;
+    return res;
+  }
+  // put the chosen derivation in order: premises first, as the book reasons
+  function orderLines(ctx, best, start, goal, known) {
+    const lines = [], done = new Set(start.keys());
+    const visit = (k) => {
+      if (done.has(k)) return; done.add(k);
+      const e = best.chosen.get(k);
+      e.prem.forEach(visit);
+      if (isReal(k)) lines.push({ key: k, v: known.get(k).v, inst: e.inst, x: e.x, prem: e.prem });
+    };
+    visit(goal);
+    return { size: best.size, weight: best.weight, lines, zsrc: (z) => best.chosen.get(z) };
+  }
+
+  // ---------- describing items and lines ----------
+  function fmtVal(v, mode = "frac") {
+    if (mode === "dec") { const x = qnum(v); return String(+x.toFixed(4)); }
+    return qstr(v);
+  }
+  function itemText(ctx, k, v) {
+    const F = (kk) => ctx.disp.get(kk) || (ctx.forms.has(kk) ? show(ctx.forms.get(kk)) : kk);
+    if (k[0] === "u") return `P(${F(k.slice(2))})`;
+    if (k[0] === "c") { const s = k.slice(2), i = splitTop(s, "|"); return `P(${F(s.slice(0, i))} | ${F(s.slice(i + 1))})`; }
+    if (k[0] === "I") { const s = k.slice(2), i = splitTop(s, ">"); return `${F(s.slice(0, i))} is ${v === false ? "not " : ""}independent of ${F(s.slice(i + 1))}`; }
+    if (k[0] === "X") { const s = k.slice(2), i = splitTop(s, ","); return `${F(s.slice(0, i))} and ${F(s.slice(i + 1))} are ${v === false ? "not " : ""}mutually exclusive`; }
+    return k;
+  }
+  // index of a separator at bracket depth 0
+  function splitTop(s, ch) { let d = 0; for (let i = 0; i < s.length; i++) { const c = s[i]; if (c === "(") d++; else if (c === ")") d--; else if (c === ch && d === 0) return i; } return -1; }
+
+  // the arithmetic for a numeric line: unknown x = expression = value
+  function calcOf(I, x, val) {
+    const parts = [];
+    if (I.eq.lin) {
+      let cu = 0; I.eq.lin.forEach(([c, k]) => { if (k === x) cu += c; });
+      const terms = [];
+      if (!qeq(I.eq.c, Q0)) terms.push({ s: Math.sign(cu), v: I.eq.c });
+      I.eq.lin.forEach(([c, k]) => { if (k !== x) terms.push({ s: -Math.sign(c) * Math.sign(cu), v: val(k), k }); });
+      terms.sort((a, b) => b.s - a.s);
+      return { kind: "lin", terms };
+    }
+    const [a, b, c] = I.eq.prod;
+    if (x === a) return { kind: "mul", l: { v: val(b), k: b }, r: { v: val(c), k: c } };
+    if (x === b) return { kind: "div", l: { v: val(a), k: a }, r: { v: val(c), k: c } };
+    return { kind: "div", l: { v: val(a), k: a }, r: { v: val(b), k: b } };
+  }
+  function calcText(calc, result, mode = "frac") {
+    const fv = (v) => fmtVal(v, mode);
+    const wrapv = (v) => (mode === "frac" && v.d !== 1 ? `(${fv(v)})` : fv(v));
+    let e;
+    if (calc.kind === "lin") {
+      if (!calc.terms.length || (calc.terms.length === 1 && calc.terms[0].s > 0)) return fv(result);
+      e = calc.terms.map((t, i) => (i === 0 ? (t.s < 0 ? "−" : "") : t.s < 0 ? " − " : " + ") + fv(t.v)).join("");
+    } else if (calc.kind === "mul") e = `${wrapv(calc.l.v)} × ${wrapv(calc.r.v)}`;
+    else e = `${wrapv(calc.l.v)} / ${wrapv(calc.r.v)}`;
+    return `${e} = ${fv(result)}`;
+  }
+  // the instance as an equation, in the problem's names (for Step through and hints)
+  function instanceText(ctx, I) {
+    const F = (f) => ctx.name(f), Fi = (f) => (isBin(f) ? `(${ctx.name(f)})` : ctx.name(f));
+    const f = I.f, g = I.g;
+    const c = g ? ctx.name(A(f, g)) : null, d = g ? ctx.name(O(f, g)) : null;
+    switch (I.rule) {
+      case "norm": return `P(${F(f)}) = 1`;
+      case "contra": return `P(${F(f)}) = 0`;
+      case "comp": return `P(${F(f)}) + P(${ctx.name(N(f))}) = 1`;
+      case "equiv": return `P(${F(f)}) = P(${F(g)})`;
+      case "ie": return `P(${d}) = P(${F(f)}) + P(${F(g)}) − P(${c})`;
+      case "add": return `P(${d}) = P(${F(f)}) + P(${F(g)})`;
+      case "cp": return `P(${F(f)} | ${F(g)}) = P(${c}) / P(${F(g)})`;
+      case "conja": return `P(${c}) = P(${F(f)} | ${F(g)}) × P(${F(g)})`;
+      case "conjb": return `P(${c}) = 0`;
+      case "indc": return `P(${c}) = P(${F(f)}) × P(${F(g)})`;
+      case "indn": return `P(${F(f)} | ${F(g)}) = P(${F(f)})`;
+      default: return "";
+    }
+  }
+
+  // full model solution as numbered lines
+  function solutionLines(res, mode = "frac") {
+    const { ctx, deriv, known } = res;
+    const prob = ctx.prob;
+    const out = [];
+    const lineOf = new Map();
+    prob.givens.forEach((g, i) => {
+      out.push({ n: i + 1, text: givenText(ctx, g), just: "Given", given: true });
+      givenItems(g).forEach(([k]) => lineOf.set(k, i + 1));
+    });
+    if (!deriv || deriv === true) return out;
+    const val = (k) => known.get(k).v;
+    const citeOf = (p) => {
+      if (lineOf.has(p)) return [lineOf.get(p)];
+      if (p[0] === "Z") { const e = deriv.zsrc(p); return e ? e.prem.flatMap(citeOf) : []; }
+      return [];
+    };
+    deriv.lines.forEach((L) => {
+      let I = L.inst;
+      if ((I.rule === "ie" || I.rule === "add") && preferSwap(ctx, I)) I = instantiate(ctx, I.rule, I.g, I.f);
+      (I.forms || []).forEach((f) => ctx.name(f)); ctx.name(I.f); if (I.g) ctx.name(I.g);
+      let cites = [...new Set(L.prem.flatMap(citeOf))];
+      if (I.stat && !I.statLogical) cites.push(...ctx.stipLines.map((i) => i + 1));
+      cites = [...new Set(cites)].sort((a, b) => a - b);
+      let text;
+      if (I.fact) {
+        text = itemText(ctx, L.key, L.v);
+        const cmp = factComparison(ctx, I, val, mode);
+        out.push({ n: out.length + 1, text, cmp, just: ruleLabel(I.rule), cites, key: L.key, v: L.v, inst: I });
+      } else {
+        const calc = calcOf(I, L.key, val);
+        text = `${itemText(ctx, L.key)} = ${calcText(calc, L.v, mode)}`;
+        out.push({ n: out.length + 1, text, just: ruleLabel(I.rule), cites, key: L.key, v: L.v, inst: I, instance: instanceText(ctx, I) });
+      }
+      lineOf.set(L.key, out.length);
+    });
+    return out;
+  }
+  // for a symmetric rule, write φ and ψ in the order the problem writes their ∧ or ∨
+  function preferSwap(ctx, I) {
+    const d = ctx.disp.get(key(O(I.f, I.g))) || ctx.disp.get(key(A(I.f, I.g)));
+    if (!d) return false;
+    const a = show(I.f), b = show(I.g);
+    return d.startsWith(b) && !d.startsWith(a);
+  }
+  function factComparison(ctx, I, val, mode = "frac") {
+    const fv = (v) => fmtVal(v, mode);
+    const T = (k) => itemText(ctx, k);
+    switch (I.rule) {
+      case "indf": { const a = val(I.prem[0]), b = val(I.prem[1]); return `${T(I.prem[0])} = ${fv(a)}, ${T(I.prem[1])} = ${fv(b)}: ${qeq(a, b) ? "equal" : "not equal"}`; }
+      case "indcf": { const a = val(I.prem[0]), b = val(I.prem[1]), c = val(I.prem[2]); return `${T(I.prem[0])} = ${fv(a)}, ${T(I.prem[1])} × ${T(I.prem[2])} = ${fv(qmul(b, c))}: not equal`; }
+      case "exc0": return `${T(I.prem[0])} = ${fv(val(I.prem[0]))} ≠ 0`;
+      case "excf": return `${ctx.name(A(I.f, I.g))} is false in every possible row`;
+      case "sym": return "";
+    }
+    return "";
+  }
+  function givenText(ctx, g, mode = "frac") {
+    const F = (f) => ctx.name(f);
+    switch (g.t) {
+      case "u": return `P(${F(g.f)}) = ${fmtVal(g.v, mode)}`;
+      case "c": return `P(${F(g.f)} | ${F(g.g)}) = ${fmtVal(g.v, mode)}`;
+      case "ind": return g.both ? `${F(g.f)} and ${F(g.g)} are independent of each other` : `${F(g.f)} is independent of ${F(g.g)}`;
+      case "exc": return `${F(g.f)} and ${F(g.g)} are mutually exclusive`;
+      case "eqv": return `${F(g.f)} is logically equivalent to ${F(g.g)}`;
+    }
+  }
+  function goalText(ctx, goal) {
+    const F = (f) => ctx.name(f);
+    switch (goal.t) {
+      case "u": return `What is P(${F(goal.f)})?`;
+      case "c": return `What is P(${F(goal.f)} | ${F(goal.g)})?`;
+      case "ind": return `Is ${F(goal.f)} independent of ${F(goal.g)}?`;
+      case "exc": return `Are ${F(goal.f)} and ${F(goal.g)} mutually exclusive?`;
+    }
+  }
+
+  // ---------- generating problems ----------
+  const LEVELS = {
+    easy:   { letters: [2], lines: [1, 1], givenDen: [2, 3, 4, 5, 6, 8, 10], maxDen: 60 },
+    medium: { letters: [2, 3], lines: [2, 3], givenDen: [2, 3, 4, 5, 6, 8, 10], maxDen: 60 },
+    hard:   { letters: [3, 4], lines: [3, 5], givenDen: [2, 3, 4, 5, 6, 8, 10, 12, 20, 25], maxDen: 100 }
+  };
+  const GROUPS = [["F", "G", "H"], ["J", "K", "L", "M"], ["R", "S"], ["X", "Y"]];
+  const NICE = [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [1, 5], [2, 5], [3, 5], [4, 5], [1, 6], [5, 6], [3, 10], [7, 10], [1, 10], [9, 10], [3, 8], [5, 8], [1, 8], [7, 8]].map(([a, b]) => Q(a, b));
+
+  // hidden stochastic table satisfying the constraints; rows are indexed as in makeCtx
+  function buildTable(rng, letters, cons) {
+    const n = letters.length, R = 1 << n;
+    const idx = (L) => letters.indexOf(L);
+    // order: the independent pair first, then the rest; an equivalence-determined letter after its partner
+    let order = [];
+    if (cons.ind) order.push(cons.ind[0], cons.ind[1]);
+    letters.forEach((L) => { if (!order.includes(L)) order.push(L); });
+    if (cons.eqv) { const [a, b] = cons.eqv.letters; const ia = order.indexOf(a), ib = order.indexOf(b); const later = ia > ib ? a : b; cons.eqv.det = later; cons.eqv.src = later === a ? b : a; }
+    if (cons.ind && cons.eqv && cons.ind.includes(cons.eqv.det)) return null;
+    if (cons.ind && cons.exc && cons.ind.includes(cons.exc[0]) && cons.ind.includes(cons.exc[1])) return null;
+    // cells: assignments to the letters placed so far
+    let cells = [{ asg: {}, m: Q1 }];
+    order.forEach((L, step) => {
+      const next = [];
+      const indPair = cons.ind && step < 2;
+      const pInd = indPair ? rng.pick(NICE) : null;
+      cells.forEach((c) => {
+        let p;
+        if (cons.eqv && cons.eqv.det === L) p = (c.asg[cons.eqv.src] !== cons.eqv.neg) ? Q1 : Q0;
+        else if (cons.exc && cons.exc.includes(L) && c.asg[cons.exc[0] === L ? cons.exc[1] : cons.exc[0]] === true) p = Q0;
+        else p = indPair ? pInd : rng.pick(NICE);
+        if (!qeq(p, Q0)) next.push({ asg: { ...c.asg, [L]: true }, m: qmul(c.m, p) });
+        if (!qeq(p, Q1)) next.push({ asg: { ...c.asg, [L]: false }, m: qmul(c.m, qsub(Q1, p)) });
+      });
+      cells = next;
+    });
+    const rows = new Array(R).fill(Q0);
+    cells.forEach((c) => { let r = 0; letters.forEach((L, i) => { if (!c.asg[L]) r |= 1 << (n - 1 - i); }); rows[r] = c.m; });
+    return rows;
+  }
+  function tableP(ctx, rows, f) { const m = ctx.mask(f); let s = Q0; for (let r = 0; r < ctx.R; r++) if ((m >> r) & 1) s = qadd(s, rows[r]); return s; }
+  function tableItem(ctx, rows, k) {
+    // value of an item key from the table (u, c, I, X)
+    const F = (kk) => ctx.formsByKey(kk);
+    if (k[0] === "u") return tableP(ctx, rows, F(k.slice(2)));
+    if (k[0] === "c") { const s = k.slice(2), i = splitTop(s, "|"); const f = F(s.slice(0, i)), g = F(s.slice(i + 1)); const pg = tableP(ctx, rows, g); return qeq(pg, Q0) ? null : qdiv(tableP(ctx, rows, A(f, g)), pg); }
+    if (k[0] === "I") { const s = k.slice(2), i = splitTop(s, ">"); const f = F(s.slice(0, i)), g = F(s.slice(i + 1)); const pg = tableP(ctx, rows, g); if (qeq(pg, Q0)) return false; return qeq(qdiv(tableP(ctx, rows, A(f, g)), pg), tableP(ctx, rows, f)); }
+    if (k[0] === "X") { const s = k.slice(2), i = splitTop(s, ","); return ctx.excl(F(s.slice(0, i)), F(s.slice(i + 1))); }
+    return null;
+  }
+
+  const lit = (L, neg) => (neg ? N(V(L)) : V(L));
+  const letterOf = (l) => (l.k === "v" ? l.n : l.a.n);
+
+  // Draft a problem by building a derivation backwards from a goal.
+  function draft(level, rng, plan) {
+    const LV = LEVELS[level];
+    const nL = rng.pick(LV.letters);
+    const grp = rng.pick(GROUPS.filter((g) => g.length >= nL));
+    const start = rng.int(grp.length - nL + 1);
+    let letters = grp.slice(start, start + nL);
+    if (grp.length > nL && rng.chance(0.5)) letters = rng.shuffle(grp).slice(0, nL).sort((a, b) => grp.indexOf(a) - grp.indexOf(b));
+    const cons = {};
+    if (level === "easy") return draftEasy(rng, letters, cons, plan.easy);
+    const yesno = plan.yesno;
+    const L = plan.L;
+    const feat = plan.feature;
+    const rl = () => rng.pick(letters);
+    const twoLetters = () => { const s = rng.shuffle(letters); return [s[0], s[1]]; };
+    const anyLit = (L0) => lit(L0, rng.chance(0.3));
+    // skeleton
+    const nodes = new Map(); // key → {need, kids:[keys], rule, internal}
+    const leaves = [];
+    let goal;
+    if (yesno) {
+      const [a, b] = twoLetters();
+      if (rng.chance(0.7)) {
+        goal = { t: "ind", f: V(a), g: V(b) };
+        if (rng.chance(0.5)) cons.indQ = [a, b]; // the answer will be yes: build it into the table
+      } else goal = { t: "exc", f: anyLit(a), g: anyLit(b) };
+    } else {
+      const kind = feat === "inversion" ? "cond" : plan.kind;
+      const [a, b] = twoLetters();
+      const la = anyLit(a), lb = anyLit(b);
+      if (kind === "lit") goal = { t: "u", f: la };
+      else if (kind === "conj") goal = { t: "u", f: A(la, lb) };
+      else if (kind === "disj") goal = { t: "u", f: O(la, lb) };
+      else if (kind === "cond") goal = { t: "c", f: la, g: lb };
+      else goal = { t: "u", f: N(rng.chance(0.5) ? A(V(a), V(b)) : O(V(a), V(b))) };
+    }
+    const needOfGoal = goal.t === "u" ? { t: "u", f: goal.f } : goal.t === "c" ? { t: "c", f: goal.f, g: goal.g } : goal.t === "ind" ? { t: "I", f: goal.f, g: goal.g } : { t: "X", f: goal.f, g: goal.g };
+    const nkey = (nd) => nd.t === "u" ? uK(nd.f) : nd.t === "c" ? cK(nd.f, nd.g) : nd.t === "I" ? iK(nd.f, nd.g) : nd.t === "X" ? xK(nd.f, nd.g) : nd.t + ":" + key(nd.f) + "," + key(nd.g);
+    const gk = nkey(needOfGoal);
+    nodes.set(gk, { need: needOfGoal, internal: false });
+    let internal = 0;
+    const needDir = []; // the directions of independence Def. 5.2 is used in
+    const other = (Lx) => rng.pick(letters.filter((y) => y !== Lx));
+    // options to derive a need; each returns {rule, kids:[needs], cons?}
+    function options(nd) {
+      const o = [];
+      if (nd.t === "u" && isLit(nd.f)) {
+        const l = nd.f, Lx = letterOf(l);
+        o.push({ rule: "comp", kids: [{ t: "u", f: negOf(l) }], w: 1 });
+        if (letters.length > 1) {
+          const m = anyLit(other(Lx));
+          o.push({ rule: "ie", kids: [{ t: "u", f: O(l, m) }, { t: "u", f: m }, { t: "u", f: A(l, m) }], w: 2 });
+          o.push({ rule: "cp", kids: [{ t: "c", f: m, g: l }, { t: "u", f: A(m, l) }], w: 2 });
+          if (l.k === "v") {
+            const M = other(Lx);
+            o.push({ rule: "add", kids: [{ t: "u", f: O(l, V(M)) }, { t: "u", f: V(M) }], cons: { exc: [Lx, M] }, w: 1 });
+            o.push({ rule: "indc", kids: [{ t: "u", f: A(l, V(M)) }, { t: "u", f: V(M) }, { t: "I", f: l, g: V(M) }], cons: { ind: [Lx, M] }, w: 1 });
+            o.push({ rule: "indn", kids: [{ t: "c", f: l, g: V(M) }, { t: "I", f: l, g: V(M) }], cons: { ind: [Lx, M] }, w: 1 });
+            const sgn = rng.chance(0.5);
+            o.push({ rule: "equiv", kids: [{ t: "u", f: lit(M, sgn) }], cons: { eqv: { letters: [Lx, M], neg: sgn } }, eqvOf: [l, lit(M, sgn)], w: 1 });
+          }
+        }
+      } else if (nd.t === "u" && nd.f.k === "a" && isLit(nd.f.a) && isLit(nd.f.b)) {
+        const [l, m] = rng.chance(0.5) ? [nd.f.a, nd.f.b] : [nd.f.b, nd.f.a];
+        o.push({ rule: "ie", kids: [{ t: "u", f: O(l, m) }, { t: "u", f: l }, { t: "u", f: m }], w: 2 });
+        o.push({ rule: "conja", kids: [{ t: "c", f: l, g: m }, { t: "u", f: m }], w: 2 });
+        if (l.k === "v" && m.k === "v") o.push({ rule: "indc", kids: [{ t: "u", f: l }, { t: "u", f: m }, { t: "I", f: l, g: m }], cons: { ind: [l.n, m.n] }, w: 1 });
+      } else if (nd.t === "u" && nd.f.k === "o" && isLit(nd.f.a) && isLit(nd.f.b)) {
+        const [l, m] = [nd.f.a, nd.f.b];
+        o.push({ rule: "ie", kids: [{ t: "u", f: l }, { t: "u", f: m }, { t: "u", f: A(l, m) }], w: 3 });
+        if (l.k === "v" && m.k === "v") o.push({ rule: "add", kids: [{ t: "u", f: l }, { t: "u", f: m }], cons: { exc: [l.n, m.n] }, w: 1 });
+        o.push({ rule: "comp", kids: [{ t: "u", f: N(nd.f) }], w: 1 });
+      } else if (nd.t === "u" && nd.f.k === "n" && isBin(nd.f.a)) {
+        o.push({ rule: "comp", kids: [{ t: "u", f: nd.f.a }], w: 3 });
+        const inner = nd.f.a; // De Morgan
+        if (isLit(inner.a) && isLit(inner.b)) {
+          const dm = inner.k === "a" ? O(negOf(inner.a), negOf(inner.b)) : A(negOf(inner.a), negOf(inner.b));
+          o.push({ rule: "equiv", kids: [{ t: "u", f: dm }], w: 1 });
+        }
+      } else if (nd.t === "c") {
+        const { f, g } = nd;
+        o.push({ rule: "cp", kids: [{ t: "u", f: A(f, g) }, { t: "u", f: g }], w: 3 });
+        if (f.k === "v" && g.k === "v") o.push({ rule: "indn", kids: [{ t: "u", f }, { t: "I", f, g }], cons: { ind: [f.n, g.n] }, w: 1 });
+      } else if (nd.t === "I") {
+        const { f, g } = nd;
+        o.push({ rule: "indf", kids: [{ t: "c", f, g }, { t: "u", f }], w: 3 });
+        if (!cons.indQ) o.push({ rule: "indcf", kids: [{ t: "u", f: A(f, g) }, { t: "u", f }, { t: "u", f: g }], w: 1 });
+        o.push({ rule: "sym", kids: [{ t: "I2", f: g, g: f }], w: 2 });
+      } else if (nd.t === "I2") {
+        // a derived independence fact (for Symmetry): from Def. 5.2 only
+        o.push({ rule: "indf", kids: [{ t: "c", f: nd.f, g: nd.g }, { t: "u", f: nd.f }], w: 1 });
+      } else if (nd.t === "X") {
+        o.push({ rule: "exc0", kids: [{ t: "u", f: A(nd.f, nd.g) }], w: 1 });
+      }
+      return o;
+    }
+    function compatible(c) {
+      if (!c) return true;
+      if (c.exc && (cons.exc || cons.eqv)) return sameArr(c.exc, cons.exc);
+      if (c.eqv && (cons.exc || cons.eqv)) return !!cons.eqv && sameArr(c.eqv.letters, cons.eqv.letters) && c.eqv.neg === cons.eqv.neg;
+      if (c.ind && (cons.ind || cons.indQ)) return !!cons.ind && sameArr(c.ind, cons.ind);
+      const ind = c.ind || cons.ind || cons.indQ, ex = c.exc || cons.exc, eq = (c.eqv || cons.eqv);
+      if (ind && ex && sameArr(ind, ex)) return false;
+      if (ind && eq && sameArr(ind, eq.letters)) return false;
+      if (goal.t === "ind" && c.ind && sameArr(c.ind, [goal.f.n, goal.g.n])) return false;
+      return true;
+    }
+    function expand(k) {
+      const nd = nodes.get(k);
+      const opts = options(nd.need).filter((op) => compatible(op.cons));
+      if (!opts.length) return false;
+      const boost = (x) => {
+        let w = x.w;
+        if (feat === "stipulation" && !cons.exc && !cons.eqv && x.cons && (x.cons.exc || x.cons.eqv)) w *= 8;
+        if (feat !== "stipulation" && x.cons && (x.cons.exc || x.cons.eqv)) w *= 0.25;
+        if (feat === "symmetry" && (x.rule === "indn" || x.rule === "sym")) w *= 8;
+        if (feat === "complement" && x.rule === "comp" && k !== gk) w *= 6;
+        if (feat !== "complement" && x.rule === "comp" && k !== gk) w *= 0.4;
+        if (feat === "inversion" && k === gk) w = x.rule === "cp" ? 1 : 0;
+        if (feat === "inversion" && nd.need.t === "u" && nd.need.f.k === "a" && k === nodes.get(gk).kids[0]) w = x.rule === "conja" ? 1 : 0;
+        return w;
+      };
+      const ws = opts.map((x) => [x, boost(x)]).filter((p) => p[1] > 0);
+      if (!ws.length) return false;
+      const op = rng.wpick(ws);
+      const kidKeys = op.kids.map(nkey);
+      if (kidKeys.includes(k) || kidKeys.some((kk) => kk === gk)) return false;
+      // no cycles: a kid may not be something this node is needed for
+      const reaches = (from, target, seen = new Set()) => { if (from === target) return true; if (seen.has(from)) return false; seen.add(from); const n0 = nodes.get(from); return !!(n0 && n0.kids && n0.kids.some((x) => reaches(x, target, seen))); };
+      if (kidKeys.some((kk) => nodes.has(kk) && reaches(kk, k))) return false;
+      if (op.rule === "indn") needDir.push(op.kids.find((x) => x.t === "I"));
+      if (op.cons) { if (op.cons.exc) cons.exc = op.cons.exc; if (op.cons.eqv) cons.eqv = op.cons.eqv; if (op.cons.ind) cons.ind = op.cons.ind; }
+      nd.internal = true; nd.rule = op.rule; nd.kids = kidKeys; internal++;
+      op.kids.forEach((kd, i) => { if (!nodes.has(kidKeys[i])) nodes.set(kidKeys[i], { need: kd, internal: false }); });
+      return true;
+    }
+    if (!expand(gk)) return null;
+    if (feat === "inversion") {
+      const ck = nodes.get(gk).kids[0];
+      if (!expand(ck)) return null;
+      const kn = nodes.get(ck);
+      const ckid = nodes.get(kn.kids[0]).need;
+      if (ckid.t !== "c" || key(ckid.f) !== key(goal.g) || key(ckid.g) !== key(goal.f)) return null;
+    }
+    for (let guard = 0; internal < L && guard < 40; guard++) {
+      const open = [...nodes.entries()].filter(([, v]) => !v.internal && (v.need.t === "u" || v.need.t === "c" || v.need.t === "I2"));
+      // I2 must be expanded
+      const must = open.find(([, v]) => v.need.t === "I2");
+      const pick = must || (open.length ? rng.pick(open) : null);
+      if (!pick) break;
+      expand(pick[0]);
+    }
+    if ([...nodes.values()].some((v) => v.need.t === "I2" && !v.internal)) return null;
+    // leaves become givens
+    const givens = [];
+    let indGiven = null;
+    for (const [, v] of nodes) {
+      if (v.internal) continue;
+      const nd = v.need;
+      if (nd.t === "u") givens.push({ t: "u", f: nd.f });
+      else if (nd.t === "c") givens.push({ t: "c", f: nd.f, g: nd.g });
+      else if (nd.t === "I") indGiven = nd;
+    }
+    if (cons.ind && indGiven) {
+      // both ways, or one way; one way in the other direction calls for Symmetry when order matters
+      const dirs = [...new Set(needDir.map((x) => key(x.f) + ">" + key(x.g)))];
+      if (feat === "symmetry") givens.push({ t: "ind", f: indGiven.g, g: indGiven.f, both: false });
+      else if (dirs.length > 1 || rng.chance(0.5)) givens.push({ t: "ind", f: indGiven.f, g: indGiven.g, both: true });
+      else if (dirs.length === 1) { const x = needDir[0]; givens.push({ t: "ind", f: x.f, g: x.g, both: false }); }
+      else if (rng.chance(0.5)) givens.push({ t: "ind", f: indGiven.f, g: indGiven.g, both: false });
+      else givens.push({ t: "ind", f: indGiven.g, g: indGiven.f, both: false });
+    } else if (cons.ind) return null;
+    if (cons.exc) givens.push({ t: "exc", f: V(cons.exc[0]), g: V(cons.exc[1]) });
+    if (cons.eqv) givens.push({ t: "eqv", f: V(cons.eqv.letters[0]), g: lit(cons.eqv.letters[1], cons.eqv.neg) });
+    const skel = [...nodes.values()].filter((v) => v.internal).map((v) => v.rule).sort().join("+") + (givens.find((g) => g.t === "ind") ? (givens.find((g) => g.t === "ind").both ? " ind2" : " ind1") : "");
+    return { letters, givens, goal, cons, skel };
+  }
+  const sameArr = (a, b) => !!a && !!b && ((a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0]));
+
+  function draftEasy(rng, letters, cons, type) {
+    const [a, b] = rng.shuffle(letters);
+    const anyLit = (L0, p = 0.25) => lit(L0, rng.chance(p));
+    const litPair = () => [anyLit(a), anyLit(b)];
+    let givens = [], goal;
+    const u = (f) => ({ t: "u", f }), c = (f, g) => ({ t: "c", f, g });
+    if (type === "comp") {
+      const l = anyLit(a, 0.5);
+      const f = rng.chance(0.25) ? (rng.chance(0.5) ? A(anyLit(a), anyLit(b)) : O(anyLit(a), anyLit(b))) : l;
+      if (rng.chance(0.5)) { givens = [u(f)]; goal = { t: "u", f: N(f) }; }
+      else { givens = [u(N(f))]; goal = { t: "u", f }; }
+      if (f.k === "n") { givens = [u(f)]; goal = { t: "u", f: f.a }; }
+    } else if (type === "ie") {
+      const [l, m] = litPair();
+      const qs = [O(l, m), l, m, A(l, m)];
+      const gi = rng.wpick([[0, 2], [3, 2], [1, 1], [2, 1]]);
+      givens = qs.filter((_, i) => i !== gi).map(u); goal = u(qs[gi]);
+    } else if (type === "add") {
+      cons.exc = [a, b];
+      const qs = [O(V(a), V(b)), V(a), V(b)];
+      const gi = rng.wpick([[0, 2], [1, 1], [2, 1]]);
+      givens = qs.filter((_, i) => i !== gi).map(u); givens.push({ t: "exc", f: V(a), g: V(b) }); goal = u(qs[gi]);
+    } else if (type === "cp") {
+      const [l, m] = litPair();
+      const gi = rng.wpick([[0, 3], [1, 1], [2, 1]]);
+      const all = [c(l, m), u(A(l, m)), u(m)];
+      givens = all.filter((_, i) => i !== gi); goal = all[gi];
+    } else if (type === "ind") {
+      cons.ind = [a, b];
+      const sub = rng.pick(["conj", "conj", "solve", "cond", "uncond"]);
+      const both = rng.chance(0.5);
+      const fact = { t: "ind", f: V(a), g: V(b), both };
+      if (sub === "conj") { givens = [u(V(a)), u(V(b)), fact]; goal = u(A(V(a), V(b))); }
+      else if (sub === "solve") { givens = [u(A(V(a), V(b))), u(V(b)), fact]; goal = u(V(a)); }
+      else if (sub === "cond") { givens = [u(V(a)), fact]; goal = c(V(a), V(b)); }
+      else { givens = [c(V(a), V(b)), fact]; goal = u(V(a)); }
+    } else if (type === "equiv") {
+      if (rng.chance(0.6)) {
+        const neg = rng.chance(0.5);
+        cons.eqv = { letters: [a, b], neg };
+        const lb = lit(b, neg);
+        if (rng.chance(0.5)) { givens = [u(lb)]; goal = u(V(a)); } else { givens = [u(V(a))]; goal = u(lb); }
+        givens.push({ t: "eqv", f: V(a), g: lb });
+      } else if (rng.chance(0.4)) {
+        // De Morgan
+        const [l, m] = litPair();
+        const inner = rng.chance(0.5) ? A(l, m) : O(l, m);
+        const dm = inner.k === "a" ? O(negOf(l), negOf(m)) : A(negOf(l), negOf(m));
+        if (rng.chance(0.5)) { givens = [u(N(inner))]; goal = u(dm); } else { givens = [u(dm)]; goal = u(N(inner)); }
+      } else if (rng.chance(0.35)) {
+        // double negation
+        const l = V(a);
+        if (rng.chance(0.5)) { givens = [u(l)]; goal = u(N(N(l))); } else { givens = [u(N(N(l)))]; goal = u(l); }
+      } else {
+        // absorption: F ∨ (F ∧ G) and F ∧ (F ∨ G) are equivalent to F
+        const l = V(a), m = V(b);
+        const f = rng.chance(0.5) ? O(l, A(l, m)) : A(l, O(l, m));
+        if (rng.chance(0.6)) { givens = [u(l)]; goal = u(f); } else { givens = [u(f)]; goal = u(l); }
+      }
+    } else {
+      const s = rng.int(4);
+      if (s === 0) { const l = V(a); goal = u(rng.chance(0.5) ? O(l, N(l)) : A(l, N(l))); givens = []; }
+      else if (s === 1) { const l = V(a); goal = u(N(A(l, N(l)))); givens = []; }
+      else if (s === 2) { cons.exc = [a, b]; givens = [{ t: "exc", f: V(a), g: V(b) }]; goal = u(rng.chance(0.5) ? A(V(a), V(b)) : A(V(b), V(a))); }
+      else { const neg = true; cons.eqv = { letters: [a, b], neg }; givens = [{ t: "eqv", f: V(a), g: N(V(b)) }]; goal = u(rng.chance(0.5) ? A(V(a), V(b)) : O(V(a), V(b))); }
+    }
+    return { letters, givens, goal, cons };
+  }
+
+  // the book's ch. 5 exercises: a draw matching one (goal, and givens a subset of the exercise's) is rejected
+  const BOOK = [
+    ["J,K ind; c K|J 3/4", "u K"], ["F,G ind; u F 5/9", "c F|G"], ["", "u H∨¬H"], ["F,G exc; u F 1/4; u G 2/3", "u F∨G"],
+    ["J,K exc; u J∨K 3/8; u J 1/4", "u K"], ["u X 2/3; u X∧Y 3/7", "c Y|X"], ["u F∧G 2/5; c G|F 3/4", "u F"], ["", "u H∧¬H"],
+    ["F,G exc", "u F∧G"], ["u J 4/7", "u ¬J"], ["u R 1/3; R≡S", "u S"], ["u G 1/3; F≡G", "u ¬F"], ["u J 5/8; u K 3/4; u J∧K 3/8", "u J∨K"],
+    ["u M 2/3; u L∧M 1/2; L>M", "u L"], ["c S|R 1/3; u S 1/3", "I R>S"], ["u G∧H 1/3; u G 1/2; u H 1/3", "I H>G"],
+    ["c J|K 1/2; u J 1/3; u K 3/5", "c K|J"], ["c L|M 5/9; c M|L 2/3; u M 3/5", "u L"],
+    ["u H 1/2; u G 1/5; u ¬F 3/5; u G∨H 3/5; c H|F 1/2; F>G", "u F", "u F∧G", "u F∧H", "c G|F", "c F|H", "u G∧H"],
+    ["u J 3/5; u K 2/5; u K∧L 3/10; u K∨L 3/5; c L|J 2/3; K≡¬M; J>M", "u M", "c J|M", "c J|L", "u K∨M", "u J∧L"],
+    ["u X 1/2; u Y 1/2; u X∧Y 1/4", "X X,Y", "u X∨Y"]
+  ];
+  function sig(ctx, prob) {
+    const g = [];
+    prob.givens.forEach((x) => {
+      if (x.t === "u") g.push(`u ${key(x.f)} ${qstr(x.v)}`);
+      else if (x.t === "c") g.push(`c ${key(x.f)}|${key(x.g)} ${qstr(x.v)}`);
+    });
+    return g;
+  }
+  function bookClash(ctx, prob) {
+    const gk = goalKey(prob.goal);
+    const mine = sig(ctx, prob);
+    for (const ex of BOOK) {
+      const exG = ex[0].split(";").map((s) => s.trim()).filter(Boolean).map((s) => {
+        const m = s.match(/^([uc]) (\S+) (\S+)$/);
+        if (!m) return null;
+        if (m[1] === "u") return `u ${key(parseF(m[2]))} ${m[3]}`;
+        const [f, g] = m[2].split("|"); return `c ${key(parseF(f))}|${key(parseF(g))} ${m[3]}`;
+      }).filter(Boolean);
+      for (const goalS of ex.slice(1)) {
+        const m = goalS.match(/^(\S) (.+)$/);
+        let k;
+        if (m[1] === "u") k = uK(parseF(m[2]));
+        else if (m[1] === "c") { const [f, g] = m[2].split("|"); k = cK(parseF(f), parseF(g)); }
+        else if (m[1] === "I") { const [f, g] = m[2].split(">"); k = iK(parseF(f), parseF(g)); }
+        else { const [f, g] = m[2].split(","); k = xK(parseF(f), parseF(g)); }
+        if (k !== gk) continue;
+        if (mine.every((s) => exG.includes(s))) return true;
+      }
+    }
+    return false;
+  }
+
+  // check a draft against the level and fill in values; returns the finished problem or null
+  const easyType = (r) => ({ comp: "comp", ie: "ie", add: "add", cp: "cp", conja: "cp", indc: "ind", indn: "ind", equiv: "equiv", norm: "cn", contra: "cn" }[r] || r);
+  function finish(level, d, rng, why, plan) {
+    const LV = LEVELS[level];
+    const tcons = { ...d.cons };
+    if (d.cons.indQ && !d.cons.ind) tcons.ind = d.cons.indQ;
+    const rows = buildTable(rng, d.letters, tcons);
+    if (!rows) return why && why("table"), null;
+    const prob = { letters: d.letters, givens: d.givens, goal: d.goal };
+    const ctx0 = makeCtx(prob);
+    // all possible rows positive
+    for (let r = 0; r < ctx0.R; r++) if (((ctx0.poss >> r) & 1) && qeq(rows[r], Q0)) return why && why("zero row"), null;
+    ctx0.formsByKey = (k) => { if (ctx0.forms.has(k)) return ctx0.forms.get(k); throw new Error("no form " + k); };
+    const okDen = (v) => LV.givenDen.includes(v.d);
+    for (const g of prob.givens) {
+      if (g.t === "u") g.v = tableP(ctx0, rows, g.f);
+      else if (g.t === "c") { const pg = tableP(ctx0, rows, g.g); if (qeq(pg, Q0)) return null; g.v = qdiv(tableP(ctx0, rows, A(g.f, g.g)), pg); }
+      if ((g.t === "u" || g.t === "c") && (!okDen(g.v) || qeq(g.v, Q0) || qeq(g.v, Q1))) return why && why("given den"), null;
+    }
+    // the givens must hold in the table (independence facts)
+    for (const g of prob.givens) if (g.t === "ind") {
+      const pf = tableP(ctx0, rows, g.f), pg = tableP(ctx0, rows, g.g);
+      if (!qeq(tableP(ctx0, rows, A(g.f, g.g)), qmul(pf, pg))) return why && why("ind"), null;
+    }
+    // no duplicate givens, goal not a given
+    const gk = goalKey(prob.goal);
+    const st = startItems(prob);
+    if (st.has(gk)) return why && why("goal given"), null;
+    const keys = prob.givens.filter((g) => g.t === "u" || g.t === "c").map((g) => (g.t === "u" ? uK(g.f) : cK(g.f, g.g)));
+    if (new Set(keys).size !== keys.length) return why && why("dup"), null;
+    const res = solve(prob, { maxB: LV.lines[1] });
+    if (!res.deriv && res.known.has(gk)) return why && why("too long"), null;
+    if (!res.deriv) { if (why && d.skel) why("underivable:" + d.skel); return null; }
+    const size = res.deriv.size;
+    if (size < LV.lines[0] || size > LV.lines[1]) return why && why("len " + size), null;
+    // values: within limits, agreeing with the table, no 0 or 1 except contradictions and tautologies
+    const ctx = res.ctx;
+    ctx.formsByKey = (k) => { if (ctx.forms.has(k)) return ctx.forms.get(k); if (res.U.has(k)) return res.U.get(k); throw new Error("no form " + k); };
+    for (const L of res.deriv.lines) {
+      const tv = tableItem(ctx, rows, L.key);
+      if (L.key[0] === "u" || L.key[0] === "c") {
+        if (!tv || !qeq(tv, L.v)) throw new Error("table disagrees " + L.key);
+        if (L.v.d > LV.maxDen) return why && why("den"), null;
+        if (qeq(L.v, Q0) || qeq(L.v, Q1)) {
+          const f = L.key[0] === "u" ? ctx.formsByKey(L.key.slice(2)) : null;
+          if (!f || !(ctx.taut(f) || ctx.contra(f))) return why && why("01"), null;
+        }
+      } else if (tv !== L.v) throw new Error("table disagrees " + L.key);
+    }
+    // no distractors: drop each given line in turn; the goal must then be underivable, or at least
+    // not derivable within the level's length using also any formula with up to two connectives.
+    // The instances are reused unless the dropped given is a stipulation (which changes the possible rows);
+    // keeping the dropped given's formulas in the universe only makes the check stricter.
+    const stip = (g) => g.t === "exc" || g.t === "eqv";
+    const P0 = { ctx: res.ctx, U: res.U, insts: res.insts };
+    for (let i = 0; i < prob.givens.length; i++) {
+      const p2 = { letters: prob.letters, givens: prob.givens.filter((_, j) => j !== i), goal: prob.goal };
+      if (solve(p2, { noDeriv: true, prepared: stip(prob.givens[i]) ? null : P0 }).deriv) return why && why("distractor " + prob.givens[i].t), null;
+    }
+    const PB = prepare(prob, [], true);
+    for (let i = 0; i < prob.givens.length; i++) {
+      const p2 = { letters: prob.letters, givens: prob.givens.filter((_, j) => j !== i), goal: prob.goal };
+      const r2 = solve(p2, { big: true, maxB: LV.lines[1], limit: 400000, prepared: stip(prob.givens[i]) ? null : PB });
+      if (r2.deriv) return why && why("distractor (big) " + prob.givens[i].t), null;
+      if (r2.exhausted) return why && why("distractor search too long"), null;
+    }
+    // an answer that is one of the given values can be guessed
+    if (level !== "easy" && (prob.goal.t === "u" || prob.goal.t === "c")) {
+      const av = res.known.get(gk).v;
+      if (prob.givens.some((g) => g.v && qeq(g.v, av))) return why && why("answer is a given value"), null;
+    }
+    if (bookClash(ctx, prob)) return why && why("book"), null;
+    // features
+    const rules = res.deriv.lines.map((l) => l.inst.rule);
+    const feats = [];
+    if (prob.goal.t === "c") {
+      const rev = cK(prob.goal.g, prob.goal.f);
+      if (startItems(prob).has(rev) && res.deriv.lines.some((l) => (l.inst.rule === "conja" || l.inst.rule === "cp") && l.prem.includes(rev))) feats.push("inversion");
+    }
+    if (prob.givens.some((g) => g.t === "exc" || g.t === "eqv")) feats.push("stipulation");
+    if (rules.includes("sym")) feats.push("symmetry");
+    if (rules.slice(0, -1).includes("comp")) feats.push("complement");
+    if (prob.goal.t === "ind" || prob.goal.t === "exc") feats.push("yes/no");
+    if (level === "hard" && !feats.length) return why && why("no feature"), null;
+    if (plan.feature && !feats.includes(plan.feature)) return why && why("planned feature missing"), null;
+    if (level === "easy" && plan.easy !== easyType(res.deriv.lines[0].inst.rule)) return why && why("easy type"), null;
+    if (level === "medium" && feats.filter((f) => f !== "yes/no").length > 1) return why && why("too many features"), null;
+    const ans = res.known.get(gk).v;
+    return { level, prob, rows, res, size, feats, answer: ans };
+  }
+
+  // sort givens as the book lists them: probabilities, then conditionals, then facts
+  function tidy(prob, rng) {
+    const rank = { u: 0, c: 1, ind: 2, exc: 2, eqv: 2 };
+    const g = rng.shuffle(prob.givens);
+    g.sort((a, b) => rank[a.t] - rank[b.t] || conns(a.f) - conns(b.f));
+    prob.givens = g;
+    return prob;
+  }
+
+  function generate(level, seed, stats) {
+    const rng = rngOf(seed);
+    const why = stats ? (r) => { stats[r] = (stats[r] || 0) + 1; } : null;
+    // the plan is fixed by the seed, so the mix of problems follows it rather than what's easy to draw
+    for (let tries = 0; tries < 6; tries++) {
+      const out = tryPlan(level, rng, why);
+      if (out) { out.seed = seed; return out; }
+    }
+    return null;
+  }
+  function tryPlan(level, rng, why) {
+    const plan = { yesno: false };
+    if (level === "easy") plan.easy = rng.pick(["comp", "ie", "add", "cp", "ind", "equiv", "cn"]);
+    else {
+      plan.yesno = rng.chance(0.25);
+      plan.kind = rng.wpick([["lit", 3], ["conj", 3], ["disj", 2], ["cond", 3], ["negc", 1]]);
+      plan.L = level === "medium" ? rng.wpick([[2, 1], [3, 1]]) : rng.wpick([[3, 1], [4, 2], [5, 2]]);
+      if (level === "hard" && !plan.yesno) plan.feature = rng.pick(["inversion", "stipulation", "symmetry", "complement"]);
+      if (level === "medium" && !plan.yesno && rng.chance(0.4)) plan.feature = rng.pick(["inversion", "stipulation", "symmetry", "complement"]);
+      if (plan.feature === "symmetry" && plan.kind !== "cond" && plan.kind !== "lit") plan.kind = rng.pick(["cond", "lit"]);
+    }
+    for (let attempt = 0; attempt < 1500; attempt++) {
+      const d = draft(level, rng, plan);
+      if (!d) { why && why("draft"); continue; }
+      tidy(d, rng);
+      const out = finish(level, d, rng, why, plan);
+      if (out) { out.attempts = attempt + 1; out.plan = plan; return out; }
+    }
+    return null;
+  }
+
+
+  // =====================================================================
+  // A student's working session: the list, step checking, hints, frames.
+  // =====================================================================
+  const RULE_MENU = [
+    ["Axioms", [["norm", "Normality"], ["add", "Additivity"]]],
+    ["Definitions", [["cp", "Conditional probability (Def. 4.2)"], ["ind", "Independence (Def. 5.2)"], ["exc", "Mutually exclusive (Def. 4.1)"]]],
+    ["Theorems", [["contra", "Contradiction (Thm 5.1)"], ["comp", "Complement (Thm 5.5)"], ["equiv", "Equivalence (Thm 5.6)"], ["ie", "Inclusion-exclusion (Thm 5.10)"],
+      ["conja", "Conjunction (Thm 5.11a)"], ["conjb", "Conjunction (Thm 5.11b)"], ["indc", "Independent conjunction (Thm 5.12)"], ["sym", "Symmetry of independence (Thm 5.13)"]]]
+  ];
+  const MENU_FORM = {
+    norm: "P(φ) = 1, if φ is a tautology", add: "P(φ ∨ ψ) = P(φ) + P(ψ), if φ and ψ are mutually exclusive",
+    cp: "P(φ | ψ) = P(φ ∧ ψ) / P(ψ), if P(ψ) ≠ 0", ind: "φ is independent of ψ iff P(ψ) ≠ 0 and P(φ | ψ) = P(φ)",
+    exc: "φ and ψ are mutually exclusive iff no row makes both true", contra: "P(φ) = 0, if φ is a contradiction",
+    comp: "P(φ) + P(¬φ) = 1", equiv: "P(φ) = P(ψ), if φ and ψ are equivalent", ie: "P(φ ∨ ψ) = P(φ) + P(ψ) − P(φ ∧ ψ)",
+    conja: "P(φ ∧ ψ) = P(φ | ψ) × P(ψ), if P(ψ) ≠ 0", conjb: "P(φ ∧ ψ) = 0, if P(ψ) = 0",
+    indc: "if φ is independent of ψ, P(φ ∧ ψ) = P(φ) × P(ψ)", sym: "if P(φ), P(ψ) ≠ 0: φ is independent of ψ iff ψ is independent of φ"
+  };
+  const MENU_ARITY = { norm: 1, contra: 1, comp: 1 };
+  const menuLabel = (id) => RULE_MENU.flatMap((g) => g[1]).find((x) => x[0] === id)[1];
+
+  function rowText(ctx, r, fs) {
+    const row = ctx.rowOf(r);
+    const Ls = [];
+    fs.forEach((f) => lettersOfF(f).forEach((L) => { if (!Ls.includes(L)) Ls.push(L); }));
+    Ls.sort((a, b) => ctx.letters.indexOf(a) - ctx.letters.indexOf(b));
+    const parts = Ls.map((L) => `${L} is ${row[L] ? "true" : "false"}`);
+    return parts.length <= 2 ? parts.join(" and ") : parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1];
+  }
+
+  function session(prob) {
+    const P = prepare(prob);
+    const ctx = P.ctx;
+    const S = { prob, ctx, lines: [], known: new Map() };
+    const nm = (f) => ctx.disp.get(key(f)) || show(f);
+    const T = (k, v) => itemText(ctx, k, v);
+    prob.givens.forEach((g, i) => {
+      S.lines.push({ n: i + 1, given: true, g, items: givenItems(g).map(([k]) => k) });
+      givenItems(g).forEach(([k, v]) => S.known.set(k, { v, line: i + 1 }));
+    });
+    S.goal = goalKey(prob.goal);
+    S.solved = () => S.known.has(S.goal);
+    const val = (k) => S.known.get(k).v;
+    const lineOf = (k) => (S.known.has(k) ? S.known.get(k).line : null);
+    const checkLetters = (f) => { const bad = lettersOfF(f).filter((L) => !ctx.letters.includes(L)); return bad.length ? `${bad[0]} isn't a letter in this problem.` : null; };
+    S.parseSlot = (src) => {
+      const s = String(src || "").trim();
+      if (!s) return { empty: true };
+      try { const f = parseF(s); const e = checkLetters(f); return e ? { err: e } : { f }; }
+      catch (e) { return { err: e.message || "That isn't a formula." }; }
+    };
+    const kindOf = (f) => (f.k === "a" ? "a conjunction" : f.k === "o" ? "a disjunction" : f.k === "n" ? "a negation" : f.k === "i" ? "a conditional" : f.k === "e" ? "a biconditional" : null);
+
+    // the concrete instance for a menu rule: numeric or fact, depending on what is on the list
+    function build(rule, f, g) {
+      switch (rule) {
+        case "ind": return instantiate(ctx, S.known.get(iK(f, g))?.v !== true && S.known.has(cK(f, g)) && S.known.has(uK(f)) ? "indf" : "indn", f, g);
+        case "indc": return instantiate(ctx, S.known.get(iK(f, g))?.v !== true && [uK(A(f, g)), uK(f), uK(g)].every((k) => S.known.has(k)) ? "indcf" : "indc", f, g);
+        case "exc": return instantiate(ctx, ctx.excl(f, g) ? "excf" : "exc0", f, g);
+        default: return instantiate(ctx, rule, f, g);
+      }
+    }
+    // the instance as text pieces: strings and {q} quantities (for the preview)
+    function pieces(I) {
+      const f = I.f, g = I.g;
+      const u = (x) => ({ q: uK(x), text: `P(${nm(x)})` }), cq = (x, y) => ({ q: cK(x, y), text: `P(${nm(x)} | ${nm(y)})` });
+      const c = g ? A(f, g) : null, d = g ? O(f, g) : null;
+      switch (I.rule) {
+        case "norm": return [u(f), " = 1"];
+        case "contra": return [u(f), " = 0"];
+        case "comp": return [u(f), " + ", u(N(f)), " = 1"];
+        case "equiv": return [u(f), " = ", u(g)];
+        case "ie": return [u(d), " = ", u(f), " + ", u(g), " − ", u(c)];
+        case "add": return [u(d), " = ", u(f), " + ", u(g)];
+        case "cp": return [cq(f, g), " = ", u(c), " / ", u(g)];
+        case "conja": return [u(c), " = ", cq(f, g), " × ", u(g)];
+        case "conjb": return [u(c), " = 0"];
+        case "indc": return [u(c), " = ", u(f), " × ", u(g)];
+        case "indn": return [cq(f, g), " = ", u(f)];
+        default: return [];
+      }
+    }
+    const pname = (I, k) => { const p = pieces(I).find((x) => typeof x !== "string" && x.q === k); return p ? p.text : T(k); };
+    // name a quantity, registering formulas so new lines keep the form written
+    const qText = (k) => {
+      if (k[0] === "u" || k[0] === "c") return T(k);
+      return T(k);
+    };
+    const registerInst = (I) => { (I.forms || []).forEach((f) => ctx.name(f)); ctx.name(I.f); if (I.g) ctx.name(I.g); if (I.rule === "comp") ctx.name(N(I.f)); };
+
+    // what the builder shows for a rule and its slots
+    S.preview = (rule, fs, gs) => {
+      const arity = MENU_ARITY[rule] || 2;
+      const pf = S.parseSlot(fs), pg = arity === 2 ? S.parseSlot(gs) : { f: null };
+      if (pf.err) return { slotErr: ["f", pf.err] };
+      if (pg.err) return { slotErr: ["g", pg.err] };
+      if (pf.empty || pg.empty) return { incomplete: true };
+      const f = pf.f, g = pg.f;
+      if (arity === 2 && key(f) === key(g) && rule !== "equiv") return { slotErr: ["g", "φ and ψ are the same formula here."] };
+      const I = build(rule, f, g);
+      const out = { I, f, g, fact: !!I.fact };
+      if (I.fact) {
+        out.cmp = factPreview(I);
+        out.choices = factChoices(I);
+      } else {
+        out.pieces = pieces(I).map((p) => (typeof p === "string" ? p : { q: p.q, text: S.known.has(p.q) ? T(p.q) : p.text, v: S.known.has(p.q) ? S.known.get(p.q).v : null }));
+        out.unknowns = I.q.filter((k) => !S.known.has(k));
+        out.unknownText = out.unknowns.map((k) => pname(I, k));
+        out.symbolic = out.pieces.map((p) => (typeof p === "string" ? p : p.text)).join("");
+      }
+      return out;
+    };
+    function factChoices(I) {
+      const a = nm(I.f), b = nm(I.g);
+      if (I.rule === "indf" || I.rule === "indcf") return [[true, `${a} is independent of ${b}`], [false, `${a} is not independent of ${b}`]];
+      if (I.rule === "sym") return [[true, `${b} is independent of ${a}`], [false, `${b} is not independent of ${a}`]];
+      return [[true, `${a} and ${b} are mutually exclusive`], [false, `${a} and ${b} are not mutually exclusive`]];
+    }
+    function factPreview(I) {
+      const have = (k) => S.known.has(k);
+      const fv = (k) => fmtVal(val(k), S.fmt || "frac");
+      switch (I.rule) {
+        case "indf": return have(I.prem[0]) && have(I.prem[1]) ? `${T(I.prem[0])} = ${fv(I.prem[0])}, ${T(I.prem[1])} = ${fv(I.prem[1])}: ${qeq(val(I.prem[0]), val(I.prem[1])) ? "equal" : "not equal"}` : `Compare ${T(I.prem[0])} with ${T(I.prem[1])}.`;
+        case "indcf": return I.prem.every(have) ? `${T(I.prem[0])} = ${fv(I.prem[0])}, ${T(I.prem[1])} × ${T(I.prem[2])} = ${fmtVal(qmul(val(I.prem[1]), val(I.prem[2])), S.fmt || "frac")}: ${qeq(val(I.prem[0]), qmul(val(I.prem[1]), val(I.prem[2]))) ? "equal" : "not equal"}` : `Compare ${T(I.prem[0])} with ${T(I.prem[1])} × ${T(I.prem[2])}.`;
+        case "sym": return have(I.prem[0]) ? `You have: ${T(I.prem[0], val(I.prem[0]))}.` : `This turns around an independence fact on your list.`;
+        case "excf": return `${nm(A(I.f, I.g))} is false in every possible row.`;
+        case "exc0": return have(I.prem[0]) ? `${T(I.prem[0])} = ${fv(I.prem[0])}${qeq(val(I.prem[0]), Q0) ? "" : " ≠ 0"}` : `${nm(A(I.f, I.g))} is true in some row; to rule out exclusivity you need P(${nm(A(I.f, I.g))}) ≠ 0.`;
+      }
+      return "";
+    }
+    const indMsg = (f, g) => {
+      let m = `This needs ${nm(f)} to be independent of ${nm(g)}, and that isn't on your list.`;
+      if (S.known.get(iK(g, f))?.v === true) m += ` You have that ${nm(g)} is independent of ${nm(f)}. Symmetry of independence (Thm 5.13) can turn it around.`;
+      return m;
+    };
+    const nzMsg = (rule, g) => (rule === "cp" ? `The definition applies only when P(${nm(g)}) ≠ 0, and you don't know that yet.` : `Thm 5.11a applies only when P(${nm(g)}) ≠ 0, and you don't know that yet.`);
+    function statMsg(I) {
+      const [t, f, g] = I.stat;
+      if (t === "taut") { const r = ctx.firstRow(~ctx.mask(f)); return `${nm(f)} isn't a tautology: it's false in the row where ${rowText(ctx, r, [f])}.`; }
+      if (t === "contra") { const r = ctx.firstRow(ctx.mask(f)); return `${nm(f)} isn't a contradiction: it's true in the row where ${rowText(ctx, r, [f])}.`; }
+      if (t === "same") { const r = ctx.firstRow(ctx.mask(f) ^ ctx.mask(g)); const tf = ((ctx.mask(f) >> r) & 1) ? "true" : "false", tg = ((ctx.mask(g) >> r) & 1) ? "true" : "false"; return `${nm(f)} and ${nm(g)} aren't equivalent: in the row where ${rowText(ctx, r, [f, g])}, the first is ${tf} and the second is ${tg}.`; }
+      if (t === "excl") return `Additivity needs ${nm(f)} and ${nm(g)} to be mutually exclusive, and they aren't known to be. Inclusion-exclusion works for any disjunction.`;
+      return "This rule doesn't apply here.";
+    }
+    // the proviso and unknown-count problems with a numeric instance, or null
+    function numericProblem(I) {
+      if (!I.statOk) return statMsg(I);
+      if (I.dyn) {
+        const d = dynCheck(ctx, S.known, I);
+        if (!d.ok) {
+          if (d.why[0] === "nz") return nzMsg(I.rule, d.why[1]);
+          if (d.why[0] === "ind") return I.rule === "indn" ? indMsg(d.why[1], d.why[2]) + ` To show that it is, you need P(${nm(I.f)} | ${nm(I.g)}) and P(${nm(I.f)}) on your list.` : indMsg(d.why[1], d.why[2]);
+          if (d.why[0] === "zero") return `Thm 5.11b needs P(${nm(d.why[1])}) = 0 on your list.`;
+        }
+      }
+      const unk = I.q.filter((k) => !S.known.has(k));
+      if (!unk.length) return "You already have everything in this equation; it adds nothing new.";
+      if (unk.length > 1) {
+        let m = `This equation has ${unk.length === 2 ? "two" : unk.length} quantities you don't have yet: ${unk.map((k) => pname(I, k)).join(" and ")}. Find one of them first, or use another rule.`;
+        const rev = unk.find((k) => k[0] === "c" && S.known.has(revKey(k)));
+        if (rev) m += ` Careful: you have ${T(revKey(rev))}, which is not the same as ${pname(I, rev)}.`;
+        return m;
+      }
+      if (!solveFor(I, unk[0], val)) return `This equation can't be solved for ${pname(I, unk[0])}: it would mean dividing by 0.`;
+      return null;
+    }
+    const revKey = (k) => { const s = k.slice(2), i = splitTop(s, "|"); return "c:" + s.slice(i + 1) + "|" + s.slice(0, i); };
+    function factProblem(I) {
+      if (I.rule === "excf") return null;
+      if (I.rule === "sym") {
+        if (!S.known.has(I.prem[0])) return `Symmetry turns around an independence fact, and you don't have one about ${nm(I.f)} and ${nm(I.g)} that way round.`;
+        for (const [, h] of I.dyn2) if (!nzSource(ctx, S.known, h)) return `Symmetry needs P(${nm(I.f)}) ≠ 0 and P(${nm(I.g)}) ≠ 0, and you don't know that P(${nm(h)}) ≠ 0 yet.`;
+        if (S.known.has(I.out)) return "You already have that on your list.";
+        return null;
+      }
+      if (S.known.has(I.out)) return "You already have that on your list.";
+      const miss = I.prem.filter((k) => !S.known.has(k));
+      if (I.rule === "exc0") {
+        if (miss.length) return `${nm(I.f)} and ${nm(I.g)} aren't mutually exclusive as a matter of logic: ${nm(A(I.f, I.g))} is true in the row where ${rowText(ctx, ctx.firstRow(ctx.mask(A(I.f, I.g))), [I.f, I.g])}. To show they aren't, you need P(${nm(A(I.f, I.g))}) on your list.`;
+        return null;
+      }
+      if (miss.length) return `To use this you need ${miss.map((k) => T(k)).join(" and ")} on your list.`;
+      return null;
+    }
+
+    // try to add a step. input: {v: Q, approx: bool} for numeric, {conclusion: bool} for facts
+    S.add = (rule, fs, gs, input) => {
+      const pv = S.preview(rule, fs, gs);
+      if (pv.slotErr) return { ok: false, msg: pv.slotErr[1] };
+      if (pv.incomplete) return { ok: false, msg: "Fill in the formula slots first." };
+      const I = pv.I;
+      let key0, v, why;
+      if (I.fact) {
+        const prob0 = factProblem(I);
+        if (prob0) return { ok: false, msg: prob0 };
+        v = factValue(ctx, I, val);
+        const c = input && input.conclusion;
+        if (I.rule === "indcf" && v === undefined) {
+          if (c === true) return { ok: false, msg: "Thm 5.12 says independence gives this product, not the other way round. Use the definition of independence (Def. 5.2)." };
+          return { ok: false, msg: `Not quite. ${T(I.prem[0])} = ${T(I.prem[1])} × ${T(I.prem[2])} here, so Thm 5.12 doesn't show they aren't independent. Use the definition of independence (Def. 5.2).` };
+        }
+        if (I.rule === "indcf" && c === true) return { ok: false, msg: "Thm 5.12 says independence gives this product, not the other way round. Use the definition of independence (Def. 5.2)." };
+        if (I.rule === "exc0" && v === undefined) return { ok: false, msg: `Not quite. ${T(I.prem[0])} = 0, so Thm 5.1 doesn't rule out exclusivity.` };
+        if (c !== v) {
+          const fv = (k) => fmtVal(val(k), S.fmt || "frac");
+          if (I.rule === "indf") return { ok: false, msg: `Not quite. ${T(I.prem[0])} = ${fv(I.prem[0])} and ${T(I.prem[1])} = ${fv(I.prem[1])} ${v ? "are equal" : "aren't equal"}.` };
+          if (I.rule === "sym") return { ok: false, msg: `Not quite. Symmetry keeps the fact as it is: you have ${T(I.prem[0], val(I.prem[0]))}.` };
+          if (I.rule === "excf") return { ok: false, msg: `Not quite. ${nm(A(I.f, I.g))} is false in every possible row, so they are mutually exclusive.` };
+          if (I.rule === "exc0") return { ok: false, msg: `Not quite. ${T(I.prem[0])} = ${fv(I.prem[0])} ≠ 0, so they can't be mutually exclusive (Thm 5.1).` };
+          return { ok: false, msg: "Not quite." };
+        }
+        key0 = I.out;
+      } else {
+        const pr = numericProblem(I);
+        if (pr) return { ok: false, msg: pr };
+        key0 = I.q.find((k) => !S.known.has(k));
+        v = solveFor(I, key0, val);
+        if (!input || !input.v) return { ok: false, msg: `Type the value of ${pname(I, key0)}.`, noCount: true };
+        const x = input.v;
+        const right = input.approx ? Math.abs(qnum(x) - qnum(v)) <= 0.005 + 1e-12 : qeq(x, v);
+        if (!right) {
+          const near = (y) => (input.approx ? Math.abs(qnum(x) - qnum(y)) <= 0.005 + 1e-12 : qeq(x, y));
+          if (I.eq.prod && !qeq(v, Q0) && near(qdiv(Q1, v))) return { ok: false, msg: "Not quite. You've divided the wrong way round." };
+          if (qnum(x) < 0) return { ok: false, msg: "Not quite. A probability can't be negative (Non-negativity)." };
+          if (qnum(x) > 1) return { ok: false, msg: "Not quite. A probability can't be more than 1 (Thm 5.7)." };
+          if (key0[0] === "c" && I.eq.prod && key0 === I.eq.prod[1] && near(val(I.eq.prod[0]))) return { ok: false, msg: `Not quite. That's ${T(I.eq.prod[0])}; divide by ${T(I.eq.prod[2])}.` };
+          if (key0[0] === "c" && S.known.has(revKey(key0)) && near(val(revKey(key0)))) return { ok: false, msg: `Not quite. That's ${T(revKey(key0))}, not ${pname(I, key0)}.` };
+          const wv = (v) => { const t = fmtVal(v, S.fmt || "frac"); return I.eq.prod && (S.fmt || "frac") === "frac" && v.d !== 1 ? `(${t})` : t; };
+          const eqn = pieces(I).map((p) => (typeof p === "string" ? p : p.q === key0 ? p.text : wv(val(p.q)))).join("");
+          return { ok: false, msg: `Not quite. Check your arithmetic: ${eqn}.` };
+        }
+      }
+      // accepted
+      registerInst(I);
+      const n = S.lines.length + 1;
+      const prem = I.fact ? [...I.prem, ...((I.dyn2 || []).map((d) => "Z:" + key(d[1])))] : I.q.filter((k) => k !== key0);
+      if (!I.fact && I.dyn) {
+        const d = dynCheck(ctx, S.known, I);
+        prem.push(...d.prem);
+      }
+      let cites = [];
+      prem.forEach((p) => {
+        if (p[0] === "Z") { const s = nzSource(ctx, S.known, ctx.forms.get(p.slice(2)) || parseF(p.slice(2))); if (s) cites.push(lineOf(s)); }
+        else if (S.known.has(p)) cites.push(lineOf(p));
+      });
+      if (I.stat && !I.statLogical) cites.push(...ctx.stipLines.map((i) => i + 1));
+      cites = [...new Set(cites.filter((x) => x))].sort((a, b) => a - b);
+      const L = { n, key: key0, v, inst: I, cites, fact: !!I.fact, cmp: I.fact && I.rule !== "sym" ? factPreview(I) : "" };
+      if (!I.fact) L.calc = calcOf(I, key0, val);
+      S.lines.push(L);
+      S.known.set(key0, { v, line: n });
+      return { ok: true, line: L };
+    };
+    S.goalName = (k) => {
+      if (k[0] === "I") { const s = k.slice(2), i = splitTop(s, ">"); return `whether ${nameKey(s.slice(0, i))} is independent of ${nameKey(s.slice(i + 1))}`; }
+      if (k[0] === "X") { const s = k.slice(2), i = splitTop(s, ","); return `whether ${nameKey(s.slice(0, i))} and ${nameKey(s.slice(i + 1))} are mutually exclusive`; }
+      return T(k);
+    };
+    S.slotName = (f) => nm(f);
+    S.lineLetters = (L) => {
+      const out = [];
+      const addF = (f) => lettersOfF(f).forEach((x) => { if (!out.includes(x)) out.push(x); });
+      if (L.given) { addF(L.g.f); if (L.g.g) addF(L.g.g); } else lettersOfKey(L.key).forEach((x) => out.includes(x) || out.push(x));
+      return out;
+    };
+    // the mistakes worth naming in Answer only
+    S.answerMistake = (r, truth) => {
+      const x = r.v;
+      const near = (y) => y && (r.approx ? Math.abs(qnum(x) - qnum(y)) <= 0.005 + 1e-12 : qeq(x, y));
+      if (S.goal[0] === "c" && !qeq(truth, Q0) && near(qdiv(Q1, truth))) return "Not quite. You've divided the wrong way round.";
+      if (qnum(x) < 0) return "Not quite. A probability can't be negative (Non-negativity).";
+      if (qnum(x) > 1) return "Not quite. A probability can't be more than 1 (Thm 5.7).";
+      const kn = S.model().known;
+      const kv = (k) => (kn.has(k) ? kn.get(k).v : null);
+      if (S.goal[0] === "c") {
+        const s = S.goal.slice(2), i = splitTop(s, "|");
+        const f = ctx.forms.get(s.slice(0, i)), g = ctx.forms.get(s.slice(i + 1));
+        if (f && g && near(kv(uK(A(f, g))))) return `Not quite. That's P(${nm(A(f, g))}); divide by P(${nm(g)}).`;
+        if (near(kv(revKey(S.goal)))) return `Not quite. That's ${T(revKey(S.goal))}, not ${T(S.goal)}.`;
+      }
+      return "Not quite.";
+    };
+    S.undo = () => { const L = S.lines[S.lines.length - 1]; if (!L || L.given) return false; S.lines.pop(); S.known.delete(L.key); return true; };
+    S.clear = () => { while (S.undo()); };
+    S.lineText = (L, mode = "frac") => {
+      if (L.given) return givenText(ctx, L.g, mode);
+      if (L.fact) return T(L.key, L.v);
+      return `${T(L.key)} = ${calcText(L.calc, L.v, mode)}`;
+    };
+    S.lineJust = (L) => (L.given ? "Given" : ruleLabel(L.inst.rule) + (L.cites.length ? ", " + L.cites.join(", ") : ""));
+    S.extraItems = () => S.lines.filter((L) => !L.given).map((L) => [L.key, L.v]);
+
+    // ---------- hints: the next backward step of a shortest route from the current list ----------
+    S.route = (goal, extraKnown = []) => {
+      const forms = [];
+      ctx.forms.forEach((f) => forms.push(f));
+      const res = solve(prob, { extra: [...S.extraItems(), ...extraKnown], extraForms: forms, goal, maxB: 9 });
+      if (!res.deriv) return null;
+      return res;
+    };
+    // describe the last step of a route to goal: rule, instance, what's missing
+    S.nextBack = (goal, extraKnown = []) => {
+      const res = S.route(goal, extraKnown);
+      if (!res) return null;
+      const L = res.deriv.lines.find((x) => x.key === goal);
+      const start = res.start;
+      const missing = [];
+      const need = (p) => {
+        if (start.has(p)) return;
+        if (p[0] === "Z") { const e = res.deriv.zsrc(p); if (e) e.prem.forEach(need); return; }
+        if (!missing.includes(p)) missing.push(p);
+      };
+      L.prem.forEach(need);
+      return { inst: L.inst, missing, res };
+    };
+    const ABOUT = { cp: "conditional probability", conja: "conjunction", ie: "disjunction and conjunction", add: "disjunction", comp: "negation", equiv: "equivalent formulas", indc: "independence and conjunction", indcf: "independence and conjunction", indn: "independence", indf: "independence", sym: "independence", contra: "contradictions", norm: "tautologies", exc0: "mutual exclusivity", excf: "mutual exclusivity", conjb: "conjunction" };
+    const KIND = (r) => (RULES[r].cite === "axiom" ? "An axiom" : RULES[r].cite.startsWith("Def") ? "A definition" : "A theorem");
+    const MENU_OF = { indn: "ind", indf: "ind", indcf: "indc", excf: "exc", exc0: "exc" };
+    S.menuOf = (r) => MENU_OF[r] || r;
+    S.goalText = (k) => {
+      const lt = lettersOfKey(k);
+      const andJoin = (xs) => (xs.length === 1 ? xs[0] : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1]);
+      const L = lt.length ? andJoin(lt) : "";
+      if (k[0] === "I") { const s = k.slice(2), i = splitTop(s, ">"); return `Your goal is to find out whether ${nameKey(s.slice(0, i))} is independent of ${nameKey(s.slice(i + 1))}. It involves ${andJoin([...lt, "independence"])}.`; }
+      if (k[0] === "X") { const s = k.slice(2), i = splitTop(s, ","); return `Your goal is to find out whether ${nameKey(s.slice(0, i))} and ${nameKey(s.slice(i + 1))} are mutually exclusive. It involves ${andJoin([...lt, "mutual exclusivity"])}.`; }
+      let what = "";
+      if (k[0] === "c") what = "a conditional probability";
+      else { const f = ctx.forms.get(k.slice(2)); what = f ? kindOf(f) : null; }
+      return `Your goal is ${T(k)}. It involves ${what ? andJoin([...lt, what]) : L}.`;
+    };
+    const nameKey = (kk) => ctx.disp.get(kk) || (ctx.forms.has(kk) ? show(ctx.forms.get(kk)) : kk);
+    function lettersOfKey(k) { const out = []; for (const ch of k.slice(2)) if (/[A-Z]/.test(ch) && !out.includes(ch)) out.push(ch); return out.sort((a, b) => ctx.letters.indexOf(a) - ctx.letters.indexOf(b)); }
+    S.lettersOfKey = lettersOfKey;
+    S.ruleText = (r) => `${KIND(r)} that involves ${ABOUT[r]}: ${ruleLabel(r).replace(/^.*\((.*)\)$/, "$1")}, ${MENU_FORM[S.menuOf(r)]}.`;
+    S.instText = (I) => {
+      const a = nm(I.f), b = I.g ? nm(I.g) : null;
+      const w = b ? `With φ = ${a} and ψ = ${b}: ` : `With φ = ${a}: `;
+      switch (I.rule) {
+        case "indf": return w + `${a} is independent of ${b} iff P(${a} | ${b}) = P(${a}).`;
+        case "indcf": return w + `if ${a} were independent of ${b}, P(${nm(A(I.f, I.g))}) would be P(${a}) × P(${b}).`;
+        case "sym": return w + `${a} is independent of ${b} iff ${b} is independent of ${a}, as P(${a}) ≠ 0 and P(${b}) ≠ 0.`;
+        case "excf": return w + `${nm(A(I.f, I.g))} is false in every possible row.`;
+        case "exc0": return w + `if they were mutually exclusive, P(${nm(A(I.f, I.g))}) would be 0 (Thm 5.1).`;
+        default: return w + pieces(I).map((p) => (typeof p === "string" ? p : T(p.q))).join("") + ".";
+      }
+    };
+    S.missingText = (bk) => {
+      if (!bk.missing.length) return "You have everything else in it.";
+      const have = (bk.inst.fact ? bk.inst.prem : bk.inst.q).filter((k) => k[0] !== "Z" && S.known.has(k));
+      const m = bk.missing.map((k) => T(k));
+      return (have.length ? `You have ${have.map((k) => T(k)).join(" and ")} but not ${m.join(" or ")}.` : `You don't have ${m.join(" or ")}.`) + ` New goal: ${T(bk.missing[0])}.`;
+    };
+
+    // ---------- the model solution and Step through frames (from the givens) ----------
+    let modelRes = null;
+    S.model = () => modelRes || (modelRes = solve(prob));
+    S.frames = () => {
+      const res = solve(prob);
+      if (!res.deriv) return null;
+      const chosen = new Map(res.deriv.lines.map((L) => [L.key, L]));
+      const frames = [];
+      const order = [];
+      const done = new Set(res.start.keys());
+      const stack = [];
+      const visit = (k) => {
+        if (done.has(k)) return;
+        if (k[0] === "Z") { const e = res.deriv.zsrc(k); if (e) e.prem.forEach(visit); return; }
+        const L = chosen.get(k);
+        stack.push(k);
+        frames.push({ kind: "goal", text: S.goalText(k), stack: stack.slice(), lines: order.length });
+        frames.push({ kind: "rule", text: S.ruleText(L.inst.rule), stack: stack.slice(), lines: order.length });
+        const miss = [];
+        const need = (p) => { if (done.has(p)) return; if (p[0] === "Z") { const e = res.deriv.zsrc(p); if (e) e.prem.forEach(need); return; } if (!miss.includes(p)) miss.push(p); };
+        L.prem.forEach(need);
+        const haveTxt = (L.inst.fact ? L.inst.prem : L.inst.q).filter((p) => p !== k && p[0] !== "Z" && done.has(p)).map((p) => T(p));
+        let tail;
+        if (!miss.length) tail = "You have everything else in it.";
+        else tail = (haveTxt.length ? `You have ${haveTxt.join(" and ")} but not ${miss.map((p) => T(p)).join(" or ")}.` : `You don't have ${miss.map((p) => T(p)).join(" or ")}.`) + ` New goal: ${T(miss[0])}.`;
+        frames.push({ kind: "inst", text: S.instText(L.inst) + " " + tail, stack: stack.slice(), lines: order.length });
+        miss.forEach((p, i) => {
+          if (i > 0 && !done.has(p)) {
+            const got = miss.slice(0, i).map((x) => T(x));
+            frames.push({ kind: "back", text: `Back to ${T(k)}: you now have ${got.join(" and ")}, but not ${T(p)}. New goal: ${T(p)}.`, stack: stack.slice(), lines: order.length });
+          }
+          visit(p);
+        });
+        done.add(k); order.push(k);
+        stack.pop();
+        frames.push({ kind: "line", text: miss.length ? `Back to ${T(k)}: now you have everything in it.` : "", stack: stack.slice(), lines: order.length, key: k });
+      };
+      visit(S.goal);
+      return { frames, order, res };
+    };
+    return S;
+  }
+
+  // ---------- your own problem ----------
+  function parseOwn(givensText, goalSrc) {
+    const errors = [];
+    const givens = [];
+    const letters = [];
+    const addL = (f) => lettersOfF(f).forEach((L) => { if (!letters.includes(L)) letters.push(L); });
+    const pf = (s, n) => { try { const f = parseF(s.trim()); if (!f) throw new Error("A formula is missing."); return f; } catch (e) { errors.push({ line: n, msg: e.message }); return null; } };
+    const pv = (s) => {
+      const t = s.trim(); let m;
+      if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/))) return +m[2] ? Q(+m[1], +m[2]) : null;
+      if ((m = t.match(/^(\d*)\.?(\d*)\s*%$/)) && (m[1] || m[2])) { const d = 10 ** (m[2] || "").length; return Q(+((m[1] || "0") + (m[2] || "")), d * 100); }
+      if ((m = t.match(/^(\d*)\.?(\d*)$/)) && (m[1] || m[2])) { const d = 10 ** (m[2] || "").length; return Q(+((m[1] || "0") + (m[2] || "")), d); }
+      return null;
+    };
+    String(givensText || "").split(/\n|;/).forEach((raw, i) => {
+      const s = raw.trim(); const n = i + 1;
+      if (!s) return;
+      let m;
+      if ((m = s.match(/^P\s*\((.*)\)\s*=\s*(.+)$/))) {
+        const inner = m[1], v = pv(m[2]);
+        if (!v) { errors.push({ line: n, msg: `“${m[2].trim()}” isn't a probability: write 1/2, 0.5 or 50%.` }); return; }
+        if (qnum(v) > 1) { errors.push({ line: n, msg: "A probability can't be more than 1." }); return; }
+        const bar = inner.indexOf("|");
+        if (bar >= 0) { const f = pf(inner.slice(0, bar), n), g = pf(inner.slice(bar + 1), n); if (f && g) { addL(f); addL(g); givens.push({ t: "c", f, g, v }); } }
+        else { const f = pf(inner, n); if (f) { addL(f); givens.push({ t: "u", f, v }); } }
+      } else if ((m = s.match(/^(.+?)\s*,\s*(.+?)\s+(indep|independent)$/i))) {
+        const f = pf(m[1], n), g = pf(m[2], n); if (f && g) { addL(f); addL(g); givens.push({ t: "ind", f, g, both: true }); }
+      } else if ((m = s.match(/^(.+?)\s+(indep|independent)(\s+of)?\s+(.+)$/i))) {
+        const f = pf(m[1], n), g = pf(m[4], n); if (f && g) { addL(f); addL(g); givens.push({ t: "ind", f, g, both: false }); }
+      } else if ((m = s.match(/^(.+?)\s*,\s*(.+?)\s+(exclusive|excl)$/i))) {
+        const f = pf(m[1], n), g = pf(m[2], n); if (f && g) { addL(f); addL(g); givens.push({ t: "exc", f, g }); }
+      } else if ((m = s.match(/^(.+?)\s+(equiv|equivalent|≡)\s+(.+)$/i))) {
+        const f = pf(m[1], n), g = pf(m[3], n); if (f && g) { addL(f); addL(g); givens.push({ t: "eqv", f, g }); }
+      } else errors.push({ line: n, msg: "Write P(φ) = v, P(φ | ψ) = v, F indep G, F, G indep, F, G exclusive or K equiv ~M." });
+    });
+    let goal = null;
+    const gs = String(goalSrc || "").trim();
+    let m;
+    if (!gs) errors.push({ line: 0, msg: "The goal is missing." });
+    else if ((m = gs.match(/^P\s*\((.*)\)\s*\??$/))) {
+      const inner = m[1], bar = inner.indexOf("|");
+      if (bar >= 0) { const f = pf(inner.slice(0, bar), 0), g = pf(inner.slice(bar + 1), 0); if (f && g) { addL(f); addL(g); goal = { t: "c", f, g }; } }
+      else { const f = pf(inner, 0); if (f) { addL(f); goal = { t: "u", f }; } }
+    } else if ((m = gs.match(/^(indep|independent)\?\s*(.+?)\s*,\s*(.+)$/i))) { const f = pf(m[2], 0), g = pf(m[3], 0); if (f && g) { addL(f); addL(g); goal = { t: "ind", f, g }; } }
+    else if ((m = gs.match(/^(exclusive|excl)\?\s*(.+?)\s*,\s*(.+)$/i))) { const f = pf(m[2], 0), g = pf(m[3], 0); if (f && g) { addL(f); addL(g); goal = { t: "exc", f, g }; } }
+    else errors.push({ line: 0, msg: "Write the goal as P(H & G), P(K | J), indep? R, S or exclusive? X, Y." });
+    if (letters.includes("P")) errors.push({ line: 0, msg: "P can't be a sentence letter here." });
+    if (letters.length > 5) errors.push({ line: 0, msg: "Use at most five letters." });
+    if (errors.length) return { errors };
+    letters.sort();
+    const seen = new Map();
+    for (const g of givens) for (const [k, v] of givenItems(g)) {
+      if (seen.has(k) && !(seen.get(k) === v || (typeof v === "object" && qeq(seen.get(k), v)))) return { errors: [{ line: 0, msg: `${k[0] === "u" || k[0] === "c" ? itemText(makeCtx({ letters, givens, goal }), k) : "A probability"} is given two different values.` }] };
+      seen.set(k, v);
+    }
+    const prob = { letters, givens, goal, own: true };
+    // inconsistent givens: two routes disagree
+    const P = prepare(prob);
+    const known = closure(P.ctx, P.insts, startItems(prob));
+    for (const I of P.insts) {
+      if (!I.statOk || I.fact) continue;
+      if (!I.q.every((k) => known.has(k))) continue;
+      if (I.dyn && !dynCheck(P.ctx, known, I).ok) continue;
+      const x = I.q[0], v = solveFor(I, x, (k) => known.get(k).v);
+      if (v && !qeq(v, known.get(x).v)) return { errors: [{ line: 0, msg: `These givens are inconsistent: two routes give ${itemText(P.ctx, x)} different values (${qstr(known.get(x).v)} and ${qstr(v)}).` }] };
+    }
+    if (!known.has(goalKey(goal))) return { prob, warn: `${goal.t === "u" ? `P(${show(goal.f)})` : goal.t === "c" ? `P(${show(goal.f)} | ${show(goal.g)})` : "The answer"} can't be found from these givens with the book's rules.` };
+    return { prob };
+  }
+
+  // problems cross from the worker as plain data
+  function serialize(prob) {
+    return { letters: prob.letters, goal: { t: prob.goal.t, f: show(prob.goal.f), g: prob.goal.g ? show(prob.goal.g) : null },
+      givens: prob.givens.map((g) => ({ t: g.t, f: show(g.f), g: g.g ? show(g.g) : null, v: g.v ? [g.v.n, g.v.d] : null, both: !!g.both })) };
+  }
+  function deserialize(o) {
+    const F = (s) => (s == null ? undefined : parseF(s));
+    const goal = { t: o.goal.t, f: F(o.goal.f) }; if (o.goal.g) goal.g = F(o.goal.g);
+    return { letters: o.letters, goal, givens: o.givens.map((g) => { const x = { t: g.t, f: F(g.f) }; if (g.g) x.g = F(g.g); if (g.v) x.v = Q(g.v[0], g.v[1]); if (g.t === "ind") x.both = g.both; return x; }) };
+  }
+
+  return {
+    serialize, deserialize, Q, qadd, qsub, qmul, qdiv, qeq, qstr, qnum, Q0, Q1, V, N, A, O, key, show, parseF, lettersOfF, conns, isLit,
+    uK, cK, iK, xK, makeCtx, prepare, solve, closure, instantiate, dynCheck, solveFor, factValue, nzSource, RULES, ruleLabel,
+    itemText, givenText, goalText, solutionLines, calcOf, calcText, instanceText, fmtVal, goalKey, givenItems, startItems,
+    generate, LEVELS, rngOf, normalize, session, parseOwn, RULE_MENU, MENU_FORM, MENU_ARITY, menuLabel, tableP, splitTop, edgesOf, shortest, orderLines, universe, allInstances, buildTable
+  };
+}
+const PR = PR_FACTORY();
+
+</script>
+<script>
+window.initProblems = () => {
+  "use strict";
+  const $ = (id) => document.getElementById("pr-" + id);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+    const bgcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b; while (b) [a, b] = [b, a % b]; return a; };
+  const Rq = (n, d = 1n) => { if (d < 0n) { n = -n; d = -d; } const g = bgcd(n, d) || 1n; return { n: n / g, d: d / g }; };
+  const radd = (a, b) => Rq(a.n * b.d + b.n * a.d, a.d * b.d);
+  const rdiv = (a, b) => Rq(a.n * b.d, a.d * b.n);
+  const RZ = Rq(0n), R1 = Rq(1n);
+  const req = (a, b) => a.n === b.n && a.d === b.d;
+  const rstr = (q) => (q.d === 1n ? `${q.n}` : `${q.n}/${q.d}`);
+  const rnum = (q) => Number(q.n) / Number(q.d);
+  const rapprox = (q) => { const x = rnum(q); return x > 0 && x < 0.001 ? x.toPrecision(2) : String(+x.toFixed(4)); };
+  // 1/8, 0.125, .125, 12.5%
+  function parseR(raw) {
+    const t = String(raw ?? "").trim();
+    let m;
+    if ((m = t.match(/^(\d+)\s*\/\s*(\d+)$/))) return BigInt(m[2]) === 0n ? null : Rq(BigInt(m[1]), BigInt(m[2]));
+    const dec = (w, f) => Rq(BigInt((w || "0") + (f || "")), 10n ** BigInt((f || "").length));
+    if ((m = t.match(/^(\d*)\.?(\d*)\s*%$/)) && (m[1] || m[2])) { const q = dec(m[1], m[2]); return Rq(q.n, q.d * 100n); }
+    if ((m = t.match(/^(\d*)\.?(\d*)$/)) && (m[1] || m[2])) return dec(m[1], m[2]);
+    return null;
+  }
+
+  // a typed value: fraction or percentage exact, decimal within 0.005
+  function readVal(raw) {
+    let t = String(raw || "").trim();
+    const neg = /^[-−]/.test(t); if (neg) t = t.slice(1).trim();
+    const q = parseR(t);
+    if (!q) return null;
+    return { v: PR.Q((neg ? -1 : 1) * Number(q.n), Number(q.d)), approx: /\./.test(t) && !/%/.test(t) };
+  }
+
+  const LEVELS = ["easy", "medium", "hard"];
+  const state = {
+    lvl: LEVELS.includes(store.get("pl-pr-lvl")) ? store.get("pl-pr-lvl") : "easy",
+    mode: "practice", sub: store.get("pl-pr-sub") === "answer" ? "answer" : "steps", step: 0,
+    seed: null, own: null
+  };
+  let prob = null, S = null, work = null, frames = null, model = null;
+  let tally = (() => { try { return JSON.parse(store.get("pl-pr-tally")) || { n: 0, ok: 0 }; } catch (e) { return { n: 0, ok: 0 }; } })();
+  const fmt = () => (store.get("pl-fmt") === "d" ? "d" : "f");
+  const fm = () => (fmt() === "d" ? "dec" : "frac");
+  const fresh = () => ({ wrong: 0, hinted: false, done: false, counted: false, shown: false, stack: [S.goal], level: 0, hints: [], virt: [], hl: null, active: "f", lastNew: null, ansDone: false });
+
+  // ---------- problems ----------
+  function loadGenerated(lvl, seed) {
+    const g = PR.generate(lvl, seed);
+    if (!g) return false;
+    state.lvl = lvl; state.seed = seed; state.own = null;
+    prob = g.prob; start();
+    return true;
+  }
+  function loadOwn(text, goal) {
+    const r = PR.parseOwn(text, goal);
+    if (r.errors || r.warn) return r;
+    state.own = { text, goal }; state.seed = null;
+    prob = r.prob; start();
+    return r;
+  }
+  function start() {
+    S = PR.session(prob); S.fmt = fm();
+    work = fresh(); frames = null; model = null; state.step = 0;
+    $("f").value = ""; $("g").value = ""; $("val").value = ""; $("ans").value = ""; $("rule").value = "";
+    setMsg("", ""); $("ansMsg").textContent = "";
+    renderKeys();
+  }
+  // ---------- generating in a worker, one problem ahead ----------
+  let worker = null, pending = null, ready = {};
+  const waiting = {};
+  function getWorker() {
+    if (worker !== null) return worker;
+    try {
+      const src = PR_FACTORY.toString() + "\nconst PR = PR_FACTORY();\nonmessage = (e) => { const { lvl, seed } = e.data; let prob = null; try { const p = PR.generate(lvl, seed); prob = p ? PR.serialize(p.prob) : null; } catch (err) { prob = null; } postMessage({ lvl, seed, prob }); };";
+      worker = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+      worker.onmessage = (e) => {
+        const { lvl, seed, prob: o } = e.data;
+        pending = null;
+        if (o) ready[lvl] = { seed, prob: o };
+        if (waiting[lvl]) { const cb = waiting[lvl]; delete waiting[lvl]; cb(); }
+        prefetch();
+      };
+      worker.onerror = () => { worker = false; };
+    } catch (err) { worker = false; }
+    return worker;
+  }
+  function prefetch() {
+    const w = getWorker(); if (!w || pending) return;
+    const lvl = [state.lvl, ...LEVELS].find((l) => !ready[l]);
+    if (!lvl) return;
+    pending = lvl;
+    w.postMessage({ lvl, seed: 1 + Math.floor(Math.random() * 999999) });
+  }
+  function useReady(lvl) {
+    const r = ready[lvl]; delete ready[lvl];
+    state.lvl = lvl; state.seed = r.seed; state.own = null;
+    prob = PR.deserialize(r.prob); start(); render(); prefetch();
+  }
+  function newProblem() {
+    const lvl = state.lvl;
+    if (ready[lvl]) { useReady(lvl); return; }
+    const w = getWorker();
+    if (!w) { const seed = 1 + Math.floor(Math.random() * 999999); setVerdict("", "", "Making a problem…"); setTimeout(() => { loadGenerated(lvl, seed); render(); }, 15); return; }
+    setVerdict("", "", "Making a problem…"); $("newBtn").disabled = true; $("next").disabled = true;
+    waiting[lvl] = () => { $("newBtn").disabled = false; $("next").disabled = false; if (ready[lvl]) useReady(lvl); };
+    if (!pending) prefetch();
+  }
+  const getFrames = () => (frames || (frames = S.frames()));
+  const getModel = () => {
+    if (model) return model;
+    const res = S.model();
+    model = res;
+    return model;
+  };
+
+  // ---------- rendering helpers ----------
+  function segSync(id, val) { $(id).querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(val)))); }
+  function setVerdict(badge, cls, text) {
+    const v = $("verdict"); v.innerHTML = "";
+    if (badge) v.append(el("span", "badge " + cls, esc(badge)));
+    if (text) v.append(el("span", "verdict-text", text));
+  }
+  function setMsg(text, cls) { const m = $("msg"); m.textContent = text; m.className = "smsg" + (cls ? " " + cls : ""); }
+  // formulas in a text become clickable (they fill the active slot)
+  const FORM_RE = /P\(([^()|]*(?:\([^()]*\)[^()|]*)*)(?:\s\|\s([^()]*(?:\([^()]*\)[^()]*)*))?\)/g;
+  function clickable(text) {
+    return esc(text).replace(FORM_RE, (m, a, b) => `P(<span class="fm click" data-f="${a}">${a}</span>${b != null ? ` | <span class="fm click" data-f="${b}">${b}</span>` : ""})`);
+  }
+  const lettersIn = (s) => [...new Set(String(s).match(/[A-Z]/g) || [])].filter((c) => c !== "P");
+
+  function statement() {
+    const ctx = S.ctx;
+    const gs = prob.givens.map((g) => PR.givenText(ctx, g, fm()));
+    return (gs.length ? "Assume: " + esc(gs.join(", ")) + ". " : "") + `<span class="q">${esc(PR.goalText(ctx, prob.goal))}</span>`;
+  }
+  function goalLine(stack) {
+    const names = stack.map((k) => S.goalName(k));
+    if (names.length === 1) return `Goal: <b>${clickable(names[0])}</b>`;
+    return `Goal: <b>${clickable(names[0])}</b>` + names.slice(1).map((n) => ` → now <b class="now">${clickable(n)}</b>`).join("");
+  }
+  function listRows(lines, opts = {}) {
+    const tb = $("list").querySelector("tbody"); tb.innerHTML = "";
+    lines.forEach((L) => {
+      const tr = el("tr", L.given ? "given" : "added");
+      if (L.key === S.goal) tr.classList.add("goalline");
+      if (opts.hl && opts.hl.some((c) => S.lineLetters(L).includes(c))) tr.classList.add("hl");
+      if (opts.fresh && L.n === opts.fresh) tr.classList.add("new");
+      const cmp = L.cmp ? `<span class="cmp">${esc(L.cmp)}</span>` : "";
+      tr.append(el("td", "n", L.n + "."), el("td", "s", clickable(S.lineText(L, fm())) + cmp), el("td", "j", esc(S.lineJust(L))));
+      tb.append(tr);
+    });
+  }
+
+  function render() {
+    S.fmt = fm();
+    segSync("diffSeg", state.own ? "" : state.lvl); segSync("modeSeg", state.mode); segSync("fmtSeg", fmt()); segSync("subSeg", state.sub);
+    $("subRow").hidden = state.mode !== "practice";
+    $("stepper").hidden = $("stepcap").hidden = state.mode !== "step";
+    $("hintBtn").hidden = state.mode !== "practice" || work.done;
+    $("modeNote").textContent = {
+      practice: state.sub === "steps" ? "Add one step at a time: pick a rule, fill in φ and ψ, type the value." : "Work it out on paper, then give the answer.",
+      answers: "A shortest solution, one rule per line.",
+      step: "The book’s method one step at a time. Use ▶ or the arrow keys."
+    }[state.mode];
+    $("tally").textContent = tally.n ? `Solved without a wrong step or a hint: ${tally.ok} of ${tally.n} problems` : "";
+    $("statement").innerHTML = statement();
+    $("hints").hidden = true; $("after").hidden = true;
+    $("builder").hidden = !(state.mode === "practice" && state.sub === "steps" && !work.done);
+    $("answer").hidden = !(state.mode === "practice" && state.sub === "answer");
+    if (state.mode === "practice") renderPractice();
+    else if (state.mode === "answers") renderAnswers();
+    else renderStep();
+    writeHash();
+  }
+
+  // ---------- practice ----------
+  function renderPractice() {
+    // pop subgoals that are on the list
+    while (work.stack.length > 1 && (S.known.has(top()) || work.virt.some(([k]) => k === top()))) work.stack.pop();
+    $("goal").innerHTML = goalLine(work.stack);
+    listRows(S.lines, { hl: work.hl, fresh: work.lastNew });
+    if (work.hints.length && !work.done) {
+      const h = $("hints"); h.hidden = false; h.innerHTML = "";
+      h.append(el("span", "hl", "Hint"));
+      work.hints.forEach((t) => h.append(el("p", "", clickable(t))));
+    }
+    $("next").hidden = !work.done;
+    $("next").classList.toggle("primary", work.done);
+    if (work.done) {
+      setVerdict("Correct", "good", esc(doneText()));
+    } else setVerdict("", "", state.sub === "steps" ? `Reach the goal: ${esc(S.goalName(S.goal))}.` : "Give the answer.");
+    if (state.sub === "steps") renderBuilder();
+    else renderAnswerOnly();
+  }
+  const top = () => work.stack[work.stack.length - 1];
+  function doneText() {
+    const g = prob.goal, k = S.goal;
+    const v = S.known.has(k) ? S.known.get(k).v : work.ansVal;
+    if (g.t === "ind" || g.t === "exc") return `So ${PR.itemText(S.ctx, k, v)}.`;
+    return `${S.goalName(k)} = ${PR.fmtVal(v, fm())}.`;
+  }
+
+  // the rule menu
+  function fillMenu() {
+    const sel = $("rule"); sel.innerHTML = "";
+    sel.append(new Option("Choose a rule…", ""));
+    PR.RULE_MENU.forEach(([grp, items]) => {
+      const og = document.createElement("optgroup"); og.label = grp;
+      items.forEach(([id, lab]) => og.append(new Option(lab, id)));
+      sel.append(og);
+    });
+  }
+  function renderKeys() {
+    const k = $("keys"); k.innerHTML = "";
+    const add = (t, ins) => { const b = el("button", "", esc(t)); b.type = "button"; b.dataset.ins = ins || t; b.tabIndex = -1; k.append(b); };
+    ["¬", "∧", "∨", "→", "↔", "(", ")"].forEach((s) => add(s));
+    k.append(el("span", "sep"));
+    prob.letters.forEach((L) => add(L));
+  }
+  function renderBuilder() {
+    const rule = $("rule").value;
+    const one = !!PR.MENU_ARITY[rule];
+    $("gwrap").hidden = one;
+    $("form").textContent = rule ? PR.MENU_FORM[rule] : "Pick the axiom, definition or theorem for this step.";
+    $("f").classList.toggle("active", work.active === "f");
+    $("g").classList.toggle("active", work.active === "g" && !one);
+    $("undo").disabled = S.lines.length === prob.givens.length;
+    $("clear").disabled = S.lines.length === prob.givens.length;
+    preview();
+  }
+  function preview() {
+    const rule = $("rule").value;
+    const inst = $("inst"); $("slotmsg").textContent = "";
+    $("f").classList.remove("bad"); $("g").classList.remove("bad");
+    if (!rule) { inst.hidden = true; $("add").hidden = false; return; }
+    const pv = S.preview(rule, $("f").value, PR.MENU_ARITY[rule] ? "" : $("g").value);
+    if (pv.slotErr) { $(pv.slotErr[0]).classList.add("bad"); $("slotmsg").textContent = pv.slotErr[1]; inst.hidden = true; return; }
+    if (pv.incomplete) { inst.hidden = true; return; }
+    inst.hidden = false;
+    const ch = $("choices"); ch.innerHTML = "";
+    if (pv.fact) {
+      $("sym").textContent = "";
+      $("num").textContent = pv.cmp;
+      $("valrow").hidden = true; $("add").hidden = true;
+      pv.choices.forEach(([v, lab]) => { const b = el("button", "btn", esc(lab)); b.type = "button"; b.onclick = () => addStep({ conclusion: v }); ch.append(b); });
+      return;
+    }
+    $("add").hidden = false;
+    $("sym").textContent = pv.symbolic;
+    const one = pv.unknowns.length === 1;
+    $("num").innerHTML = pv.pieces.map((p) => {
+      if (typeof p === "string") return esc(p);
+      if (p.v) { const t = PR.fmtVal(p.v, fm()); const w = pv.I.eq.prod && fm() === "frac" && p.v.d !== 1 ? `(${t})` : t; return `<span class="kv" title="${esc(p.text)}">${esc(w)}</span>`; }
+      return `<span class="${one ? "box" : "box2"}">${esc(p.text)}</span>`;
+    }).join("");
+    $("valrow").hidden = !one;
+    if (one) $("valLbl").textContent = pv.unknownText[0] + " =";
+  }
+  function addStep(input) {
+    const rule = $("rule").value;
+    if (!rule) { setMsg("Pick a rule first.", "bad"); return; }
+    let inp = input;
+    if (!inp) {
+      const raw = $("val").value;
+      inp = raw.trim() ? readVal(raw) : null;
+      if (raw.trim() && !inp) { setMsg("Type a probability: a fraction (3/10), a decimal (0.3) or a percentage (30%).", "bad"); return; }
+    }
+    const r = S.add(rule, $("f").value, PR.MENU_ARITY[rule] ? "" : $("g").value, inp || {});
+    if (!r.ok) {
+      if (!r.noCount) work.wrong++;
+      setMsg(r.msg.startsWith("Not quite") ? r.msg : (r.noCount ? r.msg : "Not quite. " + r.msg), r.noCount ? "" : "bad");
+      if (!r.noCount) setVerdict("Not quite", "bad", "");
+      return;
+    }
+    work.lastNew = r.line.n;
+    work.level = 0; work.hints = []; work.hl = null;
+    $("f").value = ""; $("g").value = ""; $("val").value = ""; $("rule").value = "";
+    work.active = "f";
+    setMsg(`Line ${r.line.n} added.`, "ok");
+    if (S.solved()) finish();
+    render();
+    if (!work.done) $("rule").focus({ preventScroll: true });
+  }
+  function finish() {
+    work.done = true;
+    if (!work.counted && !work.shown) {
+      work.counted = true; tally.n++;
+      if (!work.wrong && !work.hinted) tally.ok++;
+      store.set("pl-pr-tally", JSON.stringify(tally));
+    }
+  }
+
+  // ---------- answer only ----------
+  function renderAnswerOnly() {
+    const g = prob.goal, yn = g.t === "ind" || g.t === "exc";
+    $("ansNum").hidden = yn; $("ansYN").hidden = !yn;
+    $("ansLbl").textContent = S.goalName(S.goal) + " =";
+    $("check").disabled = work.done; $("yes").disabled = $("no").disabled = work.done;
+  }
+  function truthOfGoal() { const m = getModel(); return m.known.has(S.goal) ? m.known.get(S.goal).v : null; }
+  function checkAnswer(yn) {
+    if (work.done) return;
+    const T = truthOfGoal();
+    const msg = $("ansMsg");
+    let ok, text = "";
+    if (yn != null) ok = yn === T;
+    else {
+      const r = readVal($("ans").value);
+      if (!r) { msg.className = "smsg bad"; msg.textContent = "Type a probability: a fraction (3/10), a decimal (0.3) or a percentage (30%)."; return; }
+      ok = r.approx ? Math.abs(PR.qnum(r.v) - PR.qnum(T)) <= 0.005 + 1e-12 : PR.qeq(r.v, T);
+      if (!ok) text = S.answerMistake(r, T);
+    }
+    if (ok) { work.ansVal = T; S.known.set(S.goal, { v: T, line: 0 }); finish(); S.known.delete(S.goal); work.ansDone = true; msg.className = "smsg ok"; msg.textContent = ""; render(); setVerdict("Correct", "good", esc(doneText())); return; }
+    work.wrong++;
+    msg.className = "smsg bad"; msg.textContent = text || "Not quite.";
+    setVerdict("Not quite", "bad", "");
+  }
+
+  // ---------- hints ----------
+  function hint() {
+    if (work.done) return;
+    work.hinted = true;
+    while (work.stack.length > 1 && (S.known.has(top()) || work.virt.some(([k]) => k === top()))) work.stack.pop();
+    const g = top();
+    const bk = S.nextBack(g, work.virt);
+    if (!bk) { work.hints.push("There's no way to reach this goal from your list with the book's rules. Undo a step or two."); render(); return; }
+    work.level++;
+    if (work.level === 1) { work.hints = [S.goalText(g)]; work.hl = S.lettersOfKey(g); }
+    else if (work.level === 2) work.hints.push(S.ruleText(bk.inst.rule));
+    else if (work.level === 3) {
+      work.hints.push(S.instText(bk.inst) + " " + S.missingText(bk));
+      if (bk.missing.length) { work.stack.push(bk.missing[0]); work.level = 0; }
+    } else {
+      const parent = work.stack.length > 1 ? work.stack[work.stack.length - 2] : null;
+      if (state.sub === "steps") {
+        $("rule").value = S.menuOf(bk.inst.rule);
+        $("f").value = S.slotName(bk.inst.f);
+        $("g").value = bk.inst.g ? S.slotName(bk.inst.g) : "";
+        work.hints.push(bk.inst.fact ? "Set it up: the rule and its slots are filled in below. Pick the conclusion." : `Set it up: the rule and its slots are filled in below. Type the value of ${S.goalName(g)}.`);
+        work.level = 3;
+      } else {
+        work.hints.push(parent ? `Work out ${S.goalName(g)}, then come back to ${S.goalName(parent)}.` : `Work out ${S.goalName(g)} from it.`);
+        const v = bk.res.known.get(g).v;
+        work.virt.push([g, v]);
+        if (parent) work.stack.pop();
+        work.level = 0;
+      }
+    }
+    render();
+  }
+
+  // ---------- show answers ----------
+  function solutionLines() {
+    const res = getModel();
+    if (!res.deriv) return null;
+    return PR.solutionLines(res, fm()).map((L) => ({ ...L, given: !!L.given, key: L.key, text: L.text }));
+  }
+  function renderAnswers() {
+    const res = getModel();
+    $("goal").innerHTML = goalLine([S.goal]);
+    if (!res.deriv) { setVerdict("", "", "No solution with the book's rules."); listRows(S.lines.filter((L) => L.given)); return; }
+    work.shown = true;
+    setVerdict("Show answers", "neutral", `${res.deriv.size} line${res.deriv.size > 1 ? "s" : ""} after the givens.`);
+    modelRows(PR.solutionLines(res, fm()));
+    $("after").hidden = false; $("after").innerHTML = `<b>${esc(answerSentence(res))}</b>`;
+  }
+  function modelRows(lines, upto = Infinity, fresh = null) {
+    const tb = $("list").querySelector("tbody"); tb.innerHTML = "";
+    lines.slice(0, prob.givens.length + upto).forEach((L) => {
+      const tr = el("tr", L.given ? "given" : "added");
+      if (L.key === S.goal) tr.classList.add("goalline");
+      if (fresh && L.n === fresh) tr.classList.add("new");
+      const cmp = L.cmp ? `<span class="cmp">${esc(L.cmp)}</span>` : "";
+      tr.append(el("td", "n", L.n + "."), el("td", "s", esc(L.text) + cmp), el("td", "j", esc(L.just + (L.cites && L.cites.length ? ", " + L.cites.join(", ") : ""))));
+      tb.append(tr);
+    });
+  }
+  function answerSentence(res) {
+    const k = S.goal, v = res.known.get(k).v;
+    if (k[0] === "I" || k[0] === "X") return `So ${PR.itemText(S.ctx, k, v)}.`;
+    return `So ${S.goalName(k)} = ${PR.fmtVal(v, fm())}.`;
+  }
+
+  // ---------- step through ----------
+  function renderStep() {
+    const F = getFrames();
+    if (!F) { setVerdict("", "", "No solution with the book's rules."); return; }
+    work.shown = true;
+    const fr = F.frames;
+    state.step = Math.max(0, Math.min(state.step, fr.length - 1));
+    const f = fr[state.step];
+    $("stCount").textContent = `${state.step + 1} / ${fr.length}`;
+    $("stFirst").disabled = $("stPrev").disabled = state.step === 0;
+    $("stNext").disabled = $("stLast").disabled = state.step === fr.length - 1;
+    setVerdict("Step through", "neutral", "");
+    const all = PR.solutionLines(F.res, fm());
+    // lines in the order the method reaches them
+    const order = F.order;
+    const byKey = new Map(all.filter((L) => !L.given).map((L) => [L.key, L]));
+    const shown = all.filter((L) => L.given);
+    order.slice(0, f.lines).forEach((k, i) => { const L = byKey.get(k); shown.push({ ...L, n: prob.givens.length + i + 1, cites: renumber(L.cites, all, order) }); });
+    const freshN = f.kind === "line" ? prob.givens.length + f.lines : null;
+    modelRows(shown, Infinity, freshN);
+    $("goal").innerHTML = goalLine(f.stack.length ? f.stack : [S.goal]);
+    let cap = f.text;
+    if (f.kind === "line") { const L = shown[shown.length - 1]; cap = (f.text ? f.text + " " : "") + `Line ${L.n}: ${L.text} (${L.just}${L.cites.length ? ", " + L.cites.join(", ") : ""}).`; if (L.key === S.goal) cap += " " + answerSentence(F.res); }
+    $("stepcap").innerHTML = clickable(cap);
+  }
+  // the model solution's citations, renumbered to the order Step through adds the lines
+  function renumber(cites, all, order) {
+    const g = prob.givens.length;
+    return cites.map((c) => { if (c <= g) return c; const L = all.find((x) => x.n === c); const i = order.indexOf(L.key); return i >= 0 ? g + i + 1 : c; }).sort((a, b) => a - b);
+  }
+  function stepTo(i) { state.step = i; render(); }
+
+  // ---------- events ----------
+  fillMenu();
+  $("rule").addEventListener("change", () => { setMsg("", ""); if (PR.MENU_ARITY[$("rule").value]) work.active = "f"; renderBuilder(); });
+  ["f", "g"].forEach((id) => {
+    const inp = $(id);
+    inp.addEventListener("focus", () => { work.active = id; $("f").classList.toggle("active", id === "f"); $("g").classList.toggle("active", id === "g"); });
+    inp.addEventListener("input", () => {
+      const pos = inp.selectionStart, before = inp.value;
+      const after = PR.normalize(before);
+      if (after !== before) { inp.value = after; const d = before.length - after.length; inp.setSelectionRange(Math.max(0, pos - d), Math.max(0, pos - d)); }
+      setMsg("", ""); preview();
+    });
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (id === "f" && !$("gwrap").hidden && !$("g").value) $("g").focus(); else if (!$("valrow").hidden && !$("inst").hidden) $("val").focus(); else addStep(); } });
+  });
+  $("keys").addEventListener("mousedown", (e) => { if (e.target.closest("button")) e.preventDefault(); });
+  $("keys").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const inp = $(work.active === "g" && !$("gwrap").hidden ? "g" : "f");
+    const s = inp.selectionStart ?? inp.value.length, t = inp.selectionEnd ?? s;
+    inp.value = inp.value.slice(0, s) + b.dataset.ins + inp.value.slice(t);
+    inp.focus(); inp.setSelectionRange(s + b.dataset.ins.length, s + b.dataset.ins.length);
+    preview();
+  });
+  // a formula clicked anywhere goes into the active slot
+  document.getElementById("problemsApp").addEventListener("click", (e) => {
+    const f = e.target.closest(".fm.click"); if (!f) return;
+    if (state.mode !== "practice" || state.sub !== "steps" || work.done) return;
+    const id = work.active === "g" && !$("gwrap").hidden ? "g" : "f";
+    $(id).value = f.dataset.f;
+    if (id === "f" && !$("gwrap").hidden && !$("g").value) work.active = "g";
+    renderBuilder();
+  });
+  $("val").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addStep(); } });
+  $("add").onclick = () => addStep();
+  $("undo").onclick = () => { if (S.undo()) { work.lastNew = null; work.level = 0; work.hints = []; setMsg("Last step removed.", ""); render(); } };
+  $("clear").onclick = () => { S.clear(); work.lastNew = null; work.level = 0; work.hints = []; work.stack = [S.goal]; work.virt = []; setMsg("", ""); render(); };
+  $("hintBtn").onclick = hint;
+  $("next").onclick = () => { if (state.own) { start(); render(); } else newProblem(); };
+  $("check").onclick = () => checkAnswer(null);
+  $("ans").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); checkAnswer(null); } });
+  $("yes").onclick = () => checkAnswer(true);
+  $("no").onclick = () => checkAnswer(false);
+  $("newBtn").onclick = newProblem;
+  $("diffSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.lvl = b.dataset.v; store.set("pl-pr-lvl", state.lvl); newProblem(); });
+  $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.mode = b.dataset.v; state.step = 0; render(); });
+  $("subSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.sub = b.dataset.v; store.set("pl-pr-sub", state.sub); work.level = 0; work.hints = []; work.virt = []; work.stack = [S.goal]; render(); });
+  $("fmtSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; store.set("pl-fmt", b.dataset.v); render(); });
+  $("stFirst").onclick = () => stepTo(0); $("stPrev").onclick = () => stepTo(state.step - 1);
+  $("stNext").onclick = () => stepTo(state.step + 1); $("stLast").onclick = () => stepTo(9999);
+  document.addEventListener("keydown", (e) => {
+    if (!window.LL || window.LL.active !== "problems" || state.mode !== "step") return;
+    if (e.target.closest("input, textarea, select")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); stepTo(state.step + 1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); stepTo(state.step - 1); }
+  });
+  // your own problem
+  $("ownBtn").onclick = () => {
+    const o = $("own"); o.hidden = !o.hidden;
+    if (!o.hidden) { if (state.own) { $("ownGivens").value = state.own.text; $("ownGoal").value = state.own.goal; } $("ownGivens").focus(); }
+  };
+  $("ownCancel").onclick = () => { $("own").hidden = true; $("ownErr").innerHTML = ""; };
+  $("ownApply").onclick = () => {
+    const r = loadOwn($("ownGivens").value, $("ownGoal").value);
+    const ul = $("ownErr"); ul.innerHTML = "";
+    if (r.errors) { r.errors.forEach((x) => ul.append(el("li", "", esc((x.line ? `Line ${x.line}: ` : "") + x.msg)))); return; }
+    if (r.warn) { ul.append(el("li", "", esc(r.warn))); return; }
+    $("own").hidden = true; state.mode = "practice"; render();
+  };
+  function applySize(v) { document.documentElement.style.setProperty("--tsize-pr", v + "px"); segSync("sizeSeg", v); }
+  $("sizeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applySize(b.dataset.v); });
+  applySize("18");
+
+  // ---------- URL state ----------
+  function writeHash() {
+    if (!window.LL || LL.active !== "problems") return;
+    const p = new URLSearchParams({ tab: "problems" });
+    if (state.own) p.set("own", state.own.text.split(/\n/).map((s) => s.trim()).filter(Boolean).join(";") + ";?" + state.own.goal.trim());
+    else { p.set("lvl", state.lvl); p.set("seed", String(state.seed)); }
+    if (state.mode !== "practice") p.set("m", state.mode);
+    try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
+  }
+  function readHash() {
+    if (!window.LL || LL.tabOfHash() !== "problems") return false;
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (["practice", "answers", "step"].includes(p.get("m"))) state.mode = p.get("m"); else state.mode = "practice";
+    const own = p.get("own");
+    if (own) {
+      const i = own.lastIndexOf(";?");
+      const text = (i >= 0 ? own.slice(0, i) : own).split(";").join("\n"), goal = i >= 0 ? own.slice(i + 2) : "";
+      if (state.own && state.own.text === text && state.own.goal === goal) return true;
+      const r = loadOwn(text, goal);
+      return !(r.errors || r.warn);
+    }
+    const lvl = p.get("lvl"), seed = parseInt(p.get("seed"), 10);
+    if (!LEVELS.includes(lvl) || !(seed > 0)) return false;
+    if (!state.own && state.lvl === lvl && state.seed === seed && prob) return true;
+    return loadGenerated(lvl, seed);
+  }
+  if (!readHash()) loadGenerated(state.lvl, 1 + Math.floor(Math.random() * 999999));
+  render();
+  setTimeout(prefetch, 300);
+  window.addEventListener("hashchange", () => { if (readHash()) render(); });
+  window.LL_hooks.problems = { writeHash: () => writeHash() };
+  window.LL_test = window.LL_test || {};
+  window.LL_test.problems = { get S() { return S; }, get prob() { return prob; }, get work() { return work; }, get state() { return state; }, load: (lvl, seed) => { loadGenerated(lvl, seed); render(); }, render };
+};
+
+</script>
+<script>
 window.LL_hooks = {};
 window.LL = (() => {
   "use strict";
-  const TABS = ["table", "bayes", "eik"];
-  const PANEL = { table: "tableApp", bayes: "bayesApp", eik: "eikApp" };
-  const INIT = { table: "initTable", bayes: "initBayes", eik: "initEik" };
-  const SIZE_SEG = { table: "st-sizeSeg", bayes: "by-sizeSeg", eik: "sizeSeg" };
+  const TABS = ["table", "problems", "bayes", "eik"];
+  const PANEL = { table: "tableApp", problems: "problemsApp", bayes: "bayesApp", eik: "eikApp" };
+  const INIT = { table: "initTable", problems: "initProblems", bayes: "initBayes", eik: "initEik" };
+  const SIZE_SEG = { table: "st-sizeSeg", problems: "pr-sizeSeg", bayes: "by-sizeSeg", eik: "sizeSeg" };
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
@@ -2649,6 +5199,7 @@ window.LL = (() => {
     const p = new URLSearchParams(h.replace(/^#/, ""));
     let t = p.get("tab");
     if (t === "eikosogram" || t === "eikosograms") t = "eik";
+    if (t === "problem") t = "problems";
     if (!t && p.has("pA")) t = "eik"; // links made by Eikosogram Studio
     return TABS.includes(t) ? t : null;
   };
@@ -2720,7 +5271,7 @@ window.LL = (() => {
   tabsEl.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b && b.dataset.tab !== api.active) show(b.dataset.tab); });
   tabsEl.addEventListener("keydown", (e) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-    const i = TABS.indexOf(api.active), n = TABS[(i + (e.key === "ArrowRight" ? 1 : 2)) % 3];
+    const i = TABS.indexOf(api.active), n = TABS[(i + (e.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length];
     show(n); document.getElementById("ll-tab-" + n).focus();
   });
 
