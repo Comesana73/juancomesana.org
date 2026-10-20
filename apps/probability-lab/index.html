@@ -688,7 +688,7 @@
         <button class="btn primary" type="button" id="st-done">Use this problem</button>
         <button class="btn" type="button" id="st-cancel">Cancel</button>
       </div>
-      <div class="opt">
+      <div class="opt" hidden>
         <span id="st-fmtLbl">Show probabilities as</span>
         <div class="seg full" role="group" aria-labelledby="st-fmtLbl" id="st-fmtSeg">
           <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
@@ -771,7 +771,7 @@
         <ul class="pr-ownErr" id="pr-ownErr"></ul>
         <div class="buildrow"><button type="button" class="btn primary" id="pr-ownApply">Use this problem</button><button type="button" class="btn" id="pr-ownCancel">Cancel</button></div>
       </div>
-      <div class="opt">
+      <div class="opt" hidden>
         <span id="pr-fmtLbl">Show probabilities as</span>
         <div class="seg full" role="group" aria-labelledby="pr-fmtLbl" id="pr-fmtSeg">
           <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
@@ -883,7 +883,7 @@
         </div>
         <button type="button" class="btn" id="by-newBtn">New problem</button>
       </div>
-      <div class="opt">
+      <div class="opt" hidden>
         <span id="by-fmtLbl">Show probabilities as</span>
         <div class="seg full" role="group" aria-labelledby="by-fmtLbl" id="by-fmtSeg">
           <button type="button" data-v="f">Fractions</button><button type="button" data-v="d">Decimals</button>
@@ -1358,7 +1358,7 @@ window.initTable = () => {
   // ---------- state ----------
   const state = {
     diff: ["easy", "medium", "hard"].includes(store.get("pl-st-diff")) ? store.get("pl-st-diff") : "easy",
-    mode: "practice", step: 0, fmt: store.get("pl-fmt") === "d" ? "d" : "f", editing: false
+    mode: "practice", step: 0, fmt: false ? "d" : "f", editing: false
   };
   let prob = null;           // { kind, letters, p[], fs[], psi, phi }
   let work = null;           // practice answers
@@ -2015,7 +2015,7 @@ window.initBayes = () => {
   const state = { diff: DIFFS.includes(store.get("pl-by-diff")) ? store.get("pl-by-diff") : "easy", mode: "practice", step: 0 };
   let prob = null, work = null, recent = [];
   let tally = (() => { try { return JSON.parse(store.get("pl-by-tally")) || { n: 0, ok: 0 }; } catch (e) { return { n: 0, ok: 0 }; } })();
-  const fmt = () => (store.get("pl-fmt") === "d" ? "d" : "f");
+  const fmt = () => (false ? "d" : "f");
   const show = (q) => (fmt() === "d" ? String(+rnum(q).toFixed(4)) : rstr(q));
   const showA = (q) => show(q) + (fmt() === "f" && q.d !== 1n ? ` ≈ ${+rnum(q).toFixed(4)}` : "");
   const fresh = () => ({ ev: null, pH: "", pEH: "", pEnH: "", post: "", marks: {}, msgs: {}, checks: 0, done: false, shown: false, s2ok: false });
@@ -4697,7 +4697,7 @@ window.initProblems = () => {
   };
   let prob = null, S = null, work = null, frames = null, model = null;
   let tally = (() => { try { return JSON.parse(store.get("pl-pr-tally")) || { n: 0, ok: 0 }; } catch (e) { return { n: 0, ok: 0 }; } })();
-  const fmt = () => (store.get("pl-fmt") === "d" ? "d" : "f");
+  const fmt = () => (false ? "d" : "f");
   const fm = () => (fmt() === "d" ? "dec" : "frac");
   const fresh = () => ({ wrong: 0, hinted: false, done: false, counted: false, shown: false, stack: [S.goal], level: 0, hints: [], virt: [], hl: null, active: "f", lastNew: null, ansDone: false });
 
