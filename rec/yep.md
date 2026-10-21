@@ -46,4 +46,23 @@ We will email you to confirm receipt of submission.
 
 Any questions about the YEP should be sent to [rutgersepistemologyconference@gmail.com](mailto:rutgersepistemologyconference@gmail.com).
 
+## Past winners
+
+<div class="ruled winners">
+  <div class="row"><div class="row__aside publication__year">2026</div><div class="row__body">Conner Schultz</div></div>
+  <div class="row"><div class="row__aside publication__year">2024</div><div class="row__body">Timothy Kearl &amp; Christopher Willard-Kyle</div></div>
+  <div class="row"><div class="row__aside publication__year">2022</div><div class="row__body">Mona Simion</div></div>
+  <div class="row"><div class="row__aside publication__year">2019</div><div class="row__body">Alex Worsnip</div></div>
+  <div class="row"><div class="row__aside publication__year">2017</div><div class="row__body">Christopher Kelp, Miriam Schoenfield</div></div>
+  <div class="row"><div class="row__aside publication__year">2015</div><div class="row__body">Clayton Littlejohn</div></div>
+  <div class="row"><div class="row__aside publication__year">2013</div><div class="row__body">Dan Greco</div></div>
+  <div class="row"><div class="row__aside publication__year">2011</div><div class="row__body">Sinan Dogramaci, Sarah Moss</div></div>
+  <div class="row"><div class="row__aside publication__year">2009</div><div class="row__body">Jonathan Weisberg</div></div>
+  <div class="row"><div class="row__aside publication__year">2007</div><div class="row__body">Allan Hazlett</div></div>
+  <div class="row"><div class="row__aside publication__year">2005</div><div class="row__body">Jennifer Lackey</div></div>
+  <div class="row"><div class="row__aside publication__year">2003</div><div class="row__body">Michael Bergmann</div></div>
+  <div class="row"><div class="row__aside publication__year">2002</div><div class="row__body">Jonathan Schaffer, Peter Vranas</div></div>
+  <div class="row"><div class="row__aside publication__year">2001</div><div class="row__body">Ralph Wedgwood</div></div>
+</div>
+
 </div>

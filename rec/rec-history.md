@@ -159,7 +159,7 @@ permalink: /rec/rec-history/
   <div class="row__body">
     <div>
       <h3>Speakers</h3>
-      <p>Brie Gertler, Jason Konek, Clayton Littlejohn, Ram Neta, Duncan Pritchard, James Pryor, Sherry Roush.</p>
+      <p>Brie Gertler, Jason Konek, Clayton Littlejohn (YEP), Ram Neta, Duncan Pritchard, James Pryor, Sherry Roush.</p>
     </div>
     <div>
       <h3>Commentators</h3>
