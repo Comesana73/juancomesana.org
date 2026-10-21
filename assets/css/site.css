@@ -186,7 +186,6 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
 }
 .row__aside { flex: 0 0 108px; }
 .row__body { flex: 1 1 300px; min-width: 0; }
-.winners .row { padding: 14px 0; }
 
 /* Papers */
 .publication__year {
@@ -266,6 +265,7 @@ details[open] .summary__toggle::before { transform: rotate(90deg); }
 .book__body > p:last-child { margin-bottom: 0; }
 .book__reviews {
   border-top: 1px solid var(--border-soft);
+  break-inside: avoid;
   display: flex;
   flex-direction: column;
   font-size: 16.5px;
@@ -322,6 +322,31 @@ details[open] .summary__toggle::before { transform: rotate(90deg); }
   box-shadow: 0 4px 14px rgba(38, 34, 31, 0.08);
   color: var(--accent);
 }
+
+/* YEP winners */
+.winners {
+  column-gap: 40px;
+  columns: 2 300px;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.winners li {
+  align-items: baseline;
+  border-top: 1px solid var(--border-soft);
+  break-inside: avoid;
+  display: flex;
+  gap: 20px;
+  padding: 12px 0;
+}
+.winners__year {
+  color: var(--accent);
+  flex: 0 0 auto;
+  font-size: 20px;
+  font-variant-numeric: oldstyle-nums;
+  min-width: 2.6em;
+}
+.winners__name { font-size: 17px; line-height: 1.45; }
 
 /* REC history */
 .history-year h2 {
