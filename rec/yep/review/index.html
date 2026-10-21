@@ -50,7 +50,8 @@
     app.querySelector('p').textContent = text;
   }
 
-  var m = /(?:^#|&)t=([a-f0-9]{64})(?:&|$)/.exec(location.hash);
+  // Codes are 22 letters and digits (…/yep/#k7Qp…); older links have 64 hex characters after t=.
+  var m = /^#(?:t=)?([A-Za-z0-9]{22}|[a-f0-9]{64})(?:&|$)/.exec(location.hash);
   if (!m) {
     notice('This link isn’t valid', 'It may be incomplete. Please use the full link the organizers emailed you.');
     return;

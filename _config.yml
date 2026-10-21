@@ -34,3 +34,7 @@ defaults:
       path: "rec/yep/review"
     values:
       sitemap: false
+  - scope:
+      path: "yep"
+    values:
+      sitemap: false
