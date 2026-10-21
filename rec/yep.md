@@ -54,6 +54,7 @@ Any questions about the YEP should be sent to [rutgersepistemologyconference@gma
   <div class="row"><div class="row__aside publication__year">2022</div><div class="row__body">Mona Simion</div></div>
   <div class="row"><div class="row__aside publication__year">2019</div><div class="row__body">Alex Worsnip</div></div>
   <div class="row"><div class="row__aside publication__year">2017</div><div class="row__body">Christopher Kelp, Miriam Schoenfield</div></div>
+  <div class="row"><div class="row__aside publication__year">2015</div><div class="row__body">Clayton Littlejohn</div></div>
   <div class="row"><div class="row__aside publication__year">2013</div><div class="row__body">Dan Greco</div></div>
   <div class="row"><div class="row__aside publication__year">2011</div><div class="row__body">Sinan Dogramaci, Sarah Moss</div></div>
   <div class="row"><div class="row__aside publication__year">2009</div><div class="row__body">Jonathan Weisberg</div></div>
