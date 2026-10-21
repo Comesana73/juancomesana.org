@@ -323,30 +323,36 @@ details[open] .summary__toggle::before { transform: rotate(90deg); }
   color: var(--accent);
 }
 
-/* YEP winners */
+/* YEP winners: newest first, read down each column, every row the same height */
 .winners {
-  column-gap: 40px;
-  columns: 2 300px;
   list-style: none;
   margin: 8px 0 0;
   padding: 0;
 }
 .winners li {
-  align-items: baseline;
   border-top: 1px solid var(--border-soft);
-  break-inside: avoid;
   display: flex;
-  gap: 20px;
+  flex-direction: column;
   padding: 12px 0;
 }
 .winners__year {
   color: var(--accent);
-  flex: 0 0 auto;
   font-size: 20px;
   font-variant-numeric: oldstyle-nums;
-  min-width: 2.6em;
 }
-.winners__name { font-size: 17px; line-height: 1.45; }
+.winners__name { font-size: 16.5px; }
+@media (min-width: 440px) {
+  .winners li { align-items: baseline; flex-direction: row; gap: 16px; white-space: nowrap; }
+}
+@media (min-width: 880px) {
+  .winners {
+    display: grid;
+    gap: 0 32px;
+    grid-auto-flow: column;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(7, auto);
+  }
+}
 
 /* REC history */
 .history-year h2 {
