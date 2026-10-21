@@ -186,7 +186,6 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
 }
 .row__aside { flex: 0 0 108px; }
 .row__body { flex: 1 1 300px; min-width: 0; }
-.winners .row { padding: 14px 0; }
 
 /* Papers */
 .publication__year {
@@ -266,6 +265,7 @@ details[open] .summary__toggle::before { transform: rotate(90deg); }
 .book__body > p:last-child { margin-bottom: 0; }
 .book__reviews {
   border-top: 1px solid var(--border-soft);
+  break-inside: avoid;
   display: flex;
   flex-direction: column;
   font-size: 16.5px;
@@ -321,6 +321,37 @@ details[open] .summary__toggle::before { transform: rotate(90deg); }
   border-color: var(--accent);
   box-shadow: 0 4px 14px rgba(38, 34, 31, 0.08);
   color: var(--accent);
+}
+
+/* YEP winners: newest first, read down each column, every row the same height */
+.winners {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.winners li {
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+}
+.winners__year {
+  color: var(--accent);
+  font-size: 20px;
+  font-variant-numeric: oldstyle-nums;
+}
+.winners__name { font-size: 16.5px; }
+@media (min-width: 440px) {
+  .winners li { align-items: baseline; flex-direction: row; gap: 16px; white-space: nowrap; }
+}
+@media (min-width: 880px) {
+  .winners {
+    display: grid;
+    gap: 0 32px;
+    grid-auto-flow: column;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(7, auto);
+  }
 }
 
 /* REC history */
