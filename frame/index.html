@@ -568,11 +568,11 @@ function applyNight(sr, ss) {
 }
 
 
-/* ======================= art (Cleveland and NASA — all CC0 / public domain) ======================= */
+/* ======================= art (Cleveland, all CC0, plus your own photos) ======================= */
 // The Art Institute of Chicago was the first choice, but its IIIF image server sits behind a
-// Cloudflare challenge, which a plain <img> can't pass. Neither API below needs a key.
+// Cloudflare challenge, which a plain <img> can't pass. Cleveland's API needs no key.
 // Cleveland has no resizing service, so we show the ~3400px "print" JPEG and fall back to the ~900px "web" one.
-// NASA's library is US-government work, so it's public domain. The Met's API doesn't answer browser requests.
+// The Met's API doesn't answer browser requests, and NASA's images didn't load reliably.
 // The Library of Congress was tried too, but most of its prints only come at 1024px.
 const COLLECTIONS = {
   mix:         { name: 'Mix everything below', src: 'mix' },
@@ -589,14 +589,10 @@ const COLLECTIONS = {
   photos:      { name: 'Cleveland — photographs', src: 'cma', q: { type: 'Photograph' } },
   prints:      { name: 'Cleveland — European prints', src: 'cma', q: { type: 'Print', department: 'Prints' } },
   textiles:    { name: 'Cleveland — textiles', src: 'cma', q: { department: 'Textiles' } },
-  nasaSpace:   { name: 'NASA — nebulae and galaxies', src: 'nasa', q: ['nebula', 'galaxy', 'star cluster', 'supernova remnant'] },
-  nasaEarth:   { name: 'NASA — Earth from space', src: 'nasa', q: ['Earth observation', 'Earth from orbit', 'aurora from space', 'hurricane from space'] },
-  nasaPlanets: { name: 'NASA — planets and moons', src: 'nasa', q: ['Jupiter', 'Saturn', 'Mars surface', 'Moon surface', 'Pluto', 'Europa'] },
 };
-const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', nasa: 'NASA', mine: 'your photos', mix: 'the image sources' };
+const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', mine: 'your photos', mix: 'the image sources' };
 const CMA_SEARCH = 'https://openaccess-api.clevelandart.org/api/artworks/';
 const CMA_FIELDS = 'id,title,creators,creation_date,images';
-const NASA_SEARCH = 'https://images-api.nasa.gov/search';
 
 let art = load('frame-cma') || {};
 if (!art.pool) art = { key: '', pool: [], total: 0 };
@@ -627,23 +623,6 @@ async function fromCMA(col) {
   if (totals[k] == null) totals[k] = (await cmaSearch(q, 0, 1)).info.total || 0;
   const j = await cmaSearch(q, 100 * Math.floor(Math.random() * Math.max(1, Math.ceil(totals[k] / 100))), 100);
   return (j.data || []).map(toPiece).filter(Boolean);
-}
-
-// --- NASA ---
-function nasaPiece(it) {
-  const d = (it.data || [])[0] || {}, link = (it.links || []).find(l => l.render === 'image') || (it.links || [])[0];
-  if (!d.nasa_id || !link || !/~thumb\.jpg$/i.test(link.href)) return null;
-  const base = link.href.replace(/~thumb\.jpg$/i, '');
-  return { id: 'nasa:' + d.nasa_id, urls: [base + '~large.jpg', base + '~orig.jpg'], thumb: base + '~medium.jpg',
-    title: d.title || 'Untitled', artist: 'NASA' + (d.center ? ' / ' + d.center : ''), date: (d.date_created || '').slice(0, 4), minPx: 1600 };
-}
-
-async function fromNASA(col) {
-  const q = { q: pick(col.q), media_type: 'image', page_size: 100 }, k = 'nasa' + q.q;
-  if (totals[k] == null) totals[k] = (await getJSON(NASA_SEARCH + '?' + new URLSearchParams(Object.assign({}, q, { page_size: 1 })))).collection.metadata.total_hits || 0;
-  const pages = Math.min(100, Math.max(1, Math.ceil(totals[k] / 100)));      // the API stops at 10,000 results
-  const j = await getJSON(NASA_SEARCH + '?' + new URLSearchParams(Object.assign(q, { page: 1 + Math.floor(Math.random() * pages) })));
-  return (j.collection.items || []).map(nasaPiece).filter(Boolean);
 }
 
 // --- My photos: picked from the Photos app, shrunk to screen size and kept in this browser's IndexedDB.
@@ -718,23 +697,23 @@ async function showMineNote(extra = '') {
   $('#mineClear').hidden = !mineCount;
 }
 
-const FETCHERS = { cma: fromCMA, nasa: fromNASA, mine: fromMine };
+const FETCHERS = { cma: fromCMA, mine: fromMine };
 const artSource = () => SOURCE_NAMES[(COLLECTIONS[S.collection] || COLLECTIONS.highlights).src];
-const pieceCredit = p => !p ? '' : /^nasa:/.test(p.id) ? 'NASA' : /^mine:/.test(p.id) ? 'my photos' : 'Cleveland Museum of Art';
+const pieceCredit = p => !p ? '' : /^mine:/.test(p.id) ? 'my photos' : 'Cleveland Museum of Art';
 function showCredit() { $('#credit').textContent = (radar.on ? 'Radar: RainViewer · ' : '') + 'Art: ' + (pieceCredit(currentPiece) || 'Cleveland Museum of Art'); }
 
-// Mix takes turns by source (Cleveland, NASA, your photos when there are some): it draws three fresh
+// Mix takes turns by source (Cleveland, and your photos when there are some): it draws six fresh
 // pieces from a random collection of each and interleaves them, so no source dominates.
 async function fetchPieces(key) {
   const col = COLLECTIONS[key];
   if (col.src !== 'mix') return FETCHERS[col.src](col);
-  const srcs = shuffle(['cma', 'nasa'].concat(mineCount ? ['mine'] : []));
+  const srcs = shuffle(['cma'].concat(mineCount ? ['mine'] : []));
   const got = await Promise.allSettled(srcs.map(src =>
     FETCHERS[src](COLLECTIONS[pick(Object.keys(COLLECTIONS).filter(k => COLLECTIONS[k].src === src))])));
   if (got.every(r => r.status === 'rejected')) throw got[0].reason;
-  const lists = got.map(r => r.status === 'fulfilled' ? shuffle(r.value.filter(p => !seen.includes(p.id))).slice(0, 3) : []);
+  const lists = got.map(r => r.status === 'fulfilled' ? shuffle(r.value.filter(p => !seen.includes(p.id))).slice(0, 6) : []);
   const out = [];
-  for (let i = 0; i < 3; i++) lists.forEach(l => { if (l[i]) out.push(l[i]); });
+  for (let i = 0; i < 6; i++) lists.forEach(l => { if (l[i]) out.push(l[i]); });
   return out;
 }
 async function refillArt() {
@@ -762,7 +741,6 @@ function presentArt(p) {
     };
     img.onload = () => {
       if (settled) return;
-      if (p.minPx && Math.max(img.naturalWidth, img.naturalHeight) < p.minPx) return tryNext();   // too small for the screen
       const slide = document.createElement('div'); slide.className = 'slide';
       const bg = new Image(); bg.className = 'bg'; bg.src = p.thumb;
       slide.appendChild(bg); slide.appendChild(img); $('#stage').appendChild(slide);
