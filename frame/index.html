@@ -562,55 +562,124 @@ function applyNight(sr, ss) {
 }
 
 
-/* ======================= art (Cleveland Museum of Art, CC0) ======================= */
+/* ======================= art (Cleveland, The Met, NASA — all CC0 / public domain) ======================= */
 // The Art Institute of Chicago was the first choice, but its IIIF image server sits behind a
-// Cloudflare challenge, which a plain <img> can't pass. Cleveland's Open Access API needs no key.
-// It has no resizing service, so we show the ~3400px "print" JPEG and fall back to the ~900px "web" one.
+// Cloudflare challenge, which a plain <img> can't pass. None of these three APIs needs a key.
+// Cleveland has no resizing service, so we show the ~3400px "print" JPEG and fall back to the ~900px "web" one.
+// The Met's search only returns object IDs, so each piece costs one more request; only public-domain
+// objects carry a primaryImage. NASA's library is US-government work, so it's public domain too.
 const COLLECTIONS = {
-  highlights:  { name: 'Museum highlights — paintings', q: { type: 'Painting', highlight: 1 } },
-  paintings:   { name: 'All paintings', q: { type: 'Painting' } },
-  modern:      { name: 'European paintings, 1800–1960', q: { type: 'Painting', department: 'Modern European Painting and Sculpture' } },
-  landscapes:  { name: 'Landscapes', q: { type: 'Painting', q: 'landscape' } },
-  americas:    { name: 'American paintings', q: { type: 'Painting', department: 'American Painting and Sculpture' } },
-  japanese:    { name: 'Japanese woodblock prints', q: { type: 'Print', department: 'Japanese Art' } },
+  mix:         { name: 'Mix everything below', src: 'mix' },
+  highlights:  { name: 'Cleveland — museum highlights', src: 'cma', q: { type: 'Painting', highlight: 1 } },
+  paintings:   { name: 'Cleveland — all paintings', src: 'cma', q: { type: 'Painting' } },
+  modern:      { name: 'Cleveland — European paintings, 1800–1960', src: 'cma', q: { type: 'Painting', department: 'Modern European Painting and Sculpture' } },
+  landscapes:  { name: 'Cleveland — landscapes', src: 'cma', q: { type: 'Painting', q: 'landscape' } },
+  americas:    { name: 'Cleveland — American paintings', src: 'cma', q: { type: 'Painting', department: 'American Painting and Sculpture' } },
+  japanese:    { name: 'Cleveland — Japanese woodblock prints', src: 'cma', q: { type: 'Print', department: 'Japanese Art' } },
+  chinese:     { name: 'Cleveland — Chinese and Korean painting', src: 'cma', q: [{ type: 'Painting', department: 'Chinese Art' }, { type: 'Painting', department: 'Korean Art' }] },
+  miniatures:  { name: 'Cleveland — Indian and Islamic painting', src: 'cma', q: [{ department: 'Indian and South East Asian Art', type: 'Painting' }, { department: 'Islamic Art', type: 'Painting' }] },
+  drawings:    { name: 'Cleveland — drawings and watercolors', src: 'cma', q: { type: 'Drawing' } },
+  photos:      { name: 'Cleveland — photographs', src: 'cma', q: { type: 'Photograph' } },
+  prints:      { name: 'Cleveland — European prints', src: 'cma', q: { type: 'Print', department: 'Prints' } },
+  textiles:    { name: 'Cleveland — textiles', src: 'cma', q: { department: 'Textiles' } },
+  metHi:       { name: 'The Met — highlights', src: 'met', q: { isHighlight: true, q: 'painting' } },
+  metEuro:     { name: 'The Met — European paintings', src: 'met', q: { departmentId: 11, q: 'painting' } },
+  metAsian:    { name: 'The Met — Asian art', src: 'met', q: { departmentId: 6, q: 'painting' } },
+  metIslamic:  { name: 'The Met — Islamic art', src: 'met', q: { departmentId: 14, q: 'painting' } },
+  metPhotos:   { name: 'The Met — photographs', src: 'met', q: { departmentId: 19, q: 'photograph' } },
+  nasaSpace:   { name: 'NASA — nebulae and galaxies', src: 'nasa', q: ['nebula', 'galaxy', 'star cluster', 'supernova remnant'] },
+  nasaEarth:   { name: 'NASA — Earth from space', src: 'nasa', q: ['Earth observation', 'Earth from orbit', 'aurora from space', 'hurricane from space'] },
+  nasaPlanets: { name: 'NASA — planets and moons', src: 'nasa', q: ['Jupiter', 'Saturn', 'Mars surface', 'Moon surface', 'Pluto', 'Europa'] },
 };
+const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', met: 'The Met', nasa: 'NASA', mix: 'the museums and NASA' };
 const CMA_SEARCH = 'https://openaccess-api.clevelandart.org/api/artworks/';
 const CMA_FIELDS = 'id,title,creators,creation_date,images';
+const MET_API = 'https://collectionapi.metmuseum.org/public/collection/v1/';
+const NASA_SEARCH = 'https://images-api.nasa.gov/search';
 
 let art = load('frame-cma') || {};
 if (!art.pool) art = { key: '', pool: [], total: 0 };
 let seen = load('frame-cma-seen') || [];
-let artTimer = null, currentSlide = null, history = [], histPos = -1, artFails = 0;
+let artTimer = null, currentSlide = null, currentPiece = null, history = [], histPos = -1, artFails = 0;
+const totals = {}, metIds = {};          // per-query result counts and Met ID lists, kept for this session
 
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => Array.isArray(a) ? a[Math.floor(Math.random() * a.length)] : a;
+const getJSON = async url => { const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); };
+const tooLong = (w, h) => w && h && Math.max(w / h, h / w) >= 3;          // skip scrolls and long strips
 
-async function cmaSearch(col, skip, limit) {
-  const qs = new URLSearchParams(Object.assign({ cc0: 1, has_image: 1, fields: CMA_FIELDS, skip, limit }, col.q));
-  const r = await fetch(CMA_SEARCH + '?' + qs);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
+// --- Cleveland ---
+const cmaSearch = (q, skip, limit) =>
+  getJSON(CMA_SEARCH + '?' + new URLSearchParams(Object.assign({ cc0: 1, has_image: 1, fields: CMA_FIELDS, skip, limit }, q)));
 
 function toPiece(a) {
   const im = a.images || {}, web = im.web || {}, print = im.print || {};
-  const w = +(print.width || web.width), h = +(print.height || web.height);
   if (!web.url && !print.url) return null;
-  if (w && h && Math.max(w / h, h / w) >= 3) return null;                  // skip scrolls and long strips
+  if (tooLong(+(print.width || web.width), +(print.height || web.height))) return null;
   const c = (a.creators || [])[0];
   return { id: a.id, urls: [print.url, web.url].filter(Boolean), thumb: web.url || print.url,
     title: a.title || 'Untitled', artist: c ? c.description.replace(/\s*\(.*$/, '') : '', date: a.creation_date || '' };
 }
 
+async function fromCMA(col) {
+  const q = pick(col.q), k = 'cma' + JSON.stringify(q);
+  if (totals[k] == null) totals[k] = (await cmaSearch(q, 0, 1)).info.total || 0;
+  const j = await cmaSearch(q, 100 * Math.floor(Math.random() * Math.max(1, Math.ceil(totals[k] / 100))), 100);
+  return (j.data || []).map(toPiece).filter(Boolean);
+}
+
+// --- The Met ---
+function metPiece(o) {
+  if (!o || !o.isPublicDomain || !o.primaryImage) return null;
+  return { id: 'met:' + o.objectID, urls: [o.primaryImage, o.primaryImageSmall].filter(Boolean), thumb: o.primaryImageSmall || o.primaryImage,
+    title: o.title || 'Untitled', artist: o.artistDisplayName || o.culture || '', date: o.objectDate || '' };
+}
+
+async function fromMet(col) {
+  const k = JSON.stringify(col.q);
+  if (!metIds[k]) metIds[k] = (await getJSON(MET_API + 'search?' + new URLSearchParams(Object.assign({ hasImages: true }, col.q)))).objectIDs || [];
+  const ids = shuffle(metIds[k].filter(id => !seen.includes('met:' + id))).slice(0, 12);
+  const got = await Promise.allSettled(ids.map(id => getJSON(MET_API + 'objects/' + id)));
+  return got.map(r => r.status === 'fulfilled' ? metPiece(r.value) : null).filter(Boolean);
+}
+
+// --- NASA ---
+function nasaPiece(it) {
+  const d = (it.data || [])[0] || {}, link = (it.links || []).find(l => l.render === 'image') || (it.links || [])[0];
+  if (!d.nasa_id || !link || !/~thumb\.jpg$/i.test(link.href)) return null;
+  const base = link.href.replace(/~thumb\.jpg$/i, '');
+  return { id: 'nasa:' + d.nasa_id, urls: [base + '~large.jpg', base + '~orig.jpg', base + '~medium.jpg'], thumb: base + '~medium.jpg',
+    title: d.title || 'Untitled', artist: 'NASA' + (d.center ? ' / ' + d.center : ''), date: (d.date_created || '').slice(0, 4) };
+}
+
+async function fromNASA(col) {
+  const q = { q: pick(col.q), media_type: 'image', page_size: 100 }, k = 'nasa' + q.q;
+  if (totals[k] == null) totals[k] = (await getJSON(NASA_SEARCH + '?' + new URLSearchParams(Object.assign({}, q, { page_size: 1 })))).collection.metadata.total_hits || 0;
+  const pages = Math.min(100, Math.max(1, Math.ceil(totals[k] / 100)));      // the API stops at 10,000 results
+  const j = await getJSON(NASA_SEARCH + '?' + new URLSearchParams(Object.assign(q, { page: 1 + Math.floor(Math.random() * pages) })));
+  return (j.collection.items || []).map(nasaPiece).filter(Boolean);
+}
+
+const FETCHERS = { cma: fromCMA, met: fromMet, nasa: fromNASA };
+const artSource = () => SOURCE_NAMES[(COLLECTIONS[S.collection] || COLLECTIONS.highlights).src];
+const pieceCredit = p => !p ? '' : /^met:/.test(p.id) ? 'The Met' : /^nasa:/.test(p.id) ? 'NASA' : 'Cleveland Museum of Art';
+function showCredit() { $('#credit').textContent = (radar.on ? 'Radar: RainViewer · ' : '') + 'Art: ' + (pieceCredit(currentPiece) || 'Cleveland Museum of Art'); }
+
+// Mix draws a few pieces from two random collections at a time, so the frame keeps changing theme.
+async function fetchPieces(key) {
+  const col = COLLECTIONS[key];
+  if (col.src !== 'mix') return FETCHERS[col.src](col);
+  const keys = shuffle(Object.keys(COLLECTIONS).filter(k => k !== 'mix')).slice(0, 2);
+  const got = await Promise.allSettled(keys.map(k => FETCHERS[COLLECTIONS[k].src](COLLECTIONS[k])));
+  if (got.every(r => r.status === 'rejected')) throw got[0].reason;
+  return got.flatMap(r => r.status === 'fulfilled' ? shuffle(r.value).slice(0, 4) : []);
+}
+
 async function refillArt() {
-  const col = COLLECTIONS[S.collection] || COLLECTIONS.highlights;
-  if (art.key !== S.collection) art = { key: S.collection, pool: [], total: 0 };
-  if (!art.total) art.total = (await cmaSearch(col, 0, 1)).info.total || 0;
-  const pages = Math.max(1, Math.ceil(art.total / 100));
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const j = await cmaSearch(col, 100 * Math.floor(Math.random() * pages), 100);
-    const fresh = (j.data || [])
-      .filter(a => !seen.includes(a.id) && !art.pool.some(p => p.id === a.id))
-      .map(toPiece).filter(Boolean);
+  const key = COLLECTIONS[S.collection] ? S.collection : 'highlights';
+  if (art.key !== key) art = { key, pool: [] };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const fresh = (await fetchPieces(key)).filter(p => !seen.includes(p.id) && !art.pool.some(q => q.id === p.id));
     art.pool.push(...shuffle(fresh));
     if (art.pool.length >= 5) break;
     if (!fresh.length) seen = [];        // small collection and we've seen it all: start over
@@ -635,7 +704,7 @@ function presentArt(p) {
       const bg = new Image(); bg.className = 'bg'; bg.src = p.thumb;
       slide.appendChild(bg); slide.appendChild(img); $('#stage').appendChild(slide);
       requestAnimationFrame(() => requestAnimationFrame(() => slide.classList.add('show')));
-      const old = currentSlide; currentSlide = slide;
+      const old = currentSlide; currentSlide = slide; currentPiece = p; showCredit();
       if (old) setTimeout(() => old.remove(), 2600);
       $('#caption').innerHTML = `<i>${esc(p.title)}</i>${p.artist ? ` · ${esc(p.artist)}` : ''}${p.date ? `, ${esc(p.date)}` : ''}`;
       $('#empty').hidden = true;
@@ -661,14 +730,14 @@ async function nextArt(step = 1) {
     }
   }
   if (!piece) {
-    if (!currentSlide) { const e = $('#empty'); e.textContent = 'Couldn’t reach the Cleveland Museum of Art — trying again in a minute.'; e.hidden = false; }
+    if (!currentSlide) { const e = $('#empty'); e.textContent = `Couldn’t reach ${artSource()} — trying again in a minute.`; e.hidden = false; }
     artTimer = setTimeout(() => nextArt(1), 60e3); return;
   }
   const ok = await presentArt(piece);
   if (!ok) {                                                             // image missing: skip it,
     if (++artFails < 5) { artTimer = setTimeout(() => nextArt(1), 2000); return; }
     artFails = 0;                                                        // but if they all fail, back off
-    if (!currentSlide) { const e = $('#empty'); e.textContent = 'Couldn’t load images from the Cleveland Museum of Art — trying again in a few minutes.'; e.hidden = false; }
+    if (!currentSlide) { const e = $('#empty'); e.textContent = `Couldn’t load images from ${artSource()} — trying again in a few minutes.`; e.hidden = false; }
     artTimer = setTimeout(() => nextArt(1), 300e3); return;
   }
   artFails = 0;
@@ -696,7 +765,7 @@ function rainCheck() {
   if (want !== radar.on) {
     radar.on = want;
     document.body.classList.toggle('radar', want);
-    $('#credit').textContent = want ? 'Radar: RainViewer · Art: Cleveland Museum of Art' : 'Art: Cleveland Museum of Art';
+    showCredit();
     if (want) startRadar(); else clearInterval(radar.anim);
   }
 }
@@ -792,6 +861,7 @@ function setLocation(lat, lon, place) {
 
 function wireSettings() {
   $('#collection').innerHTML = Object.entries(COLLECTIONS).map(([k, c]) => `<option value="${k}">${esc(c.name)}</option>`).join('');
+  if (!COLLECTIONS[S.collection]) S.collection = DEFAULTS.collection;
   $('#gear').addEventListener('click', openSheet);
   $('#nws').addEventListener('click', openForecast);
   $('#fcSheet').addEventListener('click', e => { if (e.target.id === 'fcSheet') closeForecast(); });
@@ -868,7 +938,7 @@ function boot() {
   tickClock(); setInterval(minuteTick, 15000);
   wireSettings(); wireGestures();
   if (wx && wx.units !== S.units) wx = null;
-  const e = $('#empty'); e.textContent = 'Loading art from the Cleveland Museum of Art…'; e.hidden = false;
+  const e = $('#empty'); e.textContent = `Loading art from ${artSource()}…`; e.hidden = false;
   renderWeather();
   nextArt(1);
   refreshWeather(); setInterval(refreshWeather, 10 * 60e3);
