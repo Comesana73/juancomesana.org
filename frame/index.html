@@ -562,12 +562,12 @@ function applyNight(sr, ss) {
 }
 
 
-/* ======================= art (Cleveland, The Met, NASA — all CC0 / public domain) ======================= */
+/* ======================= art (Cleveland, NASA, Library of Congress — all CC0 / public domain) ======================= */
 // The Art Institute of Chicago was the first choice, but its IIIF image server sits behind a
-// Cloudflare challenge, which a plain <img> can't pass. None of these three APIs needs a key.
+// Cloudflare challenge, which a plain <img> can't pass. None of the sources below needs a key.
 // Cleveland has no resizing service, so we show the ~3400px "print" JPEG and fall back to the ~900px "web" one.
-// The Met's search only returns object IDs, so each piece costs one more request; only public-domain
-// objects carry a primaryImage. NASA's library is US-government work, so it's public domain too.
+// NASA's library is US-government work, so it's public domain. The Met's API doesn't answer browser requests.
+// The Library of Congress "Free to Use and Reuse" sets are small hand-picked lists, kept in loc.json.
 const COLLECTIONS = {
   mix:         { name: 'Mix everything below', src: 'mix' },
   highlights:  { name: 'Cleveland — museum highlights', src: 'cma', q: { type: 'Painting', highlight: 1 } },
@@ -582,26 +582,27 @@ const COLLECTIONS = {
   photos:      { name: 'Cleveland — photographs', src: 'cma', q: { type: 'Photograph' } },
   prints:      { name: 'Cleveland — European prints', src: 'cma', q: { type: 'Print', department: 'Prints' } },
   textiles:    { name: 'Cleveland — textiles', src: 'cma', q: { department: 'Textiles' } },
-  metHi:       { name: 'The Met — highlights', src: 'met', q: { isHighlight: true, q: 'painting' } },
-  metEuro:     { name: 'The Met — European paintings', src: 'met', q: { departmentId: 11, q: 'painting' } },
-  metAsian:    { name: 'The Met — Asian art', src: 'met', q: { departmentId: 6, q: 'painting' } },
-  metIslamic:  { name: 'The Met — Islamic art', src: 'met', q: { departmentId: 14, q: 'painting' } },
-  metPhotos:   { name: 'The Met — photographs', src: 'met', q: { departmentId: 19, q: 'photograph' } },
+  locArch:     { name: 'Library of Congress — architecture and design', src: 'loc', set: 'architecture-and-design' },
+  locAutumn:   { name: 'Library of Congress — autumn and Halloween', src: 'loc', set: 'autumn-and-halloween' },
+  locCats:     { name: 'Library of Congress — cats', src: 'loc', set: 'cats' },
+  locDogs:     { name: 'Library of Congress — dogs', src: 'loc', set: 'dogs' },
+  locJazz:     { name: 'Library of Congress — Gottlieb jazz photos', src: 'loc', set: 'gottlieb-jazz-photos', artist: 'William P. Gottlieb' },
+  locJapan:    { name: 'Library of Congress — Japanese fine prints', src: 'loc', set: 'japanese-prints' },
   nasaSpace:   { name: 'NASA — nebulae and galaxies', src: 'nasa', q: ['nebula', 'galaxy', 'star cluster', 'supernova remnant'] },
   nasaEarth:   { name: 'NASA — Earth from space', src: 'nasa', q: ['Earth observation', 'Earth from orbit', 'aurora from space', 'hurricane from space'] },
   nasaPlanets: { name: 'NASA — planets and moons', src: 'nasa', q: ['Jupiter', 'Saturn', 'Mars surface', 'Moon surface', 'Pluto', 'Europa'] },
 };
-const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', met: 'The Met', nasa: 'NASA', mix: 'the museums and NASA' };
+const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', nasa: 'NASA', loc: 'the Library of Congress', mix: 'the image sources' };
 const CMA_SEARCH = 'https://openaccess-api.clevelandart.org/api/artworks/';
 const CMA_FIELDS = 'id,title,creators,creation_date,images';
-const MET_API = 'https://collectionapi.metmuseum.org/public/collection/v1/';
 const NASA_SEARCH = 'https://images-api.nasa.gov/search';
 
 let art = load('frame-cma') || {};
 if (!art.pool) art = { key: '', pool: [], total: 0 };
 let seen = load('frame-cma-seen') || [];
 let artTimer = null, currentSlide = null, currentPiece = null, history = [], histPos = -1, artFails = 0;
-const totals = {}, metIds = {};          // per-query result counts and Met ID lists, kept for this session
+const totals = {};                      // per-query result counts, kept for this session
+let locList = null;                     // loc.json, loaded once
 
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = a => Array.isArray(a) ? a[Math.floor(Math.random() * a.length)] : a;
@@ -628,28 +629,13 @@ async function fromCMA(col) {
   return (j.data || []).map(toPiece).filter(Boolean);
 }
 
-// --- The Met ---
-function metPiece(o) {
-  if (!o || !o.isPublicDomain || !o.primaryImage) return null;
-  return { id: 'met:' + o.objectID, urls: [o.primaryImage, o.primaryImageSmall].filter(Boolean), thumb: o.primaryImageSmall || o.primaryImage,
-    title: o.title || 'Untitled', artist: o.artistDisplayName || o.culture || '', date: o.objectDate || '' };
-}
-
-async function fromMet(col) {
-  const k = JSON.stringify(col.q);
-  if (!metIds[k]) metIds[k] = (await getJSON(MET_API + 'search?' + new URLSearchParams(Object.assign({ hasImages: true }, col.q)))).objectIDs || [];
-  const ids = shuffle(metIds[k].filter(id => !seen.includes('met:' + id))).slice(0, 12);
-  const got = await Promise.allSettled(ids.map(id => getJSON(MET_API + 'objects/' + id)));
-  return got.map(r => r.status === 'fulfilled' ? metPiece(r.value) : null).filter(Boolean);
-}
-
 // --- NASA ---
 function nasaPiece(it) {
   const d = (it.data || [])[0] || {}, link = (it.links || []).find(l => l.render === 'image') || (it.links || [])[0];
   if (!d.nasa_id || !link || !/~thumb\.jpg$/i.test(link.href)) return null;
   const base = link.href.replace(/~thumb\.jpg$/i, '');
-  return { id: 'nasa:' + d.nasa_id, urls: [base + '~large.jpg', base + '~orig.jpg', base + '~medium.jpg'], thumb: base + '~medium.jpg',
-    title: d.title || 'Untitled', artist: 'NASA' + (d.center ? ' / ' + d.center : ''), date: (d.date_created || '').slice(0, 4) };
+  return { id: 'nasa:' + d.nasa_id, urls: [base + '~large.jpg', base + '~orig.jpg'], thumb: base + '~medium.jpg',
+    title: d.title || 'Untitled', artist: 'NASA' + (d.center ? ' / ' + d.center : ''), date: (d.date_created || '').slice(0, 4), minPx: 1600 };
 }
 
 async function fromNASA(col) {
@@ -660,9 +646,30 @@ async function fromNASA(col) {
   return (j.collection.items || []).map(nasaPiece).filter(Boolean);
 }
 
-const FETCHERS = { cma: fromCMA, met: fromMet, nasa: fromNASA };
+// --- Library of Congress (loc.json rows are [id, caption, file on the set's page]) ---
+// Prints & Photographs items have a IIIF server that can hand out a big copy; its path comes from the ID
+// (jpd.01578 → jpd:01500:01578, cph.3g10434 → cph:3g10000:3g10400:3g10434). Anything else, or any miss,
+// falls back to the picture shown on the set's own page.
+const PNP = new Set('agc cai cph csas det ds fsa fsac ggbain gsc hec highsm jpd nclc npcc pga ppmsc ppmsca ppss thc'.split(' '));
+function locIIIF(id) {
+  const m = /^(\w+)\.(\d{5}|\d[a-z]\d{5})$/.exec(id);
+  if (!m || !PNP.has(m[1])) return [];
+  const n = m[2], path = n.length === 5 ? `${n.slice(0, 3)}00:${n}` : `${n.slice(0, 4)}000:${n.slice(0, 5)}00:${n}`;
+  const base = `https://tile.loc.gov/image-services/iiif/service:pnp:${m[1]}:${path}/full/`;
+  return [base + '!2400,2400/0/default.jpg', base + 'pct:50/0/default.jpg'];
+}
+
+async function fromLOC(col) {
+  if (!locList) locList = await getJSON('loc.json');
+  return (locList.sets[col.set] || []).map(([id, caption, file]) => {
+    const page = locList.base + col.set + '/' + file;
+    return { id: 'loc:' + id, urls: [...locIIIF(id), page], thumb: page, title: caption, artist: col.artist || '', date: '' };
+  });
+}
+
+const FETCHERS = { cma: fromCMA, nasa: fromNASA, loc: fromLOC };
 const artSource = () => SOURCE_NAMES[(COLLECTIONS[S.collection] || COLLECTIONS.highlights).src];
-const pieceCredit = p => !p ? '' : /^met:/.test(p.id) ? 'The Met' : /^nasa:/.test(p.id) ? 'NASA' : 'Cleveland Museum of Art';
+const pieceCredit = p => !p ? '' : /^nasa:/.test(p.id) ? 'NASA' : /^loc:/.test(p.id) ? 'Library of Congress' : 'Cleveland Museum of Art';
 function showCredit() { $('#credit').textContent = (radar.on ? 'Radar: RainViewer · ' : '') + 'Art: ' + (pieceCredit(currentPiece) || 'Cleveland Museum of Art'); }
 
 // Mix draws a few pieces from two random collections at a time, so the frame keeps changing theme.
@@ -700,6 +707,7 @@ function presentArt(p) {
     };
     img.onload = () => {
       if (settled) return;
+      if (p.minPx && Math.max(img.naturalWidth, img.naturalHeight) < p.minPx) return tryNext();   // too small for the screen
       const slide = document.createElement('div'); slide.className = 'slide';
       const bg = new Image(); bg.className = 'bg'; bg.src = p.thumb;
       slide.appendChild(bg); slide.appendChild(img); $('#stage').appendChild(slide);
