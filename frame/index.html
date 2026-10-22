@@ -582,11 +582,7 @@ const COLLECTIONS = {
   photos:      { name: 'Cleveland — photographs', src: 'cma', q: { type: 'Photograph' } },
   prints:      { name: 'Cleveland — European prints', src: 'cma', q: { type: 'Print', department: 'Prints' } },
   textiles:    { name: 'Cleveland — textiles', src: 'cma', q: { department: 'Textiles' } },
-  locArch:     { name: 'Library of Congress — architecture and design', src: 'loc', set: 'architecture-and-design' },
-  locAutumn:   { name: 'Library of Congress — autumn and Halloween', src: 'loc', set: 'autumn-and-halloween' },
-  locCats:     { name: 'Library of Congress — cats', src: 'loc', set: 'cats' },
-  locDogs:     { name: 'Library of Congress — dogs', src: 'loc', set: 'dogs' },
-  locJapan:    { name: 'Library of Congress — Japanese fine prints', src: 'loc', set: 'japanese-prints' },
+  locHighsmith: { name: 'Library of Congress — Carol Highsmith photos', src: 'loc', sets: ['architecture-and-design', 'autumn-and-halloween', 'cats'] },
   nasaSpace:   { name: 'NASA — nebulae and galaxies', src: 'nasa', q: ['nebula', 'galaxy', 'star cluster', 'supernova remnant'] },
   nasaEarth:   { name: 'NASA — Earth from space', src: 'nasa', q: ['Earth observation', 'Earth from orbit', 'aurora from space', 'hurricane from space'] },
   nasaPlanets: { name: 'NASA — planets and moons', src: 'nasa', q: ['Jupiter', 'Saturn', 'Mars surface', 'Moon surface', 'Pluto', 'Europa'] },
@@ -646,27 +642,22 @@ async function fromNASA(col) {
 }
 
 // --- Library of Congress (loc.json rows are [id, caption, file on the set's page]) ---
-// Prints & Photographs items have a IIIF server that can hand out a big copy; its path comes from the ID
-// (jpd.01578 → jpd:01500:01578, cph.3g10434 → cph:3g10000:3g10400:3g10434). Master sizes vary and the
-// server only documents pct: sizes, so we climb 25% → 50% → full until the long edge reaches minPx;
-// if none does, the piece is skipped. Items outside P&P (the jazz photos, HABS) only have a small set-page
-// picture, so they're left out, and so is the jazz set, which has nothing else.
-const PNP = new Set('agc cai cph csas det ds fsa fsac ggbain gsc hec highsm jpd nclc npcc pga ppmsc ppmsca ppss thc'.split(' '));
+// Most Prints & Photographs items only reach 1024px on LoC's IIIF server (tested on the iPad, Oct 2026);
+// Carol Highsmith's photos are the exception, served full size under service:pnp:highsm:12800:12845.
+// So we use only those, climbing 25% → 50% → full until the long edge reaches minPx.
 function locIIIF(id) {
-  const m = /^(\w+)\.(\d{5}|\d[a-z]\d{5})$/.exec(id);
-  if (!m || !PNP.has(m[1])) return [];
-  const n = m[2], path = n.length === 5 ? `${n.slice(0, 3)}00:${n}` : `${n.slice(0, 4)}000:${n.slice(0, 5)}00:${n}`;
-  // the master's file name may or may not carry a u/v/r suffix; a wrong guess is an instant 404
-  return ['', 'u', 'v', 'r'].flatMap(x => ['pct:25', 'pct:50', 'full']
-    .map(size => `https://tile.loc.gov/image-services/iiif/service:pnp:${m[1]}:${path}${x}/full/${size}/0/default.jpg`));
+  const m = /^highsm\.(\d{5})$/.exec(id);
+  if (!m) return [];
+  const base = `https://tile.loc.gov/image-services/iiif/service:pnp:highsm:${m[1].slice(0, 3)}00:${m[1]}/full/`;
+  return ['pct:25', 'pct:50', 'full'].map(size => base + size + '/0/default.jpg');
 }
 
 async function fromLOC(col) {
   if (!locList) locList = await getJSON('loc.json');
-  return (locList.sets[col.set] || []).filter(([id]) => locIIIF(id).length).map(([id, caption, file]) => {
-    const page = locList.base + col.set + '/' + file;
+  return col.sets.flatMap(set => (locList.sets[set] || []).filter(([id]) => locIIIF(id).length).map(([id, caption, file]) => {
+    const page = locList.base + set + '/' + file;
     return { id: 'loc:' + id, urls: locIIIF(id), thumb: page, title: caption, artist: '', date: '', minPx: 1600 };
-  });
+  }));
 }
 
 const FETCHERS = { cma: fromCMA, nasa: fromNASA, loc: fromLOC };
