@@ -723,22 +723,26 @@ const artSource = () => SOURCE_NAMES[(COLLECTIONS[S.collection] || COLLECTIONS.h
 const pieceCredit = p => !p ? '' : /^nasa:/.test(p.id) ? 'NASA' : /^mine:/.test(p.id) ? 'my photos' : 'Cleveland Museum of Art';
 function showCredit() { $('#credit').textContent = (radar.on ? 'Radar: RainViewer · ' : '') + 'Art: ' + (pieceCredit(currentPiece) || 'Cleveland Museum of Art'); }
 
-// Mix draws a few pieces from two random collections at a time, so the frame keeps changing theme.
+// Mix takes turns by source (Cleveland, NASA, your photos when there are some): it draws three fresh
+// pieces from a random collection of each and interleaves them, so no source dominates.
 async function fetchPieces(key) {
   const col = COLLECTIONS[key];
   if (col.src !== 'mix') return FETCHERS[col.src](col);
-  const keys = shuffle(Object.keys(COLLECTIONS).filter(k => k !== 'mix' && (k !== 'mine' || mineCount))).slice(0, 2);
-  const got = await Promise.allSettled(keys.map(k => FETCHERS[COLLECTIONS[k].src](COLLECTIONS[k])));
+  const srcs = shuffle(['cma', 'nasa'].concat(mineCount ? ['mine'] : []));
+  const got = await Promise.allSettled(srcs.map(src =>
+    FETCHERS[src](COLLECTIONS[pick(Object.keys(COLLECTIONS).filter(k => COLLECTIONS[k].src === src))])));
   if (got.every(r => r.status === 'rejected')) throw got[0].reason;
-  return got.flatMap(r => r.status === 'fulfilled' ? shuffle(r.value).slice(0, 4) : []);
+  const lists = got.map(r => r.status === 'fulfilled' ? shuffle(r.value.filter(p => !seen.includes(p.id))).slice(0, 3) : []);
+  const out = [];
+  for (let i = 0; i < 3; i++) lists.forEach(l => { if (l[i]) out.push(l[i]); });
+  return out;
 }
-
 async function refillArt() {
   const key = COLLECTIONS[S.collection] ? S.collection : 'highlights';
   if (art.key !== key) art = { key, pool: [] };
   for (let attempt = 0; attempt < 3; attempt++) {
     const fresh = (await fetchPieces(key)).filter(p => !seen.includes(p.id) && !art.pool.some(q => q.id === p.id));
-    art.pool.push(...shuffle(fresh));
+    art.pool.push(...(key === 'mix' ? fresh : shuffle(fresh)));   // Mix comes pre-interleaved
     if (art.pool.length >= 5) break;
     if (!fresh.length) seen = [];        // small collection and we've seen it all: start over
   }
