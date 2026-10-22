@@ -562,12 +562,12 @@ function applyNight(sr, ss) {
 }
 
 
-/* ======================= art (Cleveland, NASA, Library of Congress — all CC0 / public domain) ======================= */
+/* ======================= art (Cleveland and NASA — all CC0 / public domain) ======================= */
 // The Art Institute of Chicago was the first choice, but its IIIF image server sits behind a
-// Cloudflare challenge, which a plain <img> can't pass. None of the sources below needs a key.
+// Cloudflare challenge, which a plain <img> can't pass. Neither API below needs a key.
 // Cleveland has no resizing service, so we show the ~3400px "print" JPEG and fall back to the ~900px "web" one.
 // NASA's library is US-government work, so it's public domain. The Met's API doesn't answer browser requests.
-// The Library of Congress "Free to Use and Reuse" sets are small hand-picked lists, kept in loc.json.
+// The Library of Congress was tried too, but most of its prints only come at 1024px.
 const COLLECTIONS = {
   mix:         { name: 'Mix everything below', src: 'mix' },
   highlights:  { name: 'Cleveland — museum highlights', src: 'cma', q: { type: 'Painting', highlight: 1 } },
@@ -582,16 +582,11 @@ const COLLECTIONS = {
   photos:      { name: 'Cleveland — photographs', src: 'cma', q: { type: 'Photograph' } },
   prints:      { name: 'Cleveland — European prints', src: 'cma', q: { type: 'Print', department: 'Prints' } },
   textiles:    { name: 'Cleveland — textiles', src: 'cma', q: { department: 'Textiles' } },
-  locArch:     { name: 'Library of Congress — architecture and design', src: 'loc', set: 'architecture-and-design' },
-  locAutumn:   { name: 'Library of Congress — autumn and Halloween', src: 'loc', set: 'autumn-and-halloween' },
-  locCats:     { name: 'Library of Congress — cats', src: 'loc', set: 'cats' },
-  locDogs:     { name: 'Library of Congress — dogs', src: 'loc', set: 'dogs' },
-  locJapan:    { name: 'Library of Congress — Japanese fine prints', src: 'loc', set: 'japanese-prints' },
   nasaSpace:   { name: 'NASA — nebulae and galaxies', src: 'nasa', q: ['nebula', 'galaxy', 'star cluster', 'supernova remnant'] },
   nasaEarth:   { name: 'NASA — Earth from space', src: 'nasa', q: ['Earth observation', 'Earth from orbit', 'aurora from space', 'hurricane from space'] },
   nasaPlanets: { name: 'NASA — planets and moons', src: 'nasa', q: ['Jupiter', 'Saturn', 'Mars surface', 'Moon surface', 'Pluto', 'Europa'] },
 };
-const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', nasa: 'NASA', loc: 'the Library of Congress', mix: 'the image sources' };
+const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', nasa: 'NASA', mix: 'Cleveland and NASA' };
 const CMA_SEARCH = 'https://openaccess-api.clevelandart.org/api/artworks/';
 const CMA_FIELDS = 'id,title,creators,creation_date,images';
 const NASA_SEARCH = 'https://images-api.nasa.gov/search';
@@ -601,7 +596,6 @@ if (!art.pool) art = { key: '', pool: [], total: 0 };
 let seen = load('frame-cma-seen') || [];
 let artTimer = null, currentSlide = null, currentPiece = null, history = [], histPos = -1, artFails = 0;
 const totals = {};                      // per-query result counts, kept for this session
-let locList = null;                     // loc.json, loaded once
 
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = a => Array.isArray(a) ? a[Math.floor(Math.random() * a.length)] : a;
@@ -645,33 +639,9 @@ async function fromNASA(col) {
   return (j.collection.items || []).map(nasaPiece).filter(Boolean);
 }
 
-// --- Library of Congress (loc.json rows are [id, caption, file on the set's page]) ---
-// Prints & Photographs items have a IIIF server that can hand out a big copy; its path comes from the ID
-// (jpd.01578 → jpd:01500:01578, cph.3g10434 → cph:3g10000:3g10400:3g10434). Master sizes vary and the
-// server only documents pct: sizes, so we climb 25% → 50% → full until the long edge reaches minPx;
-// if none does, the piece is skipped. Items outside P&P (the jazz photos, HABS) only have a small set-page
-// picture, so they're left out, and so is the jazz set, which has nothing else.
-const PNP = new Set('agc cai cph csas det ds fsa fsac ggbain gsc hec highsm jpd nclc npcc pga ppmsc ppmsca ppss thc'.split(' '));
-function locIIIF(id) {
-  const m = /^(\w+)\.(\d{5}|\d[a-z]\d{5})$/.exec(id);
-  if (!m || !PNP.has(m[1])) return [];
-  const n = m[2], path = n.length === 5 ? `${n.slice(0, 3)}00:${n}` : `${n.slice(0, 4)}000:${n.slice(0, 5)}00:${n}`;
-  // the master's file name may or may not carry a u/v/r suffix; a wrong guess is an instant 404
-  return ['', 'u', 'v', 'r'].flatMap(x => ['pct:25', 'pct:50', 'full']
-    .map(size => `https://tile.loc.gov/image-services/iiif/service:pnp:${m[1]}:${path}${x}/full/${size}/0/default.jpg`));
-}
-
-async function fromLOC(col) {
-  if (!locList) locList = await getJSON('loc.json');
-  return (locList.sets[col.set] || []).filter(([id]) => locIIIF(id).length).map(([id, caption, file]) => {
-    const page = locList.base + col.set + '/' + file;
-    return { id: 'loc:' + id, urls: locIIIF(id), thumb: page, title: caption, artist: '', date: '', minPx: 1600 };
-  });
-}
-
-const FETCHERS = { cma: fromCMA, nasa: fromNASA, loc: fromLOC };
+const FETCHERS = { cma: fromCMA, nasa: fromNASA };
 const artSource = () => SOURCE_NAMES[(COLLECTIONS[S.collection] || COLLECTIONS.highlights).src];
-const pieceCredit = p => !p ? '' : /^nasa:/.test(p.id) ? 'NASA' : /^loc:/.test(p.id) ? 'Library of Congress' : 'Cleveland Museum of Art';
+const pieceCredit = p => !p ? '' : /^nasa:/.test(p.id) ? 'NASA' : 'Cleveland Museum of Art';
 function showCredit() { $('#credit').textContent = (radar.on ? 'Radar: RainViewer · ' : '') + 'Art: ' + (pieceCredit(currentPiece) || 'Cleveland Museum of Art'); }
 
 // Mix draws a few pieces from two random collections at a time, so the frame keeps changing theme.
