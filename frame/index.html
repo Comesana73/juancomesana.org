@@ -656,8 +656,9 @@ function locIIIF(id) {
   const m = /^(\w+)\.(\d{5}|\d[a-z]\d{5})$/.exec(id);
   if (!m || !PNP.has(m[1])) return [];
   const n = m[2], path = n.length === 5 ? `${n.slice(0, 3)}00:${n}` : `${n.slice(0, 4)}000:${n.slice(0, 5)}00:${n}`;
-  const base = `https://tile.loc.gov/image-services/iiif/service:pnp:${m[1]}:${path}/full/`;
-  return [base + 'pct:25/0/default.jpg', base + 'pct:50/0/default.jpg', base + 'full/0/default.jpg'];
+  // the master's file name may or may not carry a u/v/r suffix; a wrong guess is an instant 404
+  return ['', 'u', 'v', 'r'].flatMap(x => ['pct:25', 'pct:50', 'full']
+    .map(size => `https://tile.loc.gov/image-services/iiif/service:pnp:${m[1]}:${path}${x}/full/${size}/0/default.jpg`));
 }
 
 async function fromLOC(col) {
