@@ -650,7 +650,8 @@ async function fromNASA(col) {
 // Prints & Photographs items have a IIIF server that can hand out a big copy; its path comes from the ID
 // (jpd.01578 → jpd:01500:01578, cph.3g10434 → cph:3g10000:3g10400:3g10434). Master sizes vary and the
 // server only documents pct: sizes, so we climb 25% → 50% → full until the long edge reaches minPx;
-// if none does, the piece is skipped. Items outside P&P (the jazz photos, HABS) only have the set-page picture.
+// if none does, the piece is skipped. Items outside P&P (the jazz photos, HABS) only have the set-page picture,
+// which is shown only if it is just as big.
 const PNP = new Set('agc cai cph csas det ds fsa fsac ggbain gsc hec highsm jpd nclc npcc pga ppmsc ppmsca ppss thc'.split(' '));
 function locIIIF(id) {
   const m = /^(\w+)\.(\d{5}|\d[a-z]\d{5})$/.exec(id);
@@ -664,8 +665,7 @@ async function fromLOC(col) {
   if (!locList) locList = await getJSON('loc.json');
   return (locList.sets[col.set] || []).map(([id, caption, file]) => {
     const page = locList.base + col.set + '/' + file, big = locIIIF(id);
-    return big.length ? { id: 'loc:' + id, urls: big, thumb: page, title: caption, artist: col.artist || '', date: '', minPx: 1600 }
-                      : { id: 'loc:' + id, urls: [page], thumb: page, title: caption, artist: col.artist || '', date: '' };
+    return { id: 'loc:' + id, urls: big.length ? big : [page], thumb: page, title: caption, artist: col.artist || '', date: '', minPx: 1600 };
   });
 }
 
