@@ -210,6 +210,12 @@ label.chk{display:flex;gap:10px;align-items:center;font-size:15px;margin-top:4px
     <select id="collection"></select>
     <div class="row" style="margin-top:8px"><button class="btn sec2" id="artNow">Show a new piece now</button></div>
 
+    <h3>My photos</h3>
+    <p id="mineNote"></p>
+    <div class="row"><button class="btn sec2" id="mineAdd">Add my photos</button><button class="btn sec2" id="mineDir" hidden>Add a folder</button><button class="btn sec2" id="mineClear" hidden>Remove all</button></div>
+    <input type="file" id="mineFiles" accept="image/*" multiple hidden>
+    <input type="file" id="mineFolder" webkitdirectory multiple hidden>
+
     <h3>Change artwork every</h3>
     <select id="interval">
       <option value="60">1 minute</option><option value="180">3 minutes</option><option value="300">5 minutes</option>
@@ -570,6 +576,7 @@ function applyNight(sr, ss) {
 // The Library of Congress was tried too, but most of its prints only come at 1024px.
 const COLLECTIONS = {
   mix:         { name: 'Mix everything below', src: 'mix' },
+  mine:        { name: 'My photos (on this device)', src: 'mine' },
   highlights:  { name: 'Cleveland — museum highlights', src: 'cma', q: { type: 'Painting', highlight: 1 } },
   paintings:   { name: 'Cleveland — all paintings', src: 'cma', q: { type: 'Painting' } },
   modern:      { name: 'Cleveland — European paintings, 1800–1960', src: 'cma', q: { type: 'Painting', department: 'Modern European Painting and Sculpture' } },
@@ -586,7 +593,7 @@ const COLLECTIONS = {
   nasaEarth:   { name: 'NASA — Earth from space', src: 'nasa', q: ['Earth observation', 'Earth from orbit', 'aurora from space', 'hurricane from space'] },
   nasaPlanets: { name: 'NASA — planets and moons', src: 'nasa', q: ['Jupiter', 'Saturn', 'Mars surface', 'Moon surface', 'Pluto', 'Europa'] },
 };
-const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', nasa: 'NASA', mix: 'Cleveland and NASA' };
+const SOURCE_NAMES = { cma: 'the Cleveland Museum of Art', nasa: 'NASA', mine: 'your photos', mix: 'the image sources' };
 const CMA_SEARCH = 'https://openaccess-api.clevelandart.org/api/artworks/';
 const CMA_FIELDS = 'id,title,creators,creation_date,images';
 const NASA_SEARCH = 'https://images-api.nasa.gov/search';
@@ -639,16 +646,88 @@ async function fromNASA(col) {
   return (j.collection.items || []).map(nasaPiece).filter(Boolean);
 }
 
-const FETCHERS = { cma: fromCMA, nasa: fromNASA };
+// --- My photos: picked from the Photos app, shrunk to screen size and kept in this browser's IndexedDB.
+// Nothing leaves the device. Pieces carry only the record id; the blob is turned into a URL when shown.
+let mineCount = 0, lastMineURL = null;
+function photoStore(mode, fn) {
+  return new Promise((ok, no) => {
+    const open = indexedDB.open('frame-photos', 1);
+    open.onupgradeneeded = () => open.result.createObjectStore('photos', { keyPath: 'id' });
+    open.onerror = () => no(open.error);
+    open.onsuccess = () => {
+      const tx = open.result.transaction('photos', mode), req = fn(tx.objectStore('photos'));
+      tx.oncomplete = () => ok(req ? req.result : undefined);
+      tx.onerror = () => no(tx.error);
+    };
+  });
+}
+
+async function fromMine() {
+  const ids = (await photoStore('readonly', st => st.getAllKeys())) || [];
+  mineCount = ids.length;
+  return ids.map(id => ({ id: 'mine:' + id, mine: id, urls: [], thumb: '', title: '', artist: '', date: '' }));
+}
+
+async function withMineURL(p) {
+  const rec = await photoStore('readonly', st => st.get(p.mine)).catch(() => null);
+  if (!rec) return p;
+  const u = URL.createObjectURL(rec.blob), old = lastMineURL;
+  lastMineURL = u;
+  if (old) setTimeout(() => URL.revokeObjectURL(old), 10e3);          // the old slide is gone by then
+  return Object.assign({}, p, { urls: [u], thumb: u });
+}
+
+function shrinkPhoto(file) {                                           // long edge 2560px, JPEG
+  return new Promise((ok, no) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(url); no(new Error('unreadable image')); };
+    img.onload = () => {
+      const k = Math.min(1, 2560 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? ok(b) : no(new Error('could not encode')), 'image/jpeg', 0.88);
+    };
+    img.src = url;
+  });
+}
+
+async function addPhotos(files) {
+  const note = $('#mineNote'), have = new Set((await photoStore('readonly', st => st.getAllKeys())) || []);
+  let added = 0, n = 0;
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});   // ask the browser not to evict them
+  for (const f of files) {
+    note.textContent = `Adding photo ${++n} of ${files.length}…`;
+    const id = `${f.name}|${f.size}`;                                  // so adding the same album again skips repeats
+    if (have.has(id)) continue;
+    try {
+      const blob = await shrinkPhoto(f);
+      await photoStore('readwrite', st => st.put({ id, blob, added: Date.now() }));
+      have.add(id); added++;
+    } catch (e) { console.warn('photo', f.name, e); }
+  }
+  await showMineNote(added < files.length ? ` (${files.length - added} skipped as repeats or unreadable)` : '');
+  if (S.collection === 'mine' || S.collection === 'mix') { art.key = ''; nextArt(1); }
+}
+
+async function showMineNote(extra = '') {
+  try { mineCount = ((await photoStore('readonly', st => st.getAllKeys())) || []).length; } catch (e) { mineCount = 0; }
+  $('#mineNote').textContent = (mineCount ? `${mineCount} photo${mineCount === 1 ? '' : 's'} saved on this device.`
+    : 'Pick photos from the Photos app, or a whole folder (in Photos: Select All → Share → Save to Files). They stay on this device; nothing is uploaded.') + extra;
+  $('#mineClear').hidden = !mineCount;
+}
+
+const FETCHERS = { cma: fromCMA, nasa: fromNASA, mine: fromMine };
 const artSource = () => SOURCE_NAMES[(COLLECTIONS[S.collection] || COLLECTIONS.highlights).src];
-const pieceCredit = p => !p ? '' : /^nasa:/.test(p.id) ? 'NASA' : 'Cleveland Museum of Art';
+const pieceCredit = p => !p ? '' : /^nasa:/.test(p.id) ? 'NASA' : /^mine:/.test(p.id) ? 'my photos' : 'Cleveland Museum of Art';
 function showCredit() { $('#credit').textContent = (radar.on ? 'Radar: RainViewer · ' : '') + 'Art: ' + (pieceCredit(currentPiece) || 'Cleveland Museum of Art'); }
 
 // Mix draws a few pieces from two random collections at a time, so the frame keeps changing theme.
 async function fetchPieces(key) {
   const col = COLLECTIONS[key];
   if (col.src !== 'mix') return FETCHERS[col.src](col);
-  const keys = shuffle(Object.keys(COLLECTIONS).filter(k => k !== 'mix')).slice(0, 2);
+  const keys = shuffle(Object.keys(COLLECTIONS).filter(k => k !== 'mix' && (k !== 'mine' || mineCount))).slice(0, 2);
   const got = await Promise.allSettled(keys.map(k => FETCHERS[COLLECTIONS[k].src](COLLECTIONS[k])));
   if (got.every(r => r.status === 'rejected')) throw got[0].reason;
   return got.flatMap(r => r.status === 'fulfilled' ? shuffle(r.value).slice(0, 4) : []);
@@ -686,7 +765,7 @@ function presentArt(p) {
       requestAnimationFrame(() => requestAnimationFrame(() => slide.classList.add('show')));
       const old = currentSlide; currentSlide = slide; currentPiece = p; showCredit();
       if (old) setTimeout(() => old.remove(), 2600);
-      $('#caption').innerHTML = `<i>${esc(p.title)}</i>${p.artist ? ` · ${esc(p.artist)}` : ''}${p.date ? `, ${esc(p.date)}` : ''}`;
+      $('#caption').innerHTML = p.title ? `<i>${esc(p.title)}</i>${p.artist ? ` · ${esc(p.artist)}` : ''}${p.date ? `, ${esc(p.date)}` : ''}` : '';
       $('#empty').hidden = true;
       finish(true);
     };
@@ -709,10 +788,15 @@ async function nextArt(step = 1) {
       seen.push(piece.id); if (seen.length > 500) seen = seen.slice(-500); save('frame-cma-seen', seen);
     }
   }
+  if (!piece && S.collection === 'mine') {
+    const e = $('#empty'); e.textContent = 'No photos yet. Open settings (the gear) and tap “Add my photos”.'; e.hidden = false;
+    artTimer = setTimeout(() => nextArt(1), 60e3); return;
+  }
   if (!piece) {
     if (!currentSlide) { const e = $('#empty'); e.textContent = `Couldn’t reach ${artSource()} — trying again in a minute.`; e.hidden = false; }
     artTimer = setTimeout(() => nextArt(1), 60e3); return;
   }
+  if (piece.mine) piece = await withMineURL(piece);
   const ok = await presentArt(piece);
   if (!ok) {                                                             // image missing: skip it,
     if (++artFails < 5) { artTimer = setTimeout(() => nextArt(1), 2000); return; }
@@ -721,7 +805,7 @@ async function nextArt(step = 1) {
     artTimer = setTimeout(() => nextArt(1), 300e3); return;
   }
   artFails = 0;
-  if (art.pool[0]) new Image().src = art.pool[0].urls[0];                 // warm up the next one
+  if (art.pool[0] && art.pool[0].urls[0]) new Image().src = art.pool[0].urls[0];   // warm up the next one
   artTimer = setTimeout(() => nextArt(1), S.interval * 1000);
 }
 
@@ -818,6 +902,7 @@ function openSheet() {
   document.querySelectorAll('#units button').forEach(b => b.classList.toggle('on', b.dataset.u === S.units));
   document.querySelectorAll('#radarMode button').forEach(b => b.classList.toggle('on', b.dataset.r === S.radar));
   $('#radarNote').textContent = 'Radar shows the past hour of rain and snow around you. “When rain is near” turns it on when it’s raining or the chance is 50% or more in the next few hours.';
+  showMineNote();
   $('#sheet').classList.add('on');
 }
 function closeSheet() { $('#sheet').classList.remove('on'); }
@@ -850,6 +935,20 @@ function wireSettings() {
   $('#doneBtn').addEventListener('click', closeSheet);
   $('#collection').addEventListener('change', e => { S.collection = e.target.value; saveSettings(); history = []; histPos = -1; nextArt(1); });
   $('#artNow').addEventListener('click', () => { closeSheet(); nextArt(1); });
+  $('#mineAdd').addEventListener('click', () => $('#mineFiles').click());
+  // A whole album: Photos → Select All → Share → Save to Files, then pick that folder here.
+  if ('webkitdirectory' in $('#mineFolder')) $('#mineDir').hidden = false;
+  $('#mineDir').addEventListener('click', () => $('#mineFolder').click());
+  ['#mineFiles', '#mineFolder'].forEach(sel => $(sel).addEventListener('change', e => {
+    const f = [...e.target.files].filter(x => /^image\//.test(x.type) || /\.(jpe?g|png|heic|heif|webp|gif)$/i.test(x.name));
+    e.target.value = ''; if (f.length) addPhotos(f);
+  }));
+  $('#mineClear').addEventListener('click', async () => {
+    if (!confirm('Remove all your photos from this device’s frame?')) return;
+    await photoStore('readwrite', st => st.clear()).catch(() => {});
+    await showMineNote(); if (S.collection === 'mine' || S.collection === 'mix') { art.key = ''; nextArt(1); }
+  });
+  showMineNote();
   $('#interval').addEventListener('change', e => { S.interval = +e.target.value; saveSettings(); clearTimeout(artTimer); artTimer = setTimeout(() => nextArt(1), S.interval * 1000); });
   $('#dim').addEventListener('change', e => { S.dim = e.target.checked; saveSettings(); renderWeather(); });
   document.querySelectorAll('#units button').forEach(b => b.addEventListener('click', () => {
