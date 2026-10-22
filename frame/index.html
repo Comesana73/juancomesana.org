@@ -586,7 +586,6 @@ const COLLECTIONS = {
   locAutumn:   { name: 'Library of Congress — autumn and Halloween', src: 'loc', set: 'autumn-and-halloween' },
   locCats:     { name: 'Library of Congress — cats', src: 'loc', set: 'cats' },
   locDogs:     { name: 'Library of Congress — dogs', src: 'loc', set: 'dogs' },
-  locJazz:     { name: 'Library of Congress — Gottlieb jazz photos', src: 'loc', set: 'gottlieb-jazz-photos', artist: 'William P. Gottlieb' },
   locJapan:    { name: 'Library of Congress — Japanese fine prints', src: 'loc', set: 'japanese-prints' },
   nasaSpace:   { name: 'NASA — nebulae and galaxies', src: 'nasa', q: ['nebula', 'galaxy', 'star cluster', 'supernova remnant'] },
   nasaEarth:   { name: 'NASA — Earth from space', src: 'nasa', q: ['Earth observation', 'Earth from orbit', 'aurora from space', 'hurricane from space'] },
@@ -650,8 +649,8 @@ async function fromNASA(col) {
 // Prints & Photographs items have a IIIF server that can hand out a big copy; its path comes from the ID
 // (jpd.01578 → jpd:01500:01578, cph.3g10434 → cph:3g10000:3g10400:3g10434). Master sizes vary and the
 // server only documents pct: sizes, so we climb 25% → 50% → full until the long edge reaches minPx;
-// if none does, the piece is skipped. Items outside P&P (the jazz photos, HABS) only have the set-page picture,
-// which is shown only if it is just as big.
+// if none does, the piece is skipped. Items outside P&P (the jazz photos, HABS) only have a small set-page
+// picture, so they're left out, and so is the jazz set, which has nothing else.
 const PNP = new Set('agc cai cph csas det ds fsa fsac ggbain gsc hec highsm jpd nclc npcc pga ppmsc ppmsca ppss thc'.split(' '));
 function locIIIF(id) {
   const m = /^(\w+)\.(\d{5}|\d[a-z]\d{5})$/.exec(id);
@@ -663,9 +662,9 @@ function locIIIF(id) {
 
 async function fromLOC(col) {
   if (!locList) locList = await getJSON('loc.json');
-  return (locList.sets[col.set] || []).map(([id, caption, file]) => {
-    const page = locList.base + col.set + '/' + file, big = locIIIF(id);
-    return { id: 'loc:' + id, urls: big.length ? big : [page], thumb: page, title: caption, artist: col.artist || '', date: '', minPx: 1600 };
+  return (locList.sets[col.set] || []).filter(([id]) => locIIIF(id).length).map(([id, caption, file]) => {
+    const page = locList.base + col.set + '/' + file;
+    return { id: 'loc:' + id, urls: locIIIF(id), thumb: page, title: caption, artist: '', date: '', minPx: 1600 };
   });
 }
 
