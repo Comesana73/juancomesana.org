@@ -25,6 +25,13 @@ The standalone HTML pages below need no build; open them directly or through `je
 
 When Juan wants a local preview, run the server in the background with `--host 0.0.0.0`. Give him the Mac URL (`http://127.0.0.1:4000/<path>`). Give iPad URLs only when the change touches the Frame app (`frame/`): `http://<LocalHostName>.local:4000/frame/` (`scutil --get LocalHostName`) and `http://<Wi-Fi IP>:4000/frame/` (`ipconfig getifaddr en0`) as a fallback. The macOS firewall is on; Homebrew's ruby is already allowed to accept incoming connections.
 
+GitHub Pages has no PR previews, so before merging a PR with visible changes, preview it this way in Juan's clone at `/Users/juancomesana/Documents/GitHub/juancomesana.org` (through a Remote Control session):
+
+1. Run `git status` first. Never commit, push, stash, or discard anything in his clone; if it has uncommitted work, stop and ask.
+2. `git fetch origin` and check out the PR branch, then start the server as above.
+3. Note that the preview is a different origin from juancomesana.org, so the Frame there starts with default settings and no "My photos".
+4. Afterward, stop the server and switch back to `main`; after a merge, `git pull --ff-only`. Build output (`_site/`, `vendor/`, `.bundle/`, `Gemfile.lock`) is gitignored, so previews never leave the clone out of sync with GitHub.
+
 ## Two kinds of pages
 
 **Jekyll pages** (`index.md`, `books.md`, `papers.md`, `teaching.md`, `contact.md`, `rec.md`, `rec/*.md`, `teaching/*.md`). Every file gets `layout: default` from `_config.yml` defaults, which wraps it in `_layouts/default.html` + `_includes/`. Content is mostly hand-written HTML inside Markdown (e.g. `<article class="publication">` blocks in `papers.md`, `markdown="1"` on divs that need Markdown inside). Links use `{{ '/path' | relative_url }}`. Styling is all in `assets/css/site.css`; the only shared JS is `assets/js/site.js` (new-tab for external/PDF links, photo-grid lightbox).
