@@ -11,12 +11,19 @@ Juan rarely edits the site himself; he usually asks Claude to make changes. `REA
 ## Commands
 
 ```bash
+export PATH="/opt/homebrew/opt/ruby@3.4/bin:$PATH" LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 bundle install
-bundle exec jekyll serve      # http://127.0.0.1:4000/
-bundle exec jekyll build      # output in _site/
+bundle exec jekyll serve --host 0.0.0.0   # http://127.0.0.1:4000/, reachable from the iPad on the same Wi-Fi
+bundle exec jekyll build                  # output in _site/
 ```
 
-The Gemfile pins `ffi ~> 1.15.5` so builds work on the system Ruby 2.6 on Juan's Mac. The standalone HTML pages below need no build; open them directly or through `jekyll serve`.
+Local builds on Juan's Mac use Homebrew's `ruby@3.4` (keg-only, so it must be put first on `PATH` as above). Don't use the macOS system Ruby 2.6: native gems such as `commonmarker` fail to compile against it. Don't use Homebrew's default `ruby` (4.x) either: `github-pages` depends on `commonmarker < 1.0`, which requires Ruby < 4.0. The extra gems in the Gemfile (`csv`, `base64`, `logger`, `webrick`, …) are standard-library gems that Ruby 3.4 stopped bundling. The UTF-8 locale is required, or Sass fails on non-ASCII characters in the Primer theme. Gems install into `vendor/bundle` (set in the untracked `.bundle/config`). GitHub Pages ignores this Gemfile and builds with its own environment, so these settings affect local previews only.
+
+The standalone HTML pages below need no build; open them directly or through `jekyll serve`.
+
+### Local preview for Juan
+
+When Juan wants a local preview, run the server in the background with `--host 0.0.0.0`. Give him the Mac URL (`http://127.0.0.1:4000/<path>`). Give iPad URLs only when the change touches the Frame app (`frame/`): `http://<LocalHostName>.local:4000/frame/` (`scutil --get LocalHostName`) and `http://<Wi-Fi IP>:4000/frame/` (`ipconfig getifaddr en0`) as a fallback. The macOS firewall is on; Homebrew's ruby is already allowed to accept incoming connections.
 
 ## Two kinds of pages
 
