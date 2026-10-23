@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Juan Comesaña's academic website (`juancomesana.org`), a Jekyll site published by GitHub Pages straight from `main` (root folder, `github-pages` gem, no separate build service). Merging to `main` deploys. There is no test suite, linter, or package manager beyond Bundler.
 
-Juan edits the site himself, often through GitHub's web editor, so `README.md` is written for a non-developer and should stay that way. He wants to see proposals before changes are made, and tests on iPad and Mac.
+Juan rarely edits the site himself; he usually asks Claude to make changes. `README.md` is written for a non-developer and should stay that way. He wants to see proposals before changes are made. He tests the Frame app on iPad and everything else on a Mac.
 
 ## Commands
 
