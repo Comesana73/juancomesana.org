@@ -38,3 +38,8 @@ defaults:
       path: "yep"
     values:
       sitemap: false
+  - scope:
+      path: "phil109"
+    values:
+      sitemap: false
+      noindex: true

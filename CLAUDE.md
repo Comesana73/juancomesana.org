@@ -40,6 +40,8 @@ GitHub Pages has no PR previews, so before merging a PR with visible changes, pr
 - PDFs live in `assets/papers/` and `assets/documents/`. `s/` holds duplicate copies at old Squarespace URLs so existing public links keep working; don't remove or rename them, and add a copy there when a paper already had an `/s/...` link. `assets/documents/cv.pdf` is generated outside this repo (from `cv.yaml` in Juan's iCloud `inprogress/cv/`).
 - Images are WebP in `assets/images/`.
 
+**Generated textbook chapters** (`phil109/chNN/index.html`, `layout: book`). The PHIL 109 textbook's web version, generated from the LaTeX by `web/build.py` in the Introduction-to-Formal-Reasoning-and-Decision-Making repo; never edit them by hand. Math is pre-rendered with KaTeX (stylesheet and fonts in `assets/katex/`, also copied by the build), styles are in `assets/css/textbook.css`, and `head.html` loads both only for `layout: book`. The section is unlisted: `_config.yml` gives `phil109/` `sitemap: false` and `noindex: true` (which `head.html` turns into a robots meta tag), and nothing links to it yet. The generated pages are also gitignored (`phil109/ch*/`), because the textbook repo is private and this one is public: Juan previews them locally and decides later whether, and how, they go online.
+
 **Standalone single-file apps** (no front matter, so Jekyll copies them verbatim and the site CSP does not apply). Each is one self-contained `index.html` with inline CSS/JS and its own CSP if any:
 
 - `frame/` — "Frame", a home-screen PWA for an always-on iPad: clock, weather, radar, trash/recycling reminders, and a rotating artwork slideshow. See below.

@@ -5,3 +5,6 @@ vendor/
 .jekyll-cache/
 .sass-cache/
 .DS_Store
+
+# Generated textbook chapters stay out of this public repo until they are meant to be public
+phil109/ch*/
