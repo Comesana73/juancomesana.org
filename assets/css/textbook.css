@@ -1,0 +1,124 @@
+/* PHIL 109 textbook chapters (phil109/), generated from the LaTeX by web/build.py
+   in the textbook repository. Loaded only by _layouts/book.html pages. */
+
+.textbook { margin: 0 auto; max-width: 760px; overflow-wrap: break-word; }
+.textbook h1 { margin-bottom: 28px; }
+.textbook h2 {
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 56px 0 16px;
+}
+.textbook h3 { font-size: 22px; font-weight: 500; margin: 40px 0 12px; }
+.header-section-number { color: var(--muted); margin-right: 0.35em; }
+.textbook h2[id], .textbook h3[id], .textbook [id] { scroll-margin-top: 24px; }
+
+.summarybox {
+  border-left: 3px solid var(--accent-rule);
+  color: var(--text-2);
+  font-style: italic;
+  margin: 0 0 36px;
+  padding: 2px 0 2px 20px;
+}
+.summarybox p:last-child { margin-bottom: 0; }
+
+/* Definitions, norms, theorems */
+.thm {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  margin: 0 0 24px;
+  padding: 16px 20px 2px;
+}
+.thm--norm { border-left: 3px solid var(--accent); }
+.thm-head { font-weight: 600; margin-right: 0.3em; }
+.thm .katex-display { margin: 0.6em 0; }
+
+/* Tables and decision matrices */
+.book-table { margin: 28px 0; }
+.table-scroll { overflow-x: auto; }
+.book-table table {
+  border-bottom: 1.5px solid var(--text);
+  border-collapse: collapse;
+  border-top: 1.5px solid var(--text);
+  margin: 0 auto;
+}
+.book-table thead tr:last-child th { border-bottom: 1px solid var(--text); }
+.book-table th, .book-table td { padding: 6px 16px; text-align: center; white-space: nowrap; }
+.book-table th { font-weight: 400; }
+.book-table tbody th[scope="row"]:not(.vertical) { border-right: 1px solid var(--text); }
+.book-table th.vertical { font-variant-caps: all-small-caps; letter-spacing: 0.08em; writing-mode: vertical-rl; transform: rotate(180deg); }
+.book-table figcaption {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 12px auto 0;
+  max-width: 600px;
+  text-align: center;
+}
+.caption-number { color: var(--text-2); font-weight: 600; margin-right: 0.3em; }
+li > .book-table { margin: 12px 0 16px; }
+li > .book-table table { margin: 0; }
+
+/* Ordered lists numbered down (etaremune) and lists with their own labels */
+ol.countdown { padding-left: 2em; }
+.labeled-list { list-style: none; padding-left: 0.5em; }
+.labeled-list .item-label { display: inline-block; font-weight: 600; min-width: 3.2em; }
+
+/* "Try it" links into the apps */
+.tryit {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: center;
+  margin: -12px 0 28px;
+}
+.tryit__link {
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-size: 16px;
+  padding: 3px 14px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tryit__link::after { content: " ↗"; }
+.tryit__link:hover { background: var(--accent); color: #fff; }
+.tryit__note { color: var(--muted); font-size: 15.5px; }
+li .tryit { justify-content: flex-start; margin: -4px 0 16px; }
+
+/* Exercises and their solutions */
+.textbook ol > li { margin-bottom: 14px; }
+.textbook ol ol { list-style-type: lower-alpha; }  /* (a), (b) as in the PDF */
+.solution { margin: 10px 0 18px; }
+.solution > p, .solution > div {
+  border-left: 2px solid var(--accent-rule);
+  color: var(--text-2);
+  font-size: 17px;
+  margin: 10px 0 0;
+  padding-left: 16px;
+}
+
+/* Long display math scrolls rather than overflowing on a phone */
+.katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+.figure-missing { color: var(--muted); font-style: italic; text-align: center; }
+
+.textbook__pager {
+  border-top: 1px solid var(--border);
+  display: flex;
+  font-size: 17px;
+  justify-content: space-between;
+  margin-top: 64px;
+  padding-top: 20px;
+}
+.textbook__pager:not(:has(a)) { display: none; }
+
+/* Footnotes from pandoc */
+.footnotes { color: var(--text-2); font-size: 16px; margin-top: 48px; }
+
+@media (max-width: 800px) {
+  .textbook h2 { font-size: 24px; }
+  .book-table th, .book-table td { padding: 5px 10px; }
+}
