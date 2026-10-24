@@ -108,6 +108,10 @@ li .tryit { justify-content: flex-start; margin: -4px 0 16px; }
 /* Exercises and their solutions */
 .textbook ol > li { margin-bottom: 14px; }
 .textbook ol ol { list-style-type: lower-alpha; }  /* (a), (b) as in the PDF */
+/* a list lettered (a), (b) in the LaTeX, as in a theorem with two cases */
+.textbook ol[type="a"] { list-style: none; counter-reset: alpha; padding-left: 2.4em; }
+.textbook ol[type="a"] > li { counter-increment: alpha; position: relative; }
+.textbook ol[type="a"] > li::before { content: "(" counter(alpha, lower-alpha) ")"; position: absolute; left: -2.4em; width: 2em; text-align: right; }
 .solution { margin: 10px 0 18px; }
 .solution > p, .solution > div {
   border-left: 2px solid var(--accent-rule);
