@@ -1,0 +1,75 @@
+{
+  "title": "Introduction to Formal Reasoning and Decision Making",
+  "author": "Juan Comesaña",
+  "preface": "This is a textbook to accompany Philosophy 109 at Rutgers New Brunswick. I have borrowed extensively from teaching notes by Max Bialek, Brian Weatherson, and Jonathan Weisberg.",
+  "parts": [
+    {
+      "number": "I",
+      "title": "Logic",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "The language of Propositional Logic",
+          "url": "ch01/"
+        },
+        {
+          "number": 2,
+          "title": "Translations",
+          "url": null
+        },
+        {
+          "number": 3,
+          "title": "Arguments",
+          "url": null
+        }
+      ]
+    },
+    {
+      "number": "II",
+      "title": "Probability",
+      "chapters": [
+        {
+          "number": 4,
+          "title": "Measures and stochastic truth-tables",
+          "url": null
+        },
+        {
+          "number": 5,
+          "title": "Axioms, definitions, and theorems",
+          "url": null
+        },
+        {
+          "number": 6,
+          "title": "Bayesianism",
+          "url": null
+        }
+      ]
+    },
+    {
+      "number": "III",
+      "title": "Decision and Game Theory",
+      "chapters": [
+        {
+          "number": 7,
+          "title": "Decisions",
+          "url": "ch07/"
+        },
+        {
+          "number": 8,
+          "title": "Decisions under risk",
+          "url": null
+        },
+        {
+          "number": 9,
+          "title": "Newcomb’s problem",
+          "url": null
+        },
+        {
+          "number": 10,
+          "title": "Games",
+          "url": null
+        }
+      ]
+    }
+  ]
+}
