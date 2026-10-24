@@ -2,22 +2,23 @@
 layout: default
 ---
 {%- comment -%}
-  The PHIL 109 textbook: its front page (phil109/index.html) and its chapters,
-  generated from the LaTeX by web/build.py in the textbook repository.
+  PHIL 109: the course page (phil109/index.html), the textbook's contents
+  (phil109/textbook/) and its chapters, generated from the LaTeX by
+  web/build.py in the textbook repository.
   Unlisted: no links to it from the site, not in the sitemap, and marked
   noindex (see _config.yml).
 {%- endcomment -%}
 <article class="textbook">
   {%- if page.chapter %}
-  <p class="eyebrow"><a href="../">PHIL 109 · {{ site.data.phil109.title }}</a></p>
-  {%- else %}
-  <p class="eyebrow">PHIL 109 · Rutgers University–New Brunswick</p>
+  <p class="eyebrow"><a href="../textbook/">PHIL 109 · {{ site.data.phil109.title }}</a></p>
+  {%- elsif page.eyebrow %}
+  <p class="eyebrow">{{ page.eyebrow }}</p>
   {%- endif %}
   {{ content }}
   {%- if page.chapter %}
   <nav class="textbook__pager" aria-label="Chapters">
     {%- if page.prev %}<a rel="prev" href="{{ page.prev }}">← Previous chapter</a>{% else %}<span></span>{% endif -%}
-    <a href="../">Contents</a>
+    <a href="../textbook/">Contents</a>
     {%- if page.next %}<a rel="next" href="{{ page.next }}">Next chapter →</a>{% else %}<span></span>{% endif -%}
   </nav>
   {%- endif %}

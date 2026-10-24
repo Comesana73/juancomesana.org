@@ -1,0 +1,37 @@
+---
+title: "PHIL 109 Textbook"
+description: "Introduction to Formal Reasoning and Decision Making, the PHIL 109 textbook, on the web."
+layout: book
+---
+{%- comment -%}
+  Contents of the web textbook (/phil109/textbook/), linked from the course
+  page (/phil109/). The title, preface and contents come from
+  _data/phil109.json, which web/build.py in the textbook repository writes
+  from the LaTeX; only the text on this page is written by hand.
+{%- endcomment -%}
+{%- assign book = site.data.phil109 -%}
+<a class="back-link" href="../">← PHIL 109</a>
+
+<h1>{{ book.title }}</h1>
+<p class="book-author">{{ book.author }}</p>
+
+<p class="lede">{{ book.preface }}</p>
+
+<p>This web edition is in progress: chapters appear here as they are converted from the book. Each one has the solutions to its exercises, and “Try it” links that open the course labs on the book's own examples.</p>
+
+<h2>Contents</h2>
+{%- for part in book.parts %}
+<section class="book-part">
+  <h3><span class="book-part__number">Part {{ part.number }}</span> {{ part.title }}</h3>
+  <ol class="book-contents">
+    {%- for chapter in part.chapters %}
+    <li value="{{ chapter.number }}">
+      {%- if chapter.url %}<a href="../{{ chapter.url }}">{{ chapter.title }}</a>
+      {%- else %}<span class="book-contents__soon">{{ chapter.title }}</span> <span class="book-contents__note">not online yet</span>{% endif -%}
+    </li>
+    {%- endfor %}
+  </ol>
+</section>
+{%- endfor %}
+
+<p>The exercises and examples link to the <a href="../#labs">course labs</a>.</p>

@@ -1,40 +1,45 @@
 ---
-title: "PHIL 109 Textbook"
-description: "Introduction to Formal Reasoning and Decision Making, the PHIL 109 textbook, on the web."
+title: "PHIL 109: Introduction to Formal Reasoning and Decision Making"
+description: "PHIL 109 at Rutgers: Introduction to Formal Reasoning and Decision Making. The textbook and the course labs."
 layout: book
+eyebrow: "PHIL 109 · Rutgers University–New Brunswick"
 ---
 {%- comment -%}
-  Front page of the web textbook. The title, preface and contents come from
-  _data/phil109.json, which web/build.py in the textbook repository writes
-  from the LaTeX; only the text on this page is written by hand.
+  The course page. The textbook's contents are on their own page,
+  phil109/textbook/; the chapter count below comes from _data/phil109.json,
+  which web/build.py in the textbook repository writes.
 {%- endcomment -%}
 {%- assign book = site.data.phil109 -%}
-<h1>{{ book.title }}</h1>
-<p class="book-author">{{ book.author }}</p>
+{%- assign online = 0 -%}{%- assign total = 0 -%}
+{%- for part in book.parts -%}{%- for chapter in part.chapters -%}
+  {%- assign total = total | plus: 1 -%}{%- if chapter.url -%}{%- assign online = online | plus: 1 -%}{%- endif -%}
+{%- endfor -%}{%- endfor -%}
+<h1>Introduction to Formal Reasoning and Decision Making</h1>
+<p class="book-author">Juan Comesaña</p>
 
-<p class="lede">{{ book.preface }}</p>
+<p class="lede">This course introduces students to some of the formal tools used to model reasoning and decision making. We cover the basics of propositional logic and probability, and apply them to reasoning and decision making under uncertainty. Emphasis is placed on foundational and philosophical issues related to these topics.</p>
 
-<p>This web edition is in progress: chapters appear here as they are converted from the book. Each one has the solutions to its exercises, and “Try it” links that open the course labs on the book's own examples.</p>
+<h2>Textbook</h2>
+<div class="ruled">
+  <article class="app">
+    <h2><a href="textbook/">{{ book.title }}</a></h2>
+    <p>The course textbook, in three parts: Logic, Probability, and Decision and Game Theory. The web edition has the solutions to the exercises and links into the labs. {{ online }} of its {{ total }} chapters are online so far.</p>
+  </article>
+</div>
 
-<h2>Contents</h2>
-{%- for part in book.parts %}
-<section class="book-part">
-  <h3><span class="book-part__number">Part {{ part.number }}</span> {{ part.title }}</h3>
-  <ol class="book-contents">
-    {%- for chapter in part.chapters %}
-    <li value="{{ chapter.number }}">
-      {%- if chapter.url %}<a href="{{ chapter.url }}">{{ chapter.title }}</a>
-      {%- else %}<span class="book-contents__soon">{{ chapter.title }}</span> <span class="book-contents__note">not online yet</span>{% endif -%}
-    </li>
-    {%- endfor %}
-  </ol>
-</section>
-{%- endfor %}
-
-<h2>The labs</h2>
+<h2 id="labs">Labs</h2>
 <p>Interactive tools for the course. They run in any web browser, on a laptop or a phone, with nothing to install.</p>
-<ul class="book-labs">
-  <li><a href="{{ '/apps/logic-lab/' | relative_url }}">Logic Lab</a>: truth tables, syntax trees, and translations into PL (Part I).</li>
-  <li><a href="{{ '/apps/probability-lab/' | relative_url }}">Probability Lab</a>: stochastic truth tables, the probability axioms, Bayes’ theorem, and eikosograms (Part II).</li>
-  <li><a href="{{ '/apps/decisions-games-lab/' | relative_url }}">Decisions &amp; Games Lab</a>: decision matrices under ignorance and under risk, and two-player games (Part III).</li>
-</ul>
+<div class="ruled">
+  <article class="app">
+    <h2><a href="{{ '/apps/logic-lab/' | relative_url }}">Logic Lab</a></h2>
+    <p>Truth tables for formulas and arguments (with a practice mode, random practice problems and a step-by-step reveal), a syntax-tree builder, and practice translating English sentences and arguments into PL.</p>
+  </article>
+  <article class="app">
+    <h2><a href="{{ '/apps/probability-lab/' | relative_url }}">Probability Lab</a></h2>
+    <p>Stochastic truth tables (calculating probabilities and conditionalizing), probability problems solved step by step from the axioms, definitions and theorems (with hints), Bayes’ theorem word problems worked the book’s way, and eikosograms: an interactive picture of how evidence moves a prior to a posterior.</p>
+  </article>
+  <article class="app">
+    <h2><a href="{{ '/apps/decisions-games-lab/' | relative_url }}">Decisions &amp; Games Lab</a></h2>
+    <p>Decision matrices under ignorance and under risk (dominance, maximin and leximin, minimax regret, and (conditional) expected utility), and two-player games: iterated deletion of dominated strategies, Nash equilibria, Pareto optimality and saddle points, with classic games such as the Prisoner’s Dilemma. Practice modes and random practice problems throughout.</p>
+  </article>
+</div>
