@@ -2052,7 +2052,7 @@ window.initBayes = () => {
   const truth = () => ({ ev: prob.obs === "B" ? "E" : "notE", post: post(prob.prior, prob.p, prob.q, prob.obs) });
 
   function render() {
-    segSync("diffSeg", state.diff); segSync("modeSeg", state.mode); segSync("fmtSeg", fmt());
+    segSync("diffSeg", prob.key === "own" ? "" : state.diff); segSync("modeSeg", state.mode); segSync("fmtSeg", fmt());
     $("practice").hidden = state.mode !== "practice"; $("view").hidden = state.mode === "practice";
     $("stepper").hidden = $("stepcap").hidden = state.mode !== "step";
     $("modeNote").textContent = { practice: "Work through the three steps, then click Check.", answers: "The worked solution, the book’s way.", step: "The method one step at a time. Use ▶ or the arrow keys." }[state.mode];
@@ -2272,14 +2272,17 @@ window.initBayes = () => {
   // ---------- URL state ----------
   function writeHash() {
     if (!window.LL || LL.active !== "bayes") return;
-    const p = new URLSearchParams({ tab: "bayes", id: prob.key, pr: rstr(prob.prior), p: rstr(prob.p), q: rstr(prob.q), m: state.mode });
+    const p = prob.key === "own"
+      ? new URLSearchParams({ tab: "bayes", H: prob.H, E: prob.E, nE: prob.notE, x: prob.text, pr: rstr(prob.prior), p: rstr(prob.p), q: rstr(prob.q), obs: prob.obs, m: state.mode })
+      : new URLSearchParams({ tab: "bayes", id: prob.key, pr: rstr(prob.prior), p: rstr(prob.p), q: rstr(prob.q), m: state.mode });
     try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
   }
   function readHash() {
     if (!window.LL || LL.tabOfHash() !== "bayes") return false;
     const p = new URLSearchParams(location.hash.slice(1));
     if (["practice", "answers", "step"].includes(p.get("m"))) state.mode = p.get("m");
-    const id = p.get("id"); if (!id) return false;
+    const id = p.get("id");
+    if (!id) return readOwn(p);
     const entry = Object.values(POOL).flat().find((e) => e.key === id); if (!entry) return false;
     let nums = null;
     if (entry.kind === "s") {
@@ -2290,6 +2293,21 @@ window.initBayes = () => {
     if (prob && prob.key === id && (!nums || (req(prob.prior, nums.prior) && req(prob.p, nums.p) && req(prob.q, nums.q)))) return true;
     prob = instance(entry, nums); work = fresh(); state.step = 0;
     state.diff = prob.diff;
+    return true;
+  }
+  // a problem given in the link (e.g. from the textbook): H, E, optionally nE (what ¬E says) and x (the story),
+  // pr = P(H), p = P(E | H), q = P(E | ¬H), and obs = B (E was learned) or notB (¬E was learned)
+  function readOwn(p) {
+    const H = (p.get("H") || "").trim(), E = (p.get("E") || "").trim();
+    const pr = R(p.get("pr") || ""), pp = R(p.get("p") || ""), qq = R(p.get("q") || "");
+    const obs = p.get("obs") === "notB" ? "notB" : "B";
+    if (!H || !E || ![pr, pp, qq].every((v) => v && v.n <= v.d) || !post(pr, pp, qq, obs)) return false;
+    const notE = (p.get("nE") || "").trim() || `It is not the case that ${E.charAt(0).toLowerCase()}${E.slice(1)}`;
+    const text = (p.get("x") || "").trim();
+    if (prob && prob.key === "own" && prob.H === H && prob.E === E && prob.notE === notE && prob.text === text && prob.obs === obs &&
+        req(prob.prior, pr) && req(prob.p, pp) && req(prob.q, qq)) return true;
+    prob = { key: "own", title: "", text, html: esc(text), how: {}, H, E, notE, prior: pr, p: pp, q: qq, obs, diff: state.diff };
+    work = fresh(); state.step = 0;
     return true;
   }
   if (!readHash()) newProblem();
