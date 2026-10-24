@@ -1363,9 +1363,11 @@ window.initTable = () => {
   let prob = null;           // { kind, letters, p[], fs[], psi, phi }
   let work = null;           // practice answers
   let tally = (() => { try { return JSON.parse(store.get("pl-st-tally")) || { n: 0, ok: 0 }; } catch (e) { return { n: 0, ok: 0 }; } })();
-  // the formula columns students fill in: one per formula, plus ψ (and φ on hard problems)
+  // the formula columns students fill in: one per formula, plus ψ (and φ on hard problems).
+  // ψ is optional on your own problems: without it there is no conditional column (and no φ).
   function colDefs() {
     const out = prob.fs.map((f, i) => ({ key: "f" + i, ast: f }));
+    if (!prob.psi) return out;
     out.push({ key: "psi", ast: prob.psi, psi: true });
     if (prob.phi && !prob.fs.some((f) => show(f) === show(prob.phi)) && show(prob.phi) !== show(prob.psi)) out.push({ key: "phi", ast: prob.phi });
     return out;
@@ -1405,7 +1407,7 @@ window.initTable = () => {
     const S = SS ? SS[Math.max(0, Math.min(state.step, SS.length - 1))] : null;
     if (state.mode === "answers") {
       colDefs().forEach((c) => cols.push(c));
-      condVals = condColumn();
+      if (prob.psi) condVals = condColumn();
     } else if (state.mode === "step") {
       (S.cols || []).forEach((c) => cols.push(c));
       if (S.cond === "zero") condZeroOnly = true;
@@ -1413,7 +1415,7 @@ window.initTable = () => {
       focusRows = S.rows || null;
     } else {
       colDefs().forEach((c) => cols.push({ ...c, edit: !work.shown.has(c.key) }));
-      condInputs = !state.editing;
+      condInputs = !state.editing && !!prob.psi;
     }
     return { cols, condVals, condInputs, condZeroOnly, focusRows };
   }
@@ -1427,7 +1429,8 @@ window.initTable = () => {
     const L = prob.letters, rows = rowsOf(L), N = rows.length;
     const vw = state.editing ? { cols: [], condVals: null, condInputs: false } : view();
     const t = el("table", "tt st-tt");
-    const psiTxt = show(prob.psi);
+    const hasCond = !state.editing && !!prob.psi;
+    const psiTxt = prob.psi ? show(prob.psi) : "";
     let h = "<thead>";
     if (vw.cols.some((c) => c.psi)) {
       h += `<tr class="groups"><th colspan="${L.length + 2}"></th>` + vw.cols.map((c) => `<th class="gsep${c.psi ? " psi" : ""}" colspan="${printTokens(c.ast, true).length}">${c.psi ? "Condition" : ""}</th>`).join("") + (state.editing ? "" : "<th class='sep'></th>") + "</tr>";
@@ -1441,7 +1444,7 @@ window.initTable = () => {
         h += `<th class="tok ${t.kind}${ti === 0 ? " gsep" : ""}${ti === toks.length - 1 ? " gend" : ""}${c.psi ? " psi" : ""}${main ? " main" : ""}">${esc(t.text)}</th>`;
       });
     });
-    if (!state.editing) h += `<th class="sep pc cpv">P( · | ${esc(psiTxt)})</th>`;
+    if (hasCond) h += `<th class="sep pc cpv">P( · | ${esc(psiTxt)})</th>`;
     h += "</tr></thead><tbody>";
     rows.forEach((env, r) => {
       const fr = vw.focusRows && vw.focusRows.includes(r);
@@ -1464,7 +1467,7 @@ window.initTable = () => {
           }
         });
       });
-      if (!state.editing) {
+      if (hasCond) {
         const psiTrue = evalNode(prob.psi, env);
         if (vw.condInputs) {
           const mk = work.marks && work.marks.col ? work.marks.col[r] : null;
@@ -1490,7 +1493,7 @@ window.initTable = () => {
           h += `<td class="gsep psv" colspan="${span}"><input class="ain sumin${mk === false ? " bad" : mk === true ? " ok" : ""}" id="st-a${i}" data-i="${i}" value="${esc(work.ans[i])}" autocomplete="off" spellcheck="false" aria-label="P(${esc(show(c.ast))})">${mk != null ? `<span class="qm ${mk ? "ok" : "bad"}">${mk ? "✓" : "✗"}</span>` : ""}</td>`;
         } else h += `<td class="gsep psv" colspan="${span}">${shownF("f" + i) ? `<b>${fmtP(probOf(c.ast, prob))}</b>` : `<span class="pq">?</span>`}</td>`;
       });
-      h += `<td class="sep"></td></tr></tfoot>`;
+      h += `${hasCond ? `<td class="sep"></td>` : ""}</tr></tfoot>`;
     }
     t.innerHTML = h; wrap.append(t);
     wrap.querySelectorAll("input.sumin").forEach((inp) => {
@@ -1571,6 +1574,7 @@ window.initTable = () => {
       ol.append(li);
     });
     // conditional column
+    if (prob.psi) {
     const li = el("li", "q qcol");
     const psiTxt = esc(show(prob.psi));
     if (state.mode === "practice") {
@@ -1607,6 +1611,7 @@ window.initTable = () => {
       }
       ol.append(li2);
     }
+    }
     if (state.mode === "practice") [...ol.children].forEach((item) => {
       const inp = item.querySelector("input.ain"); if (!inp || !/^st-a\d+$/.test(inp.id)) return;
       inp.remove(); item.querySelector(".qm")?.remove();
@@ -1632,6 +1637,7 @@ window.initTable = () => {
       done.push("f" + i);
       S.push({ cap: `Add their probabilities: P(${show(f)}) = ${sumText(f).replace(/<\/?b>/g, "")}.`, cols: [{ ast: f }], rows: rs, done: [...done] });
     });
+    if (!prob.psi) return S;
     const psi = show(prob.psi), rsP = trueRows(prob.psi, prob), pPsi = probOf(prob.psi, prob);
     S.push({ cap: `The column P( · | ${psi}): find the rows where ${psi} is true.`, cols: [{ ast: prob.psi, psi: true }], rows: rsP, done: [...done] });
     S.push({ cap: `Rows where ${psi} is false get probability 0.`, cols: [{ ast: prob.psi, psi: true }], rows: rsP, cond: "zero", done: [...done] });
@@ -1677,7 +1683,7 @@ window.initTable = () => {
     $("feedback").innerHTML = "";
     const nextBtn = (on) => { $("next").hidden = !on; $("next").classList.toggle("primary", on); $("check").classList.toggle("primary", !on); };
     if (!m) { nextBtn(false); return setVerdict(null, null, "Fill in the column under each connective, then calculate the probabilities."); }
-    const total = m.cols.length + m.fs.length + 1 + (prob.phi ? 1 : 0);
+    const total = m.cols.length + m.fs.length + (prob.psi ? 1 : 0) + (prob.phi ? 1 : 0);
     const right = m.cols.filter((x) => x === true).length + m.fs.filter((x) => x === true).length + (m.colOk ? 1 : 0) + (prob.phi && m.cond ? 1 : 0);
     nextBtn(right === total);
     if (right === total) setVerdict("Correct", "good", "Every column and every probability.");
@@ -1722,6 +1728,7 @@ window.initTable = () => {
       }
     });
     // conditional column
+    if (prob.psi) {
     const cv = condColumn();
     const rows = rowsOf(prob.letters);
     if (work.col.every((x) => !x.trim())) { marks.colOk = null; marks.blank = true; }
@@ -1742,6 +1749,7 @@ window.initTable = () => {
         else marks.colMsg = `Rows where ${psi} is false get 0; the others keep their proportions, divided by P(${psi}).`;
       }
     }
+    }
     if (prob.phi) {
       const raw = work.cond.trim();
       if (!raw) { marks.cond = null; marks.blank = true; }
@@ -1759,7 +1767,7 @@ window.initTable = () => {
     if (answered) {
       work.checks++;
       if (work.checks === 1) {
-        const allRight = !marks.blank && marks.cols.every((x) => x === true) && marks.fs.every((x) => x === true) && marks.colOk && (!prob.phi || marks.cond);
+        const allRight = !marks.blank && marks.cols.every((x) => x === true) && marks.fs.every((x) => x === true) && (!prob.psi || marks.colOk) && (!prob.phi || marks.cond);
         tally.n++; if (allRight) tally.ok++;
         store.set("pl-st-tally", JSON.stringify(tally));
       }
@@ -1771,7 +1779,7 @@ window.initTable = () => {
   let editState = null;
   function startEdit() {
     const n = prob.letters.length;
-    editState = { n, p: prob.p.map(rstr), fs: prob.fs.map(show), psi: show(prob.psi), phi: prob.phi ? show(prob.phi) : "", err: "", backup: prob };
+    editState = { n, p: prob.p.map(rstr), fs: prob.fs.map(show), psi: prob.psi ? show(prob.psi) : "", phi: prob.phi ? show(prob.phi) : "", err: "", backup: prob };
     state.editing = true; render();
   }
   function editSum() {
@@ -1801,7 +1809,7 @@ window.initTable = () => {
     box.append(el("h3", null, "Calculate the probability of"));
     editState.fs.forEach((f, i) => box.append(mkRow(`Formula ${i + 1}`, f, (v) => (editState.fs[i] = v), editState.fs.length > 1 ? () => { editState.fs.splice(i, 1); renderEditQs(); } : null)));
     if (editState.fs.length < 6) { const b = el("button", "linkbtn", "+ Add formula"); b.type = "button"; b.onclick = () => { editState.fs.push(""); renderEditQs(); }; box.append(b); }
-    box.append(el("h3", null, "Conditional column"));
+    box.append(el("h3", null, "Conditional column (optional)"));
     box.append(mkRow("P( · | ψ), with ψ =", editState.psi, (v) => (editState.psi = v)));
     box.append(mkRow("Also ask P(φ | ψ), with φ = (optional)", editState.phi, (v) => (editState.phi = v)));
     if (editState.err) box.append(el("p", "errmsg", esc(editState.err)));
@@ -1822,9 +1830,10 @@ window.initTable = () => {
     try {
       const fs = editState.fs.map((s, i) => s.trim()).filter(Boolean).map((s, i) => parseIn(s, `Formula ${i + 1}`));
       if (!fs.length) return fail("Add at least one formula.");
-      const psi = parseIn(editState.psi, "ψ");
+      const psi = editState.psi.trim() ? parseIn(editState.psi, "ψ") : null;
       const tmp = { letters: L, p: ps };
-      if (probOf(psi, tmp).n === 0n) return fail("P(ψ) is 0 in this table, so P( · | ψ) is undefined.");
+      if (psi && probOf(psi, tmp).n === 0n) return fail("P(ψ) is 0 in this table, so P( · | ψ) is undefined.");
+      if (!psi && editState.phi.trim()) return fail("P(φ | ψ) needs a ψ: fill in ψ, or leave φ blank.");
       const phi = editState.phi.trim() ? parseIn(editState.phi, "φ") : null;
       prob = { kind: "own", letters: L, p: ps, fs, psi, phi };
     } catch (e) { return fail(e.message); }
@@ -1876,7 +1885,7 @@ window.initTable = () => {
     if (!window.LL || LL.active !== "table") return;
     const p = new URLSearchParams({ tab: "table", k: prob.kind, n: prob.letters.length, pr: prob.p.map(rstr).join(",") });
     prob.fs.forEach((f) => p.append("f", show(f)));
-    p.set("c", show(prob.psi)); if (prob.phi) p.set("g", show(prob.phi));
+    if (prob.psi) p.set("c", show(prob.psi)); if (prob.phi) p.set("g", show(prob.phi));
     p.set("m", state.editing ? "practice" : state.mode);
     try { history.replaceState(null, "", `${location.pathname}${location.search}#${p}`); } catch (e) { /* ignore */ }
   }
@@ -1890,10 +1899,13 @@ window.initTable = () => {
       const L = LETTERS.slice(0, n), ps = p.get("pr").split(",").map(parseR);
       if (ps.length !== 1 << n || ps.some((q) => !q) || !req(ps.reduce(radd, RZ), R1)) return false;
       const fs = p.getAll("f").map((s) => parse(normalize(s)));
-      const psi = parse(normalize(p.get("c") || ""));
+      // no c: an unconditional table (only your own problems; generated ones always have ψ)
+      const psi = p.has("c") ? parse(normalize(p.get("c"))) : null;
       const phi = p.get("g") ? parse(normalize(p.get("g"))) : null;
-      if (!fs.length || !psi || [...fs, psi, ...(phi ? [phi] : [])].some((a) => lettersOf(a, []).some((x) => !L.includes(x)))) return false;
-      const kind = ["easy", "medium", "hard"].includes(p.get("k")) ? p.get("k") : "own";
+      if (p.has("c") && !psi) return false;
+      if (phi && !psi) return false;
+      if (!fs.length || [...fs, ...(psi ? [psi] : []), ...(phi ? [phi] : [])].some((a) => lettersOf(a, []).some((x) => !L.includes(x)))) return false;
+      const kind = psi && ["easy", "medium", "hard"].includes(p.get("k")) ? p.get("k") : "own";
       if (kind !== "own") state.diff = kind;
       prob = { kind, letters: L, p: ps, fs, psi, phi };
       work = fresh(); state.step = 0; state.editing = false;
