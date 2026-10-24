@@ -156,3 +156,4 @@ li .tryit { justify-content: flex-start; margin: -4px 0 16px; }
 /* the course page */
 .textbook .ruled { margin-bottom: 40px; }
 .textbook .app h2 { font-size: 22px; margin: 0 0 8px; }
+.course-units > li { margin-bottom: 8px; }
