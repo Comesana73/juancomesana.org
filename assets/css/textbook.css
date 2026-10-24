@@ -56,6 +56,15 @@
 .book-table .cell-u { text-align: left; }
 .book-table .cell-p { text-align: right; font-size: 0.85em; margin-top: -0.2em; }
 .book-table td:has(.cell-u) { min-width: 4.5em; }
+/* a cell of a game (Chapter 10): Column's payoff at the upper right, Row's at the lower left */
+.book-table .cell-c, .book-table .cell-r { display: block; }
+.book-table .cell-c { text-align: right; }
+.book-table .cell-r { text-align: left; }
+.book-table td:has(.cell-c) { min-width: 4em; }
+/* tables ruled on every side in the PDF, as the game matrices are; a shaded cell is a deleted strategy */
+.book-table table.grid, .book-table table.grid th, .book-table table.grid td { border: 1px solid var(--text); }
+.book-table table.grid td.blank { border-bottom: 0; border-right: 0; }
+.book-table td.shaded { background: var(--border-soft); }
 .book-table th.vertical { font-variant-caps: all-small-caps; letter-spacing: 0.08em; writing-mode: vertical-rl; transform: rotate(180deg); }
 .book-table figcaption, .book-figure figcaption {
   color: var(--muted);
@@ -130,6 +139,8 @@ li .tryit { justify-content: flex-start; margin: -4px 0 16px; }
    or it can stick out of a scrolling table and widen the page on a phone */
 .textbook .katex { position: relative; }
 .solution table { display: block; max-width: 100%; overflow-x: auto; }
+/* a drawing in a solution (Chapter 10), inside the solution's rule */
+.solution .book-figure { margin: 12px 0 0; }
 
 /* Long display math scrolls rather than overflowing on a phone */
 .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
