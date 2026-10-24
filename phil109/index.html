@@ -17,31 +17,7 @@ eyebrow: "PHIL 109 · Rutgers University–New Brunswick"
 <h1>Introduction to Formal Reasoning and Decision Making</h1>
 <p class="book-author">Juan Comesaña</p>
 
-<p class="lede">Fundamentals of logical, probabilistic, and statistical thinking, as well as the basic principles of rational decision making.</p>
-
-<p>The course introduces some of the formal tools used to model reasoning and decision making. It covers the basics of propositional logic and probability, and applies them to reasoning and decision making under uncertainty, with an emphasis on the foundational and philosophical issues they raise. It satisfies the SAS Core goals in Quantitative and Formal Reasoning:</p>
-<ul>
-  <li><strong>QQ:</strong> Formulate, evaluate, and communicate conclusions and inferences from quantitative information.</li>
-  <li><strong>QR:</strong> Apply effective and efficient mathematical or other formal processes to reason and to solve problems.</li>
-</ul>
-<p>Although this is a philosophy course, quantitative skills play an important role in it. It assumes some pre-college mathematics, especially algebra and fractions.</p>
-
-<h2>Units</h2>
-<ol class="course-units">
-  {%- for part in book.parts %}
-  <li><strong>{{ part.title }}</strong>: {% for chapter in part.chapters %}{{ chapter.title }}{% unless forloop.last %}; {% endunless %}{% endfor %} (chapters {{ part.chapters.first.number }}–{{ part.chapters.last.number }}).</li>
-  {%- endfor %}
-</ol>
-
-<h2>How the course works</h2>
-<ul>
-  <li>Readings from the textbook are assigned for each class, and most classes begin with a short quiz on that day's reading.</li>
-  <li>Online quizzes are done at home, and each can be taken twice.</li>
-  <li>Each unit ends with an in-class exam. The last exam is cumulative.</li>
-  <li>Grading emphasizes reasoning over arithmetic: a correct setup with a small arithmetic slip loses very little, while a flawed argument or a misapplied principle costs much more.</li>
-  <li>No artificial intelligence tools and no calculators or computational software for quizzes, exams, or assignments: all the work, arithmetic included, is done by hand. No electronics in class.</li>
-</ul>
-<p>The schedule, deadlines and grading details for the current term are in the syllabus and on Canvas.</p>
+<p class="lede">Fundamentals of logical, probabilistic, and statistical thinking, as well as the basic principles of rational decision making. Reasoning through data (and rhetoric) encountered on a daily basis using elementary principles of deductive logic and inference. This course will introduce students to some of the formal tools used to model reasoning and decision making.</p>
 
 <h2>Textbook</h2>
 <div class="ruled">
@@ -52,7 +28,7 @@ eyebrow: "PHIL 109 · Rutgers University–New Brunswick"
 </div>
 
 <h2 id="labs">Labs</h2>
-<p>Interactive tools for practicing outside of graded work. They run in any web browser, on a laptop or a phone, with nothing to install.</p>
+<p>Interactive tools for the course. They run in any web browser, on a laptop or a phone, with nothing to install.</p>
 <div class="ruled">
   <article class="app">
     <h2><a href="{{ '/apps/logic-lab/' | relative_url }}">Logic Lab</a></h2>
