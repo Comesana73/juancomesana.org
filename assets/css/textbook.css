@@ -51,6 +51,11 @@
 .book-table tr.shaded th, .book-table tr.shaded td { background: var(--border-soft); }
 /* formula columns packed tight with @{} in the LaTeX, as in the truth tables of Chapter 1 */
 .book-table th.tight, .book-table td.tight { padding-left: 0.1em; padding-right: 0.1em; }
+/* a cell with the utility at the upper left and its probability at the lower right (Chapter 8) */
+.book-table .cell-u, .book-table .cell-p { display: block; }
+.book-table .cell-u { text-align: left; }
+.book-table .cell-p { text-align: right; font-size: 0.85em; margin-top: -0.2em; }
+.book-table td:has(.cell-u) { min-width: 4.5em; }
 .book-table th.vertical { font-variant-caps: all-small-caps; letter-spacing: 0.08em; writing-mode: vertical-rl; transform: rotate(180deg); }
 .book-table figcaption, .book-figure figcaption {
   color: var(--muted);
