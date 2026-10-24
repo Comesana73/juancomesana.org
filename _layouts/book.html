@@ -2,15 +2,23 @@
 layout: default
 ---
 {%- comment -%}
-  Chapters of the PHIL 109 textbook, generated from the LaTeX by web/build.py
-  in the textbook repository. Unlisted: no links to it from the site, not in
-  the sitemap, and marked noindex (see _config.yml).
+  The PHIL 109 textbook: its front page (phil109/index.html) and its chapters,
+  generated from the LaTeX by web/build.py in the textbook repository.
+  Unlisted: no links to it from the site, not in the sitemap, and marked
+  noindex (see _config.yml).
 {%- endcomment -%}
 <article class="textbook">
-  <p class="eyebrow">PHIL 109 · Introduction to Formal Reasoning and Decision Making</p>
+  {%- if page.chapter %}
+  <p class="eyebrow"><a href="../">PHIL 109 · {{ site.data.phil109.title }}</a></p>
+  {%- else %}
+  <p class="eyebrow">PHIL 109 · Rutgers University–New Brunswick</p>
+  {%- endif %}
   {{ content }}
+  {%- if page.chapter %}
   <nav class="textbook__pager" aria-label="Chapters">
     {%- if page.prev %}<a rel="prev" href="{{ page.prev }}">← Previous chapter</a>{% else %}<span></span>{% endif -%}
-    {%- if page.next %}<a rel="next" href="{{ page.next }}">Next chapter →</a>{% endif -%}
+    <a href="../">Contents</a>
+    {%- if page.next %}<a rel="next" href="{{ page.next }}">Next chapter →</a>{% else %}<span></span>{% endif -%}
   </nav>
+  {%- endif %}
 </article>
