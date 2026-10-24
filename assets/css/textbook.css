@@ -48,6 +48,7 @@
 .book-table th, .book-table td { padding: 6px 16px; text-align: center; white-space: nowrap; }
 .book-table th { font-weight: 400; }
 .book-table .label-end { border-right: 1px solid var(--text); }
+.book-table tr.shaded th, .book-table tr.shaded td { background: var(--border-soft); }
 /* formula columns packed tight with @{} in the LaTeX, as in the truth tables of Chapter 1 */
 .book-table th.tight, .book-table td.tight { padding-left: 0.1em; padding-right: 0.1em; }
 .book-table th.vertical { font-variant-caps: all-small-caps; letter-spacing: 0.08em; writing-mode: vertical-rl; transform: rotate(180deg); }
@@ -76,6 +77,9 @@ ol.countdown { padding-left: 2em; }
 .labeled-list .item-label { display: inline-block; font-weight: 600; min-width: 3.2em; }
 .labeled-list--argument { padding-left: 1.5em; }
 .labeled-list--argument .item-label { font-weight: 400; min-width: 2.4em; }
+/* a long premise wraps under its text, not under its number */
+.labeled-list--argument li { padding-left: 2.4em; text-indent: -2.4em; }
+.labeled-list--argument .item-label { text-indent: 0; }
 
 /* "Try it" links into the apps */
 .tryit {
