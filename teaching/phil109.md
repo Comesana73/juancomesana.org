@@ -11,7 +11,7 @@ permalink: /teaching/phil109/
 <p class="eyebrow">PHIL 109</p>
 <h1>Introduction to Formal Reasoning and Decision Making</h1>
 
-<p class="lede" style="margin-bottom:48px">Interactive tools for the course. They run in any web browser, on a laptop or a phone, with nothing to install.</p>
+<p class="lede" style="margin-bottom:48px">Interactive tools for the course. They run in any web browser, on a laptop or a phone, with nothing to install. The <a href="{{ '/phil109/' | relative_url }}">course page</a> also has the textbook, with links into these labs.</p>
 
 <div class="ruled">
   <article class="app">
