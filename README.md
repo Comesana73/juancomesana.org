@@ -80,5 +80,6 @@ GitHub Pages only publishes `main`, so a pull request has no preview online. To 
    The first time, run `bundle install` before `bundle exec jekyll serve`.
 3. Open `http://127.0.0.1:4000/` in your browser, for example `http://127.0.0.1:4000/phil109/ch06/` for Chapter 6.
 4. When you are done, press Ctrl-C in Terminal, and in GitHub Desktop switch "Current Branch" back to `main`.
+5. After you merge a textbook update, delete your copy of its branch: in GitHub Desktop, switch to `textbook-update`, choose Branch → Delete…, and confirm. The next textbook update arrives under the same name, and an old copy would get in its way.
 
 The same steps preview the current `main`, for example after editing a page on GitHub.
