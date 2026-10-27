@@ -9,7 +9,7 @@
       "chapters": [
         {
           "number": 1,
-          "title": "The language of Propositional Logic",
+          "title": "The language of propositional logic",
           "url": "ch01/"
         },
         {
@@ -19,7 +19,7 @@
         },
         {
           "number": 3,
-          "title": "Arguments",
+          "title": "Arguments and validity",
           "url": "ch03/"
         }
       ]
@@ -51,7 +51,7 @@
       "chapters": [
         {
           "number": 7,
-          "title": "Decisions",
+          "title": "Decisions under ignorance",
           "url": "ch07/"
         },
         {
