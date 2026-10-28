@@ -11,6 +11,7 @@ Most pages are Markdown with some HTML, the shared page frame is a small layout 
 - `phil109/` is the PHIL 109 course page and the web version of the textbook (see below).
 - `apps/` holds the course labs: the Logic Lab, the Probability Lab and the Decisions & Games Lab. Each is a single self-contained page. A few older addresses there (`decision-lab`, `eikosogram-studio`, `truth-table-builder`, and `teaching/phil109/`) only forward to their replacements, so old links keep working.
 - `frame/` is Frame, the clock, weather and art display for the iPad.
+- `tools/fractions/` is a private fraction calculator that shows every step. It isn't linked from the site and is hidden from search engines. To use it like an app on the Mac, open it in Safari and choose File → Add to Dock.
 - `yep/` and `rec/yep/review/` are the two identical entry pages for reviewing Young Epistemologist Prize submissions.
 - `private/` holds password-protected pages.
 - `assets/papers/` has paper and conference PDFs, and `assets/documents/` has the CV and the PHIL 109 textbook PDF. `cv.pdf` is built from `cv.yaml` in the iCloud `inprogress/cv/` folder.

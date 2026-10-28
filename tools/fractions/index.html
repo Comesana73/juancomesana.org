@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fractions">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111114" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Fractions</title>
+<style>
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f0f0f4;
+  --ink: #1c1c22;
+  --muted: #6b6b78;
+  --faint: #a3a3ae;
+  --line: #e3e3ea;
+  --accent: #5b4ee0;
+  --accent-ink: #ffffff;
+  --accent-soft: #ecebfd;
+  --bad: #c2372d;
+  --bad-soft: #fdecea;
+  --shadow: 0 1px 2px rgba(20, 20, 40, .05), 0 6px 24px rgba(20, 20, 40, .06);
+  --radius: 16px;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111114;
+    --surface: #1b1b20;
+    --surface-2: #24242b;
+    --ink: #ececf1;
+    --muted: #9c9cab;
+    --faint: #5f5f6c;
+    --line: #2c2c34;
+    --accent: #9d94ff;
+    --accent-ink: #15131f;
+    --accent-soft: #2a2747;
+    --bad: #ff8a80;
+    --bad-soft: #3a1f1d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 24px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--sans); font-size: 15px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+h1, h2, h3, p { margin: 0; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app {
+  max-width: 1180px; margin: 0 auto;
+  padding: max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  display: grid; gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "head" "input" "main" "side";
+}
+@media (min-width: 980px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-areas: "head head" "input side" "main side";
+    align-items: start; padding-top: max(28px, env(safe-area-inset-top));
+  }
+  .side { position: sticky; top: 20px; }
+}
+
+/* ---------- header ---------- */
+header { grid-area: head; display: flex; align-items: center; gap: 12px; }
+.mark {
+  width: 36px; height: 36px; border-radius: 10px; flex: none;
+  background: linear-gradient(145deg, #7b6ff2, #4a3dd1);
+  color: #fff; display: grid; place-items: center; font-size: 22px; font-weight: 600;
+  box-shadow: 0 2px 8px rgba(74, 61, 209, .35);
+}
+header h1 { font-size: 1.25rem; font-weight: 650; letter-spacing: -.015em; }
+header p { color: var(--muted); font-size: .85rem; }
+
+.card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+/* ---------- input ---------- */
+.input-card { grid-area: input; padding: 16px; }
+.field { position: relative; }
+#expr {
+  width: 100%; border: 1.5px solid var(--line); background: var(--surface-2);
+  border-radius: 12px; padding: 14px 16px; font-size: clamp(1.25rem, 3.6vw, 1.6rem);
+  letter-spacing: .01em; outline: none; transition: border-color .15s, background .15s;
+}
+#expr:focus { border-color: var(--accent); background: var(--surface); }
+#expr::placeholder { color: var(--faint); }
+.keys { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.keys button {
+  min-width: 46px; height: 42px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface); font-size: 1.15rem;
+  transition: background .12s, transform .06s;
+}
+.keys button:hover { background: var(--surface-2); }
+.keys button:active { transform: scale(.96); }
+.keys .wide { font-size: .9rem; color: var(--muted); }
+.keys .spacer { flex: 1; }
+.hint { color: var(--muted); font-size: .82rem; margin-top: 12px; }
+.hint code { font-family: inherit; background: var(--surface-2); padding: 1px 6px; border-radius: 6px; color: var(--ink); }
+.err {
+  margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+  background: var(--bad-soft); color: var(--bad); font-size: .9rem;
+}
+
+/* ---------- results ---------- */
+main { grid-area: main; display: grid; gap: 20px; min-width: 0; transition: opacity .15s; }
+main.stale { opacity: .45; }
+.answer { padding: 20px; }
+.label { font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.answer .m { font-size: clamp(1.35rem, 4vw, 1.9rem); margin-top: 10px; }
+.answer .m .res { color: var(--accent); font-weight: 600; }
+.forms { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chip {
+  display: inline-flex; align-items: baseline; gap: 8px; padding: 8px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface-2); text-align: left;
+  transition: border-color .12s;
+}
+.chip:hover { border-color: var(--accent); }
+.chip small { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+.chip span { font-size: 1.05rem; }
+.copied { color: var(--accent) !important; }
+
+.steps-card { padding: 20px; }
+.steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 4px; }
+.step { position: relative; padding: 14px 0 16px 44px; border-top: 1px solid var(--line); }
+.step:first-child { border-top: 0; padding-top: 4px; }
+.step .num {
+  position: absolute; left: 0; top: 14px; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent); font-weight: 650; font-size: .85rem;
+  display: grid; place-items: center;
+}
+.step:first-child .num { top: 4px; }
+.step h3 { font-size: .95rem; font-weight: 600; line-height: 28px; }
+.step .expr { font-size: 1.15rem; margin: 6px 0 10px; color: var(--muted); }
+.work { display: grid; gap: 10px; padding-left: 14px; border-left: 2px solid var(--accent-soft); }
+.row .m { font-size: 1.2rem; }
+.note { color: var(--muted); font-size: .84rem; margin-top: 2px; }
+
+.empty { padding: 28px 20px; text-align: center; color: var(--muted); }
+.empty p + p { margin-top: 12px; }
+.examples { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.examples button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 14px; }
+.examples button:hover { border-color: var(--accent); }
+
+/* ---------- history ---------- */
+.side { grid-area: side; padding: 16px; }
+.side-h { display: flex; align-items: center; justify-content: space-between; }
+.side-h button { border: 0; background: none; color: var(--muted); font-size: .82rem; padding: 4px 6px; border-radius: 6px; }
+.side-h button:hover { color: var(--bad); }
+.hist { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 2px; }
+.hist button {
+  width: 100%; text-align: left; border: 0; background: none; border-radius: 10px; padding: 8px 10px;
+  display: grid; gap: 1px;
+}
+.hist button:hover { background: var(--surface-2); }
+.hist .q { overflow-wrap: anywhere; }
+.hist .a { color: var(--accent); font-size: .85rem; }
+.hist-empty { color: var(--faint); font-size: .85rem; margin-top: 10px; }
+
+/* ---------- math typesetting ---------- */
+.m { line-height: 2.6; overflow-wrap: anywhere; }
+.fr {
+  display: inline-flex; flex-direction: column; text-align: center;
+  vertical-align: middle; margin: 0 .1em; line-height: 1.2; font-size: .92em;
+}
+.fr > .n { padding: 0 .2em .08em; border-bottom: max(1.5px, .07em) solid currentColor; }
+.fr > .d { padding: .08em .2em 0; }
+.op { margin: 0 .35em; }
+.iop { margin: 0 .2em; color: var(--muted); }
+.fr .iop { color: inherit; opacity: .6; }
+.sg { margin-right: .06em; }
+.pa { font-size: 1.5em; font-weight: 200; vertical-align: middle; line-height: 1; position: relative; top: -.06em; }
+.mix .fr { margin-left: .05em; }
+.hl { background: var(--accent-soft); color: var(--ink); border-radius: 8px; padding: .25em .15em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.cx { display: inline-flex; align-items: baseline; gap: .2em; }
+.cx s { opacity: .45; text-decoration-thickness: 1.5px; }
+.cx b { color: var(--accent); font-weight: 600; }
+.rep { text-decoration: overline; text-decoration-thickness: 1.5px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translate(-50%, 20px);
+  background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: .88rem;
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 560px) {
+  .keys { gap: 6px; }
+  .keys button { flex: 1 1 0; min-width: 0; padding: 0; }
+  .keys .spacer { display: none; }
+  .keys .wide { flex-basis: auto; padding: 0 10px; }
+  .step { padding-left: 38px; }
+  .work { padding-left: 10px; }
+  .row .m { font-size: 1.1rem; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="mark" aria-hidden="true">÷</div>
+    <div>
+      <h1>Fractions</h1>
+      <p>Step-by-step fraction arithmetic</p>
+    </div>
+  </header>
+
+  <section class="card input-card">
+    <div class="field">
+      <input id="expr" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+             placeholder="e.g. (3/4 + 2/3) × 6" aria-label="Expression">
+    </div>
+    <div class="keys" id="keys">
+      <button type="button" data-ins="+">+</button>
+      <button type="button" data-ins="−">−</button>
+      <button type="button" data-ins="×">×</button>
+      <button type="button" data-ins="÷">÷</button>
+      <button type="button" data-ins="/" title="Fraction bar">a/b</button>
+      <button type="button" data-ins="(">(</button>
+      <button type="button" data-ins=")">)</button>
+      <span class="spacer"></span>
+      <button type="button" class="wide" id="clear">Clear</button>
+    </div>
+    <p class="hint">Fractions <code>3/4</code>, mixed numbers <code>2 1/2</code>, decimals <code>0.25</code>. Type <code>*</code> for × and <code>:</code> for ÷.</p>
+    <p class="err" id="err" hidden></p>
+  </section>
+
+  <main id="out"></main>
+
+  <aside class="card side">
+    <div class="side-h">
+      <h2 class="label">History</h2>
+      <button type="button" id="hist-clear" hidden>Clear</button>
+    </div>
+    <ul class="hist" id="hist"></ul>
+    <p class="hist-empty" id="hist-empty">Your calculations will appear here.</p>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* ===== rational numbers (BigInt, so nothing overflows) ===== */
+const abs = x => (x < 0n ? -x : x);
+const gcd = (a, b) => { a = abs(a); b = abs(b); while (b) { const t = a % b; a = b; b = t; } return a; };
+const lcm = (a, b) => a / gcd(a, b) * b;
+const Q = (n, d) => (d < 0n ? { n: -n, d: -d } : { n, d });
+const reduce = q => { const g = gcd(q.n, q.d) || 1n; return { n: q.n / g, d: q.d / g }; };
+
+class UserError extends Error {}
+
+/* ===== typesetting helpers (return HTML strings; all content is numeric) ===== */
+const MINUS = '−';
+const SYM = { '+': '+', '-': MINUS, '*': '×', '÷': '÷' };
+const N = n => (n < 0n ? MINUS : '') + abs(n).toString();
+const NP = n => (n < 0n ? '(' + N(n) + ')' : N(n));
+const frac = (top, bot) => `<span class="fr"><span class="n">${top}</span><span class="d">${bot}</span></span>`;
+const F = (n, d) => (d === 1n ? N(n) : (n < 0n ? `<span class="sg">${MINUS}</span>` : '') + frac(abs(n), d));
+const P = h => `<span class="pa">(</span>${h}<span class="pa">)</span>`;
+const FP = (n, d) => (n < 0n ? P(F(n, d)) : F(n, d));
+const op = s => `<span class="op">${s}</span>`;
+const iop = s => `<span class="iop">${s}</span>`;
+const EQ = op('=');
+const fq = q => F(q.n, q.d);
+
+/* ===== tokenizer ===== */
+const OPS = {
+  '+': '+', '-': '-', '−': '-', '–': '-', '—': '-',
+  '*': '*', '×': '*', '·': '*', '⋅': '*', 'x': '*', 'X': '*',
+  '/': '/', '⁄': '/', '÷': '÷', ':': '÷',
+  '(': '(', '[': '(', ')': ')', ']': ')'
+};
+
+function tokenize(s) {
+  const toks = [];
+  let i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (/[0-9.]/.test(c)) {
+      let j = i;
+      while (j < s.length && /[0-9.]/.test(s[j])) j++;
+      let str = s.slice(i, j);
+      if (!/^(\d+\.?\d*|\.\d+)$/.test(str)) throw new UserError(`“${str}” isn't a number.`);
+      if (str.endsWith('.')) str = str.slice(0, -1);
+      toks.push({ k: 'num', s: str, int: /^\d+$/.test(str) });
+      i = j; continue;
+    }
+    if (OPS[c]) { toks.push({ k: OPS[c] }); i++; continue; }
+    throw new UserError(`I don't understand “${c}”.`);
+  }
+  return toks;
+}
+
+/* ===== parser =====
+   expr   := term (('+'|'-') term)*
+   term   := factor (('*'|'÷'|'/') factor | '(' implicit ×)*
+   factor := '-' factor | '+' factor | '(' expr ')' | literal
+   literal: 3, 0.25, 3/4 (integers around '/' bind tighter than division), 2 1/4 */
+function parse(toks) {
+  let p = 0;
+  const peek = (o = 0) => toks[p + o];
+  const is = (k, o = 0) => peek(o) && peek(o).k === k;
+  const isInt = o => is('num', o) && peek(o).int;
+  const show = t => (t.k === 'num' ? t.s : ({ '*': '×', '-': MINUS }[t.k] || t.k));
+
+  function expr() {
+    let l = term();
+    while (is('+') || is('-')) { const o = toks[p++].k; l = { t: 'bin', op: o, l, r: term() }; }
+    return l;
+  }
+  function term() {
+    let l = factor();
+    for (;;) {
+      if (is('*') || is('÷') || is('/')) {
+        const o = toks[p++].k;
+        l = { t: 'bin', op: o === '/' ? '÷' : o, l, r: factor() };
+      } else if (is('(')) {
+        l = { t: 'bin', op: '*', l, r: factor() };
+      } else return l;
+    }
+  }
+  function factor() {
+    if (is('-')) { p++; return { t: 'neg', c: factor() }; }
+    if (is('+')) { p++; return factor(); }
+    if (is('(')) {
+      p++;
+      if (is(')')) throw new UserError('Empty parentheses.');
+      const e = expr();
+      if (!is(')')) throw new UserError(peek() ? `Expected “)” before “${show(peek())}”.` : 'Missing a closing “)”.');
+      p++;
+      return { t: 'group', c: e };
+    }
+    if (is('num')) return literal();
+    if (!peek()) throw new UserError('The expression ends too early.');
+    throw new UserError(`Unexpected “${show(peek())}”.`);
+  }
+  function literal() {
+    const a = toks[p];
+    if (a.int && isInt(1) && is('/', 2) && isInt(3)) {
+      p += 4;
+      return { t: 'num', raw: { kind: 'mixed', w: BigInt(a.s), n: BigInt(toks[p - 3].s), d: BigInt(toks[p - 1].s) } };
+    }
+    if (a.int && is('/', 1) && isInt(2)) {
+      p += 3;
+      return { t: 'num', raw: { kind: 'frac', n: BigInt(a.s), d: BigInt(toks[p - 1].s) } };
+    }
+    p++;
+    return a.int ? { t: 'num', raw: { kind: 'int', n: BigInt(a.s) } } : { t: 'num', raw: { kind: 'dec', s: a.s } };
+  }
+
+  const tree = expr();
+  if (p < toks.length) {
+    const t = peek();
+    if (t.k === ')') throw new UserError('There’s a “)” without a matching “(”.');
+    if (t.k === 'num') throw new UserError(`Missing an operation before “${t.s}”.`);
+    throw new UserError(`Unexpected “${show(t)}”.`);
+  }
+  return tree;
+}
+
+/* ===== rendering an expression tree ===== */
+function rawHtml(r) {
+  switch (r.kind) {
+    case 'int': return N(r.n);
+    case 'frac': return frac(r.n, r.d);
+    case 'mixed': return `<span class="mix">${r.w}${frac(r.n, r.d)}</span>`;
+    case 'dec': return r.s.startsWith('.') ? '0' + r.s : r.s;
+  }
+}
+
+// `first`: whether the node starts the expression (or a parenthesised part);
+// negative numbers anywhere else get parentheses.
+function render(node, hl, first = true) {
+  let h;
+  switch (node.t) {
+    case 'num':
+      if (node.raw) h = rawHtml(node.raw);
+      else { h = fq(node.v); if (node.v.n < 0n && !first) h = P(h); }
+      break;
+    case 'neg':
+      h = `<span class="sg">${MINUS}</span>` + (node.c.t === 'neg' ? P(render(node.c, hl, true)) : render(node.c, hl, false));
+      break;
+    case 'group':
+      h = P(render(node.c, hl, true));
+      break;
+    case 'bin':
+      h = render(node.l, hl, first) + op(SYM[node.op]) + render(node.r, hl, false);
+      break;
+  }
+  return hl.has(node) ? `<span class="hl">${h}</span>` : h;
+}
+
+/* ===== the operations, with their worked steps ===== */
+function reduceLine(n, d, r) {
+  if (n === 0n) return { m: frac(N(n), d) + EQ + '0', note: 'Zero divided by anything is 0.' };
+  const g = d / r.d;
+  return {
+    m: F(n, d) + EQ + frac(N(n) + iop('÷') + g, d + iop('÷') + g) + EQ + fq(r),
+    note: `Divide top and bottom by ${g}` + (r.d === 1n ? '.' : ' to get lowest terms.')
+  };
+}
+
+function addSub(a, b, o) {
+  const s = o === '+' ? 1n : -1n;
+  const sym = SYM[o];
+  const verb = o === '+' ? 'Add' : 'Subtract';
+  const lines = [];
+  if (a.d === 1n && b.d === 1n) {
+    const r = a.n + s * b.n;
+    lines.push({ m: N(a.n) + op(sym) + NP(b.n) + EQ + N(r) });
+    return { res: Q(r, 1n), lines };
+  }
+  let S, D;
+  if (a.d === b.d) {
+    S = a.n + s * b.n; D = a.d;
+    lines.push({
+      m: fq(a) + op(sym) + FP(b.n, b.d) + EQ + frac(N(a.n) + iop(sym) + NP(b.n), D) + EQ + F(S, D),
+      note: `Same denominator, so just ${verb.toLowerCase()} the numerators.`
+    });
+  } else {
+    const L = lcm(a.d, b.d);
+    if (a.d !== 1n && b.d !== 1n) {
+      let note;
+      if (L === a.d || L === b.d) note = `${L} is already a multiple of ${L === a.d ? b.d : a.d}, so it is the common denominator.`;
+      else if (gcd(a.d, b.d) === 1n) note = `${a.d} and ${b.d} have no common factor, so the common denominator is their product.`;
+      else note = `The least common multiple of ${a.d} and ${b.d}.`;
+      lines.push({ m: `LCD(${a.d}, ${b.d})` + EQ + L, note: 'Least common denominator: ' + note[0].toLowerCase() + note.slice(1) });
+    }
+    for (const x of [a, b]) {
+      const k = L / x.d;
+      if (k === 1n) continue;
+      lines.push({
+        m: fq(x) + EQ + frac(N(x.n) + iop('×') + k, x.d === 1n ? k : x.d + iop('×') + k) + EQ + F(x.n * k, L),
+        note: x.d === 1n ? `Write ${N(x.n)} as a fraction over ${L}.` : `Multiply top and bottom by ${k}.`
+      });
+    }
+    const A = a.n * (L / a.d), B = b.n * (L / b.d);
+    S = A + s * B; D = L;
+    lines.push({
+      m: F(A, L) + op(sym) + FP(B, L) + EQ + frac(N(A) + iop(sym) + NP(B), L) + EQ + F(S, L),
+      note: `${verb} the numerators; the denominator stays ${L}.`
+    });
+  }
+  const r = reduce(Q(S, D));
+  if (r.d !== D) lines.push(reduceLine(S, D, r));
+  return { res: r, lines };
+}
+
+function mul(a, b, lines = []) {
+  if (a.n === 0n || b.n === 0n) {
+    lines.push({ m: fq(a) + op('×') + FP(b.n, b.d) + EQ + '0', note: 'Anything times 0 is 0.' });
+    return { res: Q(0n, 1n), lines };
+  }
+  if (a.d === 1n && b.d === 1n) {
+    const r = a.n * b.n;
+    lines.push({ m: N(a.n) + op('×') + NP(b.n) + EQ + N(r) });
+    return { res: Q(r, 1n), lines };
+  }
+  const g1 = gcd(a.n, b.d), g2 = gcd(b.n, a.d);
+  let an = a.n, ad = a.d, bn = b.n, bd = b.d, prefix;
+  if (g1 > 1n || g2 > 1n) {
+    const cx = (v, g) => (g > 1n ? `<span class="cx"><s>${N(v)}</s><b>${N(v / g)}</b></span>` : N(v));
+    const shown = (n, d, gn, gd) => (d === 1n ? cx(n, gn) : frac(cx(n, gn), cx(d, gd)));
+    const sa = shown(a.n, a.d, g1, g2);
+    const sb = shown(b.n, b.d, g2, g1);
+    const parts = [];
+    if (g1 > 1n) parts.push(`${g1} from ${abs(a.n)} and ${b.d}`);
+    if (g2 > 1n) parts.push(`${g2} from ${abs(b.n)} and ${a.d}`);
+    lines.push({
+      m: sa + op('×') + (b.n < 0n ? P(sb) : sb),
+      note: 'Cancel common factors before multiplying: ' + parts.join('; ') + '.'
+    });
+    an /= g1; bd /= g1; bn /= g2; ad /= g2;
+    prefix = EQ;
+  } else {
+    prefix = fq(a) + op('×') + FP(b.n, b.d) + EQ;
+  }
+  const rn = an * bn, rd = ad * bd;
+  lines.push({
+    m: prefix + frac(N(an) + iop('×') + NP(bn), ad + iop('×') + bd) + EQ + F(rn, rd),
+    note: 'Multiply the numerators together and the denominators together.'
+  });
+  const r = reduce(Q(rn, rd));
+  if (r.d !== rd) lines.push(reduceLine(rn, rd, r));
+  return { res: r, lines };
+}
+
+function div(a, b) {
+  if (b.n === 0n) throw new UserError('Division by zero: you can’t divide by 0.');
+  const rb = Q(b.d, b.n);
+  const lines = [{
+    m: fq(a) + op('÷') + FP(b.n, b.d) + EQ + fq(a) + op('×') + FP(rb.n, rb.d),
+    note: b.d === 1n
+      ? `Dividing by ${N(b.n)} is the same as multiplying by ${N(rb.n)}/${rb.d}.`
+      : 'Dividing by a fraction is multiplying by its reciprocal (flip it upside down).'
+  }];
+  return mul(a, rb, lines);
+}
+
+const OPERATE = { '+': (a, b) => addSub(a, b, '+'), '-': (a, b) => addSub(a, b, '-'), '*': mul, '÷': div };
+const OPNAME = { '+': 'Add', '-': 'Subtract', '*': 'Multiply', '÷': 'Divide' };
+
+/* ===== literals: decimals, mixed numbers, unreduced fractions ===== */
+function convertLiteral(r) {
+  switch (r.kind) {
+    case 'int': return { v: Q(r.n, 1n) };
+    case 'dec': {
+      const [ip, fp] = r.s.split('.');
+      const k = fp.length, d = 10n ** BigInt(k), n = BigInt((ip || '0') + fp);
+      const v = reduce(Q(n, d)), g = d / v.d;
+      return {
+        v, line: {
+          m: rawHtml(r) + EQ + frac(n, d) + (g > 1n ? EQ + fq(v) : ''),
+          note: `${k} decimal place${k > 1 ? 's' : ''}, so put it over ${d}` + (g > 1n ? `, then divide top and bottom by ${g}.` : '.')
+        }
+      };
+    }
+    case 'mixed': {
+      const n = r.w * r.d + r.n, v = reduce(Q(n, r.d)), g = r.d / v.d;
+      return {
+        v, line: {
+          m: rawHtml(r) + EQ + frac(r.w + iop('×') + r.d + iop('+') + r.n, r.d) + EQ + frac(n, r.d) + (g > 1n ? EQ + fq(v) : ''),
+          note: 'Whole part × denominator + numerator, over the same denominator' + (g > 1n ? `; then divide top and bottom by ${g}.` : '.')
+        }
+      };
+    }
+    case 'frac': {
+      const v = reduce(Q(r.n, r.d));
+      if (v.n === r.n && v.d === r.d && r.d !== 1n) return { v };
+      if (r.n === 0n) return { v, line: { m: frac(0, r.d) + EQ + '0', note: 'Zero divided by anything is 0.' } };
+      if (r.d === 1n) return { v, line: { m: frac(r.n, 1) + EQ + N(r.n), note: 'Anything over 1 is itself.' } };
+      return { v, line: reduceLine(r.n, r.d, v) };
+    }
+  }
+}
+
+function literalTitle(kinds) {
+  if (kinds.size > 1) return 'Write every number as a simple fraction';
+  if (kinds.has('dec')) return 'Turn decimals into fractions';
+  if (kinds.has('mixed')) return 'Turn mixed numbers into fractions';
+  return 'Simplify the fractions';
+}
+
+/* ===== solving ===== */
+function walk(node, f) {
+  f(node);
+  if (node.t === 'bin') { walk(node.l, f); walk(node.r, f); }
+  else if (node.c) walk(node.c, f);
+}
+
+function become(node, v) {
+  for (const k of Object.keys(node)) delete node[k];
+  node.t = 'num'; node.v = v;
+}
+
+// Fold parentheses around a single number, and a minus sign in front of one.
+function tidy(node) {
+  if (node.t === 'bin') { tidy(node.l); tidy(node.r); }
+  else if (node.t === 'group' || node.t === 'neg') {
+    tidy(node.c);
+    if (node.c.t === 'num' && !node.c.raw) become(node, node.t === 'neg' ? Q(-node.c.v.n, node.c.v.d) : node.c.v);
+  }
+}
+
+// Leftmost innermost operation whose two sides are both numbers: this follows
+// parentheses first, then × and ÷ before + and −, left to right.
+function nextOp(node) {
+  if (node.t === 'bin') {
+    const f = nextOp(node.l) || nextOp(node.r);
+    if (f) return f;
+    return node.l.t === 'num' && node.r.t === 'num' ? node : null;
+  }
+  return node.c ? nextOp(node.c) : null;
+}
+
+function solve(input) {
+  const toks = tokenize(input);
+  if (!toks.length) return null;
+  const tree = parse(toks);
+
+  const lits = [];
+  walk(tree, n => { if (n.t === 'num') lits.push(n); });
+  for (const n of lits) {
+    const r = n.raw;
+    if ((r.kind === 'frac' || r.kind === 'mixed') && r.d === 0n) throw new UserError(`${r.n}/0 has no value: a denominator can’t be 0.`);
+  }
+  const original = render(tree, new Set());
+  const steps = [];
+
+  const converted = lits.map(n => ({ n, ...convertLiteral(n.raw) }));
+  const changed = converted.filter(c => c.line);
+  if (changed.length) {
+    steps.push({
+      title: literalTitle(new Set(changed.map(c => c.n.raw.kind))),
+      expr: render(tree, new Set(changed.map(c => c.n))),
+      lines: changed.map(c => c.line)
+    });
+  }
+  for (const c of converted) { delete c.n.raw; c.n.v = c.v; }
+  tidy(tree);
+
+  let guard = 0;
+  while (tree.t !== 'num' && guard++ < 1000) {
+    const node = nextOp(tree);
+    const exprHtml = render(tree, new Set([node]));
+    const { res, lines } = OPERATE[node.op](node.l.v, node.r.v);
+    steps.push({ title: OPNAME[node.op], expr: exprHtml, lines });
+    become(node, res);
+    tidy(tree);
+  }
+  return { original, steps, result: tree.v };
+}
+
+/* ===== other forms of the answer ===== */
+function mixedForm(r) {
+  if (r.d === 1n || abs(r.n) < r.d) return null;
+  const w = abs(r.n) / r.d, rem = abs(r.n) % r.d, sg = r.n < 0n;
+  return {
+    html: `<span class="mix">${sg ? MINUS : ''}${w}${frac(rem, r.d)}</span>`,
+    text: `${sg ? '-' : ''}${w} ${rem}/${r.d}`
+  };
+}
+
+function roundedDecimal(r, places) {
+  const sg = r.n < 0n ? '-' : '', n = abs(r.n), scale = 10n ** BigInt(places);
+  const v = (n * scale * 2n + r.d) / (2n * r.d);
+  let s = (v / scale).toString();
+  let f = (v % scale).toString().padStart(places, '0').replace(/0+$/, '');
+  return (v === 0n ? '' : sg) + s + (f ? '.' + f : '');
+}
+
+function decimalForm(r) {
+  const sg = r.n < 0n ? MINUS : '', n = abs(r.n), d = r.d;
+  const ip = (n / d).toString();
+  let rem = n % d;
+  const text = roundedDecimal(r, 12);
+  if (rem === 0n) return { html: sg + ip, text, exact: true };
+  const digits = [], seen = new Map();
+  while (rem !== 0n && digits.length < 40) {
+    if (seen.has(rem)) {
+      const at = seen.get(rem);
+      return {
+        html: `${sg}${ip}.${digits.slice(0, at).join('')}<span class="rep">${digits.slice(at).join('')}</span>`,
+        text, exact: true
+      };
+    }
+    seen.set(rem, digits.length);
+    rem *= 10n;
+    digits.push((rem / d).toString());
+    rem %= d;
+  }
+  if (rem === 0n) return { html: `${sg}${ip}.${digits.join('')}`, text, exact: true };
+  return { html: '≈ ' + roundedDecimal(r, 10).replace('-', MINUS), text, exact: false };
+}
+
+const fracText = r => (r.d === 1n ? r.n.toString() : `${r.n}/${r.d}`);
+
+/* ===== page ===== */
+const $ = id => document.getElementById(id);
+const input = $('expr'), out = $('out'), errBox = $('err');
+const store = {
+  get(k, def) { try { const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
+};
+
+let history = store.get('fractions-history', []);
+let last = null;          // { input, result } of the last successful calculation
+let errTimer = 0, saveTimer = 0;
+
+const EXAMPLES = ['3/4 + 2/3', '2 1/2 × 4/15', '5/6 ÷ 10/9', '(1/2 − 3/4) × 0.4', '7/8 − 1 1/3 ÷ 2'];
+
+function showEmpty() {
+  out.classList.remove('stale');
+  out.innerHTML = `<section class="card empty">
+    <p>Type an expression above to see the answer and every step.</p>
+    <div class="examples">${EXAMPLES.map(e => `<button type="button" data-ex="${e}">${e}</button>`).join('')}</div>
+  </section>`;
+}
+
+function showResult(res) {
+  const r = res.result;
+  const mixed = mixedForm(r), dec = decimalForm(r);
+  const chips = [`<button type="button" class="chip" data-copy="${fracText(r)}"><small>${r.d === 1n ? 'Whole number' : 'Fraction'}</small><span class="m">${fq(r)}</span></button>`];
+  if (mixed) chips.push(`<button type="button" class="chip" data-copy="${mixed.text}"><small>Mixed</small><span class="m">${mixed.html}</span></button>`);
+  if (r.d !== 1n) chips.push(`<button type="button" class="chip" data-copy="${dec.text}"><small>Decimal</small><span class="m">${dec.html}</span></button>`);
+
+  let html = `<section class="card answer">
+    <h2 class="label">Answer</h2>
+    <div class="m">${res.original}${EQ}<span class="res">${fq(r)}</span></div>
+    <div class="forms">${chips.join('')}</div>
+  </section>`;
+  if (res.steps.length) {
+    html += `<section class="card steps-card">
+      <h2 class="label">Steps</h2>
+      <ol class="steps">${res.steps.map((s, i) => `<li class="step">
+        <span class="num">${i + 1}</span>
+        <h3>${s.title}</h3>
+        <div class="m expr">${s.expr}</div>
+        <div class="work">${s.lines.map(l => `<div class="row"><div class="m">${l.m}</div>${l.note ? `<p class="note">${l.note}</p>` : ''}</div>`).join('')}</div>
+      </li>`).join('')}</ol>
+    </section>`;
+  }
+  out.classList.remove('stale');
+  out.innerHTML = html;
+}
+
+function showError(msg) {
+  errBox.textContent = msg;
+  errBox.hidden = false;
+}
+
+function update({ now = false } = {}) {
+  const text = input.value;
+  store.set('fractions-current', text);
+  clearTimeout(errTimer); clearTimeout(saveTimer);
+  let res;
+  try {
+    res = solve(text);
+  } catch (e) {
+    if (!(e instanceof UserError)) { console.error(e); e = new UserError('Something went wrong with that expression.'); }
+    last = null;
+    if (out.firstElementChild && !out.querySelector('.empty')) out.classList.add('stale');
+    if (now) showError(e.message);
+    else { errBox.hidden = true; errTimer = setTimeout(() => showError(e.message), 900); }
+    return;
+  }
+  errBox.hidden = true;
+  if (!res) { last = null; showEmpty(); return; }
+  last = { input: text.trim(), result: fracText(res.result) };
+  showResult(res);
+  if (now) saveHistory(); else saveTimer = setTimeout(saveHistory, 2500);
+}
+
+/* ===== history ===== */
+function saveHistory() {
+  if (!last) return;
+  history = [last, ...history.filter(h => h.input !== last.input)].slice(0, 30);
+  store.set('fractions-history', history);
+  renderHistory();
+}
+
+function renderHistory() {
+  const ul = $('hist');
+  ul.innerHTML = history.map((h, i) => `<li><button type="button" data-h="${i}">
+    <span class="q"></span><span class="a"></span></button></li>`).join('');
+  ul.querySelectorAll('button').forEach((b, i) => {
+    b.querySelector('.q').textContent = history[i].input;
+    b.querySelector('.a').textContent = '= ' + history[i].result.replace('-', MINUS);
+  });
+  $('hist-empty').hidden = history.length > 0;
+  $('hist-clear').hidden = history.length === 0;
+}
+
+/* ===== input handling ===== */
+function setInput(text) {
+  input.value = text;
+  input.focus();
+  input.setSelectionRange(text.length, text.length);
+  update({ now: true });
+}
+
+function insertAtCursor(t) {
+  const s = input.selectionStart ?? input.value.length, e = input.selectionEnd ?? s;
+  input.value = input.value.slice(0, s) + t + input.value.slice(e);
+  input.focus();
+  input.setSelectionRange(s + t.length, s + t.length);
+  update();
+}
+
+input.addEventListener('input', () => {
+  // Show the nicer symbols while typing, keeping the caret in place.
+  if (/[*:]/.test(input.value)) {
+    const pos = input.selectionStart;
+    input.value = input.value.replace(/\*/g, '×').replace(/:/g, '÷');
+    input.setSelectionRange(pos, pos);
+  }
+  update();
+});
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); update({ now: true }); }
+  else if (e.key === 'Escape') { e.preventDefault(); setInput(''); }
+});
+
+$('keys').addEventListener('click', e => {
+  const b = e.target.closest('button[data-ins]');
+  if (b) insertAtCursor(b.dataset.ins);
+});
+$('clear').addEventListener('click', () => setInput(''));
+
+out.addEventListener('click', e => {
+  const ex = e.target.closest('[data-ex]');
+  if (ex) { setInput(ex.dataset.ex); return; }
+  const c = e.target.closest('[data-copy]');
+  if (c) copy(c.dataset.copy);
+});
+
+$('hist').addEventListener('click', e => {
+  const b = e.target.closest('button[data-h]');
+  if (b) setInput(history[+b.dataset.h].input);
+});
+$('hist-clear').addEventListener('click', () => {
+  history = [];
+  store.set('fractions-history', history);
+  renderHistory();
+});
+
+let toastTimer = 0;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1400);
+}
+
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); toast(`Copied ${text}`); }
+  catch (e) { toast('Couldn’t copy'); }
+}
+
+renderHistory();
+input.value = store.get('fractions-current', '');
+update({ now: true });
+if (matchMedia('(hover: hover)').matches) input.focus();
+</script>
+</body>
+</html>

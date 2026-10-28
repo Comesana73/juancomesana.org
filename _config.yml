@@ -44,3 +44,7 @@ defaults:
     values:
       sitemap: false
       noindex: true
+  - scope:
+      path: "tools"
+    values:
+      sitemap: false

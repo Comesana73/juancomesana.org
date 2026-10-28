@@ -1,0 +1,9 @@
+{
+  "name": "Fractions",
+  "short_name": "Fractions",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f7",
+  "theme_color": "#5b4ee0",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png" }]
+}

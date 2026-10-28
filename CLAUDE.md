@@ -47,9 +47,10 @@ GitHub Pages has no PR previews, so before merging a PR with visible changes, pr
 - `frame/` — "Frame", a home-screen PWA for an always-on iPad: clock, weather, radar, trash/recycling reminders, and a rotating artwork slideshow. See below.
 - `apps/*` — teaching tools (Logic Lab, Probability Lab, Decisions & Games Lab). `decision-lab`, `eikosogram-studio`, and `truth-table-builder` are only redirect stubs to their merged successors; keep them so old links work. Shared IBM Plex fonts are self-hosted in `apps/fonts/`.
 - `yep/` and `rec/yep/review/` — identical loader pages for the REC Young Epistemologist Prize review; the real interface comes from a Google Apps Script web app (URL in the page). Keep the two copies in sync.
+- `tools/fractions/` — a personal fraction calculator (Juan's own use, not for students): parses `+ − × ÷`, parentheses, mixed numbers, and decimals, and shows each step (LCD, cancelling before multiplying, reciprocal for ÷, reducing). Exact arithmetic with BigInt. Has its own manifest and icon so Safari's "Add to Dock" makes it a Mac app. History is in `localStorage` (`fractions-history`).
 - `private/lucas-f1b9fed5/` — a StatiCrypt-encrypted page; it is generated output, don't hand-edit it.
 
-`private/`, `frame/`, `yep/`, and `rec/yep/review/` are excluded from the sitemap via `_config.yml` defaults and carry `noindex` meta tags. Add both for any new unlisted page.
+`private/`, `frame/`, `tools/`, `yep/`, and `rec/yep/review/` are excluded from the sitemap via `_config.yml` defaults and carry `noindex` meta tags. Add both for any new unlisted page.
 
 ## Frame app (`frame/index.html`)
 
