@@ -625,6 +625,9 @@
   }
   html.presenting #problemsApp .pr-body { zoom: 1.3; }
   html.presenting #pr-stepcap { font-size: 1.3rem; padding: 14px 20px; }
+  #eikApp .eik-back { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #eikApp .eik-back span { font-size: 0.84rem; color: var(--muted); }
+  @media (max-width: 959px) { #eikApp .eik-back { order: -1; } }
 </style>
 </head>
 <body>
@@ -983,6 +986,7 @@
     </div>
   </header>
   <aside class="panel" aria-label="Controls">
+    <div class="eik-back" id="eik-backBayes" hidden><button type="button" class="btn" id="eik-backBtn">← Back to Bayes</button><span>Your problem and numbers are still there.</span></div>
     <section class="card" aria-labelledby="probHead">
       <h2 id="probHead">Probabilities</h2>
       <div class="seg" role="group" aria-label="Show numbers as" id="fmtSeg">
@@ -2243,6 +2247,7 @@ window.initBayes = () => {
     const [pA, pBgA, pBgNotA] = mine || [prob.prior, prob.p, prob.q];
     // condition on what was learned: the student's choice in Practice, otherwise what the story reports
     const ev = mine && work.ev ? work.ev : truth().ev;
+    document.getElementById("eik-backBayes").hidden = false;
     LL.go("eik", { t: `H = ${prob.H}; E = ${prob.E}`, a: "H", na: "¬H", b: "E", nb: "¬E", bg: 0, post: 1, g: ev === "notE" ? "nb" : "b", pA: rstr(pA), pBgA: rstr(pBgA), pBgNotA: rstr(pBgNotA), n: fmt() });
   }
   function updateEikBtn() { $("eikBtn").hidden = !(work.shown || studentVals()); }
@@ -5293,7 +5298,8 @@ window.LL = (() => {
   };
 
   const tabsEl = document.getElementById("ll-tabs");
-  tabsEl.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b && b.dataset.tab !== api.active) show(b.dataset.tab); });
+  tabsEl.addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b && b.dataset.tab === "eik") document.getElementById("eik-backBayes").hidden = true; if (b && b.dataset.tab !== api.active) show(b.dataset.tab); });
+  document.getElementById("eik-backBtn").addEventListener("click", () => { document.getElementById("eik-backBayes").hidden = true; show("bayes"); window.scrollTo({ top: 0 }); });
   tabsEl.addEventListener("keydown", (e) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     const i = TABS.indexOf(api.active), n = TABS[(i + (e.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length];
