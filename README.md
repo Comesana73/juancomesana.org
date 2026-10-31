@@ -14,6 +14,7 @@ Most pages are Markdown with some HTML, the shared page frame is a small layout 
 - `tools/fractions/` is a private fraction calculator that shows every step. It isn't linked from the site and is hidden from search engines. To use it like an app on the Mac, open it in Safari and choose File → Add to Dock.
 - `yep/` and `rec/yep/review/` are the two identical entry pages for reviewing Young Epistemologist Prize submissions.
 - `private/` holds password-protected pages.
+- `private/recipes-27a4fdb5/` is your RecipeBox recipe reader for the iPad. It's password-protected, isn't linked from the site and is hidden from search engines. Your recipes aren't stored on the website, only on the iPad. To change the password or update the reader, ask Claude; the page is generated from the RecipeBox folder on your Mac.
 - `assets/papers/` has paper and conference PDFs, and `assets/documents/` has the CV and the PHIL 109 textbook PDF. `cv.pdf` is built from `cv.yaml` in the iCloud `inprogress/cv/` folder.
 - `assets/images/` has the images, saved as WebP files, and `assets/css/site.css` controls the design.
 - `s/` has copies of PDFs at their old Squarespace addresses, so older public links keep working. Don't remove or rename them.
