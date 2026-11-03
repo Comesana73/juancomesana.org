@@ -34,4 +34,8 @@ layout: book
 </section>
 {%- endfor %}
 
+{%- if book.formulas %}
+<p>The definitions, axioms and theorems of probability are collected on the <a href="../{{ book.formulas }}">formula sheet</a>.</p>
+{%- endif %}
+
 <p>The exercises and examples link to the <a href="../#labs">course labs</a>.</p>

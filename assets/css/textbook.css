@@ -180,3 +180,8 @@ li .tryit { justify-content: flex-start; margin: -4px 0 16px; }
 /* the course page */
 .textbook .ruled { margin-bottom: 40px; }
 .textbook .app h2 { font-size: 22px; margin: 0 0 8px; }
+
+/* Formula sheet (/phil109/formulas/), written by web/build.py */
+.thm--formula { padding: 12px 18px 0; margin-bottom: 14px; }
+.formula-ref { color: var(--text-2); font-size: 0.9em; white-space: nowrap; }
+.formula-note { color: var(--text-2); font-size: 0.9em; }
