@@ -855,6 +855,10 @@ window.LogicCore = (() => {
       let first = null;
       while (peek() && peek().t === "bin") {
         const t = peek();
+        if (k + 1 >= toks.length)
+          throw new ParseError(`“${BIN[t.op].sym}” needs a formula on its right, but the formula ends here.`, t.pos, t.len);
+        if (toks[k + 1].t === "rp")
+          throw new ParseError(`“${BIN[t.op].sym}” needs a formula on its right, before the “)”.`, t.pos, t.len);
         if (first && (t.op !== first.op || !BIN[t.op].assoc)) {
           const a = BIN[first.op].sym, b = BIN[t.op].sym;
           throw new ParseError(
@@ -2481,6 +2485,10 @@ window.initTranslate = () => {
       let first = null;
       while (peek() && peek().t === "bin") {
         const t = peek();
+        if (k + 1 >= toks.length)
+          throw new ParseError(`“${BIN[t.op].sym}” needs a formula on its right, but the formula ends here.`, t.pos, t.len);
+        if (toks[k + 1].t === "rp")
+          throw new ParseError(`“${BIN[t.op].sym}” needs a formula on its right, before the “)”.`, t.pos, t.len);
         if (first && (t.op !== first.op || !BIN[t.op].assoc)) {
           const a = BIN[first.op].sym, b = BIN[t.op].sym;
           throw new ParseError(
