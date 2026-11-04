@@ -88,7 +88,7 @@
 <use xlink:href="#glyph-1-0" x="114.382429" y="12.984656"/>
 <use xlink:href="#glyph-1-1" x="119.31987" y="12.984656"/>
 </g>
-<path fill="none" stroke-width="0.79701" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-dasharray="0.79701 1.99255" stroke-miterlimit="10" d="M 128.466589 -0.000875188 L 166.339114 -0.000875188 " transform="matrix(0.991195, 0, 0, -0.991195, 21.035638, 17.338976)"/>
+<path fill="none" stroke-width="0.3985" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(50%, 50%, 50%)" stroke-opacity="1" stroke-dasharray="2.98883 2.98883" stroke-miterlimit="10" d="M 128.466589 -0.000875188 L 166.339114 -0.000875188 " transform="matrix(0.991195, 0, 0, -0.991195, 21.035638, 17.338976)"/>
 <path fill="none" stroke-width="0.3985" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-miterlimit="10" d="M 185.161089 -0.000875188 L 245.709839 -0.000875188 " transform="matrix(0.991195, 0, 0, -0.991195, 21.035638, 17.338976)"/>
 <g fill="rgb(0%, 0%, 0%)" fill-opacity="1">
 <use xlink:href="#glyph-1-0" x="229.579127" y="12.984656"/>

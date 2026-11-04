@@ -1,7 +1,7 @@
 {
   "title": "Introduction to Formal Reasoning and Decision Making",
   "author": "Juan Comesaña",
-  "preface": "This is a textbook to accompany Philosophy 109 at Rutgers New Brunswick. I have borrowed extensively from teaching notes by Max Bialek, Brian Weatherson, and Jonathan Weisberg. I have also borrowed from Resnik’s <em>Choices</em> for chapter 10.",
+  "preface": "This is a textbook to accompany Philosophy 109 at Rutgers New Brunswick. It is about the formal tools we use to model good reasoning and rational choice.</p>\n<p>The book has three parts. Part I builds the language of propositional logic and uses it to model valid arguments. Part II introduces probability, first as a measure over the possibilities that truth-tables represent and then axiomatically, and uses it to model probabilistic arguments; it ends with Bayesianism and the problem of priors. Part III applies both to rational choice: decisions under ignorance and under risk, Newcomb’s problem, and games.</p>\n<p>Many examples and exercises link to three interactive labs (the Logic Lab, the Probability Lab, and the Decisions &amp; Games Lab), where you can step through the book’s own examples and practice on new ones. The solutions to the exercises are at the end of the book, and in the web edition each exercise has its solution.</p>\n<p>I have borrowed extensively from teaching notes by Max Bialek, Brian Weatherson, and Jonathan Weisberg. I have also borrowed from Resnik’s <em>Choices</em> for chapter 10.",
   "parts": [
     {
       "number": "I",
@@ -71,5 +71,6 @@
         }
       ]
     }
-  ]
+  ],
+  "formulas": "formulas/"
 }
