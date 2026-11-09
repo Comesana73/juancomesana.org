@@ -448,9 +448,72 @@
   #gmApp .gm-edkind { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 10px; }
   #gmApp .gm-edkind .lbl { font-size: 0.84rem; color: var(--muted); }
   #gmApp .gm-edkind .note { flex-basis: 100%; }
+
+  /* ================= course links above the header, Nov 2026 ================= */
+  .ll-course {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px;
+    max-width: 1600px; margin: 0 auto; padding: 10px 16px 0; font-size: 0.82rem;
+  }
+  .ll-course a { color: var(--muted); text-decoration: none; padding: 2px 0; }
+  .ll-course a:hover { color: var(--accent); text-decoration: underline; }
+  .ll-course a.home { color: var(--accent); font-weight: 500; }
+  .ll-course a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+  .ll-course .sep { width: 1px; height: 1em; background: var(--line-strong); opacity: 0.3; }
+  @media (min-width: 980px) { .ll-course { padding: 12px 20px 0; } }
+  html.presenting .ll-course { display: none !important; }
+  @media print { .ll-course { display: none !important; } }
+
+  /* ================= phone pass, Nov 2026 ================= */
+  /* text that has to be read (row numbers, a tab's status) is no longer the faintest grey */
+  .tt th.num, .tt td.num, .work .tabs button .ts.off { color: var(--muted); }
+  @media (max-width: 640px) {
+    /* every rem-sized label grows a little; body text goes from 15px to 16px */
+    html { font-size: 106.25%; }
+    body { font-size: 16px; }
+    /* below 16px, Safari on the iPhone zooms the page when a field gets the focus */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px !important; }
+  }
+  /* fingers need bigger targets than a mouse pointer */
+  @media (pointer: coarse), (max-width: 640px) {
+    .seg button, #eikApp .seg button { min-height: 40px; padding-left: 12px; padding-right: 12px; }
+    .btn, .btn.small, #eikApp .btn { min-height: 42px; padding: 8px 14px; font-size: 0.9rem; }
+    a.btn { display: inline-flex; align-items: center; }
+    .chip { min-height: 38px; padding: 6px 12px; }
+    .keypad button { min-height: 44px; }
+    .tabs button, #ll-tabs button { min-height: 44px; }
+    .icon-btn, .ed .rm { width: 40px; height: 40px; }
+    .linkbtn { min-height: 40px; }
+    select { min-height: 42px; }
+    input[type="checkbox"], input[type="radio"], #translateApp .pickrow input[type="checkbox"], #eikApp .check input { width: 22px; height: 22px; flex: none; }
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) { min-height: 40px; }
+    #problemsApp .pr-keys button { min-width: 2.6em; min-height: 40px; }
+    .tt td { padding-top: 0.5em; padding-bottom: 0.5em; }
+    .tt td.edit { min-width: 2em; }
+    .ll-course a { padding: 8px 0; }
+  }
+  @media (max-width: 640px) {
+    /* the header stays short: one line of course links, and Size and Theme side by side */
+    .ll-course { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; gap: 0 12px; padding-top: 4px; }
+    .ll-course::-webkit-scrollbar { display: none; }
+    .ll-course .w, .ll-course a[aria-current="page"] { display: none; }
+    .ll-top { padding-top: 6px; }
+    .ll-top .top-controls { flex-wrap: nowrap; gap: 8px; }
+    .ll-top .top-controls .lbl { display: none; }
+    .ll-top .top-controls .seg button { min-height: 36px; padding-left: 9px; padding-right: 9px; }
+  }
 </style>
+<!-- Analytics: GoatCounter (no cookies, no personal data collected), as on the rest of the site -->
+<script data-goatcounter="https://juancomesana.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
+<nav class="ll-course" aria-label="PHIL 109">
+  <a class="home" href="../../phil109/">← PHIL 109</a>
+  <a href="../../phil109/textbook/">Textbook</a>
+  <span class="sep" aria-hidden="true"></span>
+  <a href="../logic-lab/">Logic<span class="w"> Lab</span></a>
+  <a href="../probability-lab/">Probability<span class="w"> Lab</span></a>
+  <a href="../decisions-games-lab/" aria-current="page">Decisions &amp; Games<span class="w"> Lab</span></a>
+</nav>
 <header class="topbar ll-top">
   <div class="brand">
     <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>

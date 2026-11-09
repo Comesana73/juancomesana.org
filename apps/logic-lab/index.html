@@ -486,9 +486,77 @@
   .tt .fkid { background: var(--accent-softer); }
   .tt th.fkid { color: var(--accent); }
   .tt td.fsrc { background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent); }
+
+  /* ================= course links above the header, Nov 2026 ================= */
+  .ll-course {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px;
+    max-width: 1600px; margin: 0 auto; padding: 10px 16px 0; font-size: 0.82rem;
+  }
+  .ll-course a { color: var(--muted); text-decoration: none; padding: 2px 0; }
+  .ll-course a:hover { color: var(--accent); text-decoration: underline; }
+  .ll-course a.home { color: var(--accent); font-weight: 500; }
+  .ll-course a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+  .ll-course .sep { width: 1px; height: 1em; background: var(--line-strong); opacity: 0.3; }
+  @media (min-width: 980px) { .ll-course { padding: 12px 20px 0; } }
+  html.presenting .ll-course { display: none !important; }
+  @media print { .ll-course { display: none !important; } }
+
+  /* ================= phone pass, Nov 2026 ================= */
+  /* text that has to be read (row numbers, a tab's status) is no longer the faintest grey */
+  .tt th.num, .tt td.num, .work .tabs button .ts.off { color: var(--muted); }
+  @media (max-width: 640px) {
+    /* every rem-sized label grows a little; body text goes from 15px to 16px */
+    html { font-size: 106.25%; }
+    body { font-size: 16px; }
+    /* below 16px, Safari on the iPhone zooms the page when a field gets the focus */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea { font-size: 16px !important; }
+  }
+  /* fingers need bigger targets than a mouse pointer */
+  @media (pointer: coarse), (max-width: 640px) {
+    .seg button, #eikApp .seg button { min-height: 40px; padding-left: 12px; padding-right: 12px; }
+    .btn, .btn.small, #eikApp .btn { min-height: 42px; padding: 8px 14px; font-size: 0.9rem; }
+    a.btn { display: inline-flex; align-items: center; }
+    .chip { min-height: 38px; padding: 6px 12px; }
+    .keypad button { min-height: 44px; }
+    .tabs button, #ll-tabs button { min-height: 44px; }
+    .icon-btn, .ed .rm { width: 40px; height: 40px; }
+    .linkbtn { min-height: 40px; }
+    select { min-height: 42px; }
+    input[type="checkbox"], input[type="radio"], #translateApp .pickrow input[type="checkbox"], #eikApp .check input { width: 22px; height: 22px; flex: none; }
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) { min-height: 40px; }
+    #problemsApp .pr-keys button { min-width: 2.6em; min-height: 40px; }
+    .tt td { padding-top: 0.5em; padding-bottom: 0.5em; }
+    .tt td.edit { min-width: 2em; }
+    .ll-course a { padding: 8px 0; }
+  }
+  @media (max-width: 640px) {
+    /* the header stays short: one line of course links, and Size and Theme side by side */
+    .ll-course { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; gap: 0 12px; padding-top: 4px; }
+    .ll-course::-webkit-scrollbar { display: none; }
+    .ll-course .w, .ll-course a[aria-current="page"] { display: none; }
+    .ll-top { padding-top: 6px; }
+    .ll-top .top-controls { flex-wrap: nowrap; gap: 8px; }
+    .ll-top .top-controls .lbl { display: none; }
+    .ll-top .top-controls .seg button { min-height: 36px; padding-left: 9px; padding-right: 9px; }
+  }
+
+  /* Check and Clear sit in their own bar under the verdict question; on a phone only this bar sticks */
+  .ll-checkrow { padding: 0 16px 12px; }
+  @media (max-width: 640px) { .ll-checkrow { padding: 8px 12px; } }
+  @media print { .ll-checkrow { display: none !important; } }
 </style>
+<!-- Analytics: GoatCounter (no cookies, no personal data collected), as on the rest of the site -->
+<script data-goatcounter="https://juancomesana.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
+<nav class="ll-course" aria-label="PHIL 109">
+  <a class="home" href="../../phil109/">← PHIL 109</a>
+  <a href="../../phil109/textbook/">Textbook</a>
+  <span class="sep" aria-hidden="true"></span>
+  <a href="../logic-lab/" aria-current="page">Logic<span class="w"> Lab</span></a>
+  <a href="../probability-lab/">Probability<span class="w"> Lab</span></a>
+  <a href="../decisions-games-lab/">Decisions &amp; Games<span class="w"> Lab</span></a>
+</nav>
 <header class="topbar ll-top">
   <div class="brand">
     <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
@@ -645,7 +713,8 @@
       <div class="stepcap" id="stepcap" hidden></div>
       <div class="practicecap" id="practicecap" hidden></div>
       <div class="scrollfade"><div class="table-wrap scrollx" id="tableWrap"></div></div>
-      <div class="verdictbar sticky-phone" id="verdictbar" hidden></div>
+      <div class="verdictbar" id="verdictbar" hidden></div>
+      <div class="checkbar sticky-phone ll-checkrow" id="checkrow" hidden></div>
       <div class="stochbar" id="stochbar" hidden></div>
       <p class="foot" id="foot"></p>
     </section>
@@ -1307,7 +1376,7 @@ window.initTable = () => {
         : m.needConclusion ? "Add a conclusion to test the argument." : "Type a formula, or pick an example.";
       wrap.appendChild(d);
       $("verdict").innerHTML = "";
-      $("stepcap").hidden = true; $("practicecap").hidden = true; $("stochbar").hidden = true; $("verdictbar").hidden = true;
+      $("stepcap").hidden = true; $("practicecap").hidden = true; $("stochbar").hidden = true; $("verdictbar").hidden = true; $("checkrow").hidden = true;
       $("foot").textContent = "";
       syncControls();
       return;
@@ -1674,7 +1743,9 @@ window.initTable = () => {
     if (state.mode === "practice") {
       pc.hidden = false; pc.innerHTML = "";
       const help = document.createElement("span");
-      help.textContent = "Click a cell or type T / F. Arrow keys move; Backspace clears.";
+      help.textContent = window.matchMedia && matchMedia("(pointer: coarse)").matches
+        ? "Tap a cell to switch it between T, F and blank."
+        : "Click a cell or type T / F. Arrow keys move; Backspace clears.";
       pc.append(help);
       if (score) {
         const sp = document.createElement("span");
@@ -1693,9 +1764,9 @@ window.initTable = () => {
 
   // Practice: the student commits to a verdict (and, for arguments, marks the counterexample rows).
   function drawVerdictBar(score) {
-    const bar = $("verdictbar");
-    if (state.mode !== "practice" || !model) { bar.hidden = true; return; }
-    bar.hidden = false; bar.innerHTML = "";
+    const bar = $("verdictbar"), checkrow = $("checkrow");
+    if (state.mode !== "practice" || !model) { bar.hidden = true; checkrow.hidden = true; return; }
+    bar.hidden = false; bar.innerHTML = ""; checkrow.hidden = false; checkrow.innerHTML = "";
     const v = model.verdict;
     const choices = state.kind === "formula"
       ? [["taut", "Tautology"], ["contra", "Contradiction"], ["contingent", "Contingency"]]
@@ -1740,18 +1811,18 @@ window.initTable = () => {
       }
       bar.append(row2);
     }
-    const row3 = document.createElement("div"); row3.className = "vrow checkbar";
     const chk = document.createElement("button"); chk.type = "button"; chk.className = "btn small primary"; chk.dataset.check = "1"; chk.textContent = "Check";
     const clr = document.createElement("button"); clr.type = "button"; clr.className = "btn small"; clr.dataset.clear = "1"; clr.textContent = "Clear";
-    row3.append(chk, clr);
-    bar.append(row3);
+    checkrow.append(chk, clr);
   }
-  $("verdictbar").addEventListener("click", (e) => {
+  const onVerdictClick = (e) => {
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.verdict) { pickVerdict = pickVerdict === b.dataset.verdict ? null : b.dataset.verdict; vChecked = false; drawTable(); }
     else if (b.dataset.check) { checked = true; vChecked = true; drawTable(); }
     else if (b.dataset.clear) { resetPractice(); drawTable(); }
-  });
+  };
+  $("verdictbar").addEventListener("click", onVerdictClick);
+  $("checkrow").addEventListener("click", onVerdictClick);
 
   function clearFieldError(inp) {
     inp.classList.remove("err");
