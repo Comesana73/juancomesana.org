@@ -59,55 +59,55 @@ If you are a graduate student or a postdoc and would like to attend the conferen
 
 <div class="photo-grid">
   <a href="{{ '/assets/images/rec-2026/IMG_0451.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0451.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0451.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0456.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0456.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0456.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0467.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0467.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0467.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0476.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0476.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0476.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0477.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0477.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0477.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0479.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0479.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0479.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0492.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0492.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0492.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0498.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0498.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0498.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0502.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0502.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0502.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0510.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0510.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0510.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0516.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0516.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0516.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0524.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0524.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0524.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0529.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0529.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0529.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0531.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0531.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0531.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0544.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0544.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0544.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0550.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0550.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0550.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
   <a href="{{ '/assets/images/rec-2026/IMG_0553.webp' | relative_url }}">
-    <img src="{{ '/assets/images/rec-2026/IMG_0553.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
+    <img src="{{ '/assets/images/rec-2026/thumbs/IMG_0553.webp' | relative_url }}" alt="Photo from the 2026 Rutgers Epistemology Conference" loading="lazy">
   </a>
 </div>
 
