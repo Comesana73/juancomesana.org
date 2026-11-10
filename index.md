@@ -4,7 +4,7 @@ description: "Juan Comesaña is Professor and Director of Graduate Studies in th
 ---
 
 <section class="hero">
-  <img class="hero__image" src="{{ '/assets/images/juan-comesana.webp' | relative_url }}" alt="Juan Comesaña">
+  <img class="hero__image" src="{{ '/assets/images/juan-comesana.webp' | relative_url }}" alt="Juan Comesaña" width="1200" height="971">
   <div class="hero__text" markdown="1">
 <h1>Juan Comesaña</h1>
 
