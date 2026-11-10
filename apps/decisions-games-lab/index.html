@@ -3,7 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Decisions &amp; Games Lab</title>
+<title>Decisions &amp; Games Lab — PHIL 109</title>
+<meta name="description" content="Decisions under ignorance and under risk, and two-player games: dominance, maximin, minimax regret, expected utility, Nash equilibria. A lab for PHIL 109 at Rutgers.">
+<link rel="canonical" href="https://juancomesana.org/apps/decisions-games-lab/">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#faf8f4">
+<meta property="og:site_name" content="Juan Comesaña">
+<meta property="og:title" content="Decisions &amp; Games Lab — PHIL 109">
+<meta property="og:description" content="Decisions under ignorance and under risk, and two-player games: dominance, maximin, minimax regret, expected utility, Nash equilibria. A lab for PHIL 109 at Rutgers.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://juancomesana.org/apps/decisions-games-lab/">
+<meta name="twitter:card" content="summary">
 <link rel="preload" href="../fonts/plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../fonts/plex.css">
 <link rel="preload" href="../fonts/source-serif-4-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -618,7 +630,7 @@
   <button type="button" role="tab" data-tab="games" id="ll-tab-games" aria-controls="gmApp">Games</button>
 </nav>
 
-<div id="decApp" hidden>
+<div id="decApp" role="tabpanel" aria-labelledby="ll-tab-decisions" hidden>
 <header class="topbar" hidden>
   <div class="brand">
     <div class="brand-mark" aria-hidden="true">
@@ -717,10 +729,10 @@
 
     <section class="card work" id="workCard">
       <div class="scrollfade"><div class="tabs scrollx" role="tablist" id="tabs">
-        <button type="button" role="tab" data-v="dominance">Dominance</button>
-        <button type="button" role="tab" data-v="maximin">Maximin</button>
-        <button type="button" role="tab" data-v="regret">Minimax regret</button>
-        <button type="button" role="tab" data-v="eu" id="euTab">Expected utility</button>
+        <button type="button" role="tab" data-v="dominance" id="tab-dominance" aria-controls="workBody">Dominance</button>
+        <button type="button" role="tab" data-v="maximin" id="tab-maximin" aria-controls="workBody">Maximin</button>
+        <button type="button" role="tab" data-v="regret" id="tab-regret" aria-controls="workBody">Minimax regret</button>
+        <button type="button" role="tab" data-v="eu" id="euTab" aria-controls="workBody">Expected utility</button>
       </div></div>
       <div class="work-head">
         <span class="what" id="what"></span>
@@ -735,7 +747,7 @@
         </div>
       </div>
       <div class="hintbar" id="hintbar" aria-live="polite"></div>
-      <div class="work-body" id="workBody"></div>
+      <div class="work-body" id="workBody" role="tabpanel"></div>
       <div class="checkbar sticky-phone dg-checkbar" id="practiceBtns" hidden>
         <button class="btn primary" type="button" id="checkBtn">Check</button>
         <button class="btn" type="button" id="clearBtn">Clear</button>
@@ -744,7 +756,7 @@
   </main>
 </div>
 </div>
-<div id="gmApp" hidden>
+<div id="gmApp" role="tabpanel" aria-labelledby="ll-tab-games" hidden>
 <div hidden><div class="seg" id="gm-sizeSeg"><button type="button" data-v="15">S</button><button type="button" data-v="18">M</button><button type="button" data-v="23">L</button><button type="button" data-v="30">XL</button></div></div>
 <div class="app">
   <aside class="panel" aria-label="Setup">
@@ -821,10 +833,10 @@
 
     <section class="card work" id="gm-workCard">
       <div class="scrollfade"><div class="tabs scrollx" role="tablist" id="gm-tabs">
-        <button type="button" role="tab" data-v="dominance">Dominance</button>
-        <button type="button" role="tab" data-v="nash">Nash equilibrium</button>
-        <button type="button" role="tab" data-v="pareto">Pareto</button>
-        <button type="button" role="tab" data-v="saddle">Saddle point</button>
+        <button type="button" role="tab" data-v="dominance" id="gm-tab-dominance" aria-controls="gm-workBody">Dominance</button>
+        <button type="button" role="tab" data-v="nash" id="gm-tab-nash" aria-controls="gm-workBody">Nash equilibrium</button>
+        <button type="button" role="tab" data-v="pareto" id="gm-tab-pareto" aria-controls="gm-workBody">Pareto</button>
+        <button type="button" role="tab" data-v="saddle" id="gm-tab-saddle" aria-controls="gm-workBody">Saddle point</button>
       </div></div>
       <div class="work-head">
         <span class="what" id="gm-what"></span>
@@ -839,7 +851,7 @@
         </div>
       </div>
       <div class="hintbar" id="gm-hintbar" aria-live="polite"></div>
-      <div class="work-body" id="gm-workBody"></div>
+      <div class="work-body" id="gm-workBody" role="tabpanel"></div>
       <div class="checkbar sticky-phone dg-checkbar" id="gm-practiceBtns" hidden>
         <button class="btn primary" type="button" id="gm-checkBtn">Check</button>
         <button class="btn" type="button" id="gm-clearBtn">Clear</button>
@@ -1202,6 +1214,8 @@ window.initDec = () => {
       b.setAttribute("aria-selected", String(b.dataset.v === state.tab));
       b.classList.toggle("unavail", !!(state.problem && availability(b.dataset.v)));
     });
+    const selTab = tabsEl.querySelector('[aria-selected="true"]');
+    if (selTab) $("workBody").setAttribute("aria-labelledby", selTab.id);
     const body = $("workBody");
     const pb = state.problem;
     $("stepper").hidden = true; $("practiceBtns").hidden = true;
@@ -2205,6 +2219,8 @@ window.initGames = () => {
       b.setAttribute("aria-selected", String(b.dataset.v === state.tab));
       b.classList.toggle("unavail", !!(state.problem && availability(b.dataset.v)));
     });
+    const selTab = $("tabs").querySelector('[aria-selected="true"]');
+    if (selTab) $("workBody").setAttribute("aria-labelledby", selTab.id);
     const body = $("workBody");
     $("stepper").hidden = true; $("practiceBtns").hidden = true;
     if (!state.problem) { body.innerHTML = `<p class="unavail-note">Fill in the matrix and press Build.</p>`; setHint("", ""); $("what").textContent = ""; return; }
@@ -2820,7 +2836,7 @@ window.initGames = () => {
   $("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; state.tab = b.dataset.v; renderWork(); writeHash(); });
 
   // classic games
-  $("classic").innerHTML = `<option value="">— choose a game —</option>` + PRESETS.map((p) => `<option value="${p.id}">${esc(p.name)}${p.kind === "zero" ? " (zero-sum)" : ""}</option>`).join("");
+  $("classic").innerHTML = `<option value="">— choose a game —</option>` + PRESETS.map((p) => `<option value="${p.id}">${esc(p.name)}${p.kind === "zero" && !/zero-sum/i.test(p.name) ? " (zero-sum)" : ""}</option>`).join("");
   function syncClassic() { $("classic").value = draft.preset || ""; }
   $("classic").addEventListener("change", (e) => {
     const p = PRESETS.find((x) => x.id === e.target.value); if (!p) return;
