@@ -1653,7 +1653,8 @@ window.initTable = () => {
     const b = document.createElement("div"); put(b, parts.body); box.append(b);
     parts.also.forEach((a) => { const d = document.createElement("div"); d.className = "also"; put(d, a); box.append(d); });
     const x = document.createElement("button"); x.type = "button"; x.className = "x"; x.setAttribute("aria-label", "Close"); x.textContent = "×";
-    x.addEventListener("click", () => { why = null; box.hidden = true; td.focus(); });
+    // back to the cell, without its focus opening the box again
+    x.addEventListener("click", () => { why = null; box.hidden = true; byPointer = true; td.focus(); byPointer = false; });
     box.append(x);
     box.hidden = false;
     const card = box.parentElement.getBoundingClientRect(), cell = td.getBoundingClientRect();
