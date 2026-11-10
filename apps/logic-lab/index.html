@@ -547,6 +547,23 @@
   @media (max-width: 640px) { .ll-checkrow { padding: 8px 12px; } }
   @media print { .ll-checkrow { display: none !important; } }
 
+  /* ================= why a checked cell is wrong, Nov 2026 ================= */
+  .result { position: relative; }
+  .whypop {
+    position: absolute; z-index: 5; width: min(360px, calc(100% - 16px)); box-sizing: border-box;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--bad); border-radius: var(--radius);
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.14); padding: 10px 36px 11px 14px; font-size: 0.92rem; line-height: 1.45;
+    pointer-events: none;   /* taps go through to the cells under it; only the close button takes them */
+  }
+  .whypop .whyhead { font-weight: 600; margin-bottom: 3px; }
+  .whypop .f { font-family: var(--logic); white-space: nowrap; }
+  .whypop .also { margin-top: 6px; color: var(--muted); }
+  .whypop .x { position: absolute; top: 4px; right: 4px; width: 30px; height: 30px; border: 0; background: transparent;
+    color: var(--muted); font-size: 1.2rem; line-height: 1; cursor: pointer; border-radius: var(--radius); pointer-events: auto; }
+  .whypop .x:hover { background: var(--surface-2); color: var(--ink); }
+  .practicecap .whyhint { color: var(--ink); }
+  @media print { .whypop { display: none !important; } }
+
   /* ================= site style, Nov 2026: the palette and type of juancomesana.org ================= */
   /* Warm paper, a brown accent and hairline rules; Source Serif 4 for titles, tabs, section labels and
      formulas (connectives from KaTeX, as in the textbook); IBM Plex for controls and T/F values. */
@@ -789,6 +806,7 @@
       <div class="scrollfade"><div class="table-wrap scrollx" id="tableWrap"></div></div>
       <div class="verdictbar" id="verdictbar" hidden></div>
       <div class="checkbar sticky-phone ll-checkrow" id="checkrow" hidden></div>
+      <div class="whypop" id="whypop" role="status" hidden></div>
       <div class="stochbar" id="stochbar" hidden></div>
       <p class="foot" id="foot"></p>
     </section>
@@ -1312,7 +1330,8 @@ window.initTable = () => {
   let pickVerdict = null;    // practice: the student's verdict ("taut" | "contra" | "contingent" | "valid" | "invalid")
   let pickCx = new Set();    // practice: rows the student marked as counterexamples
   let vChecked = false;      // has the verdict been checked since it last changed?
-  const resetPractice = () => { answers = new Map(); checked = false; pickVerdict = null; pickCx = new Set(); vChecked = false; showProbs = false; };
+  let why = null;            // practice, after Check: the wrong cell being explained, { key, r }
+  const resetPractice = () => { why = null; answers = new Map(); checked = false; pickVerdict = null; pickCx = new Set(); vChecked = false; showProbs = false; };
   let showProbs = false;     // practice: the stochastic results stay hidden until asked for
   let signature = "";
 
@@ -1450,7 +1469,7 @@ window.initTable = () => {
         : m.needConclusion ? "Add a conclusion to test the argument." : "Type a formula, or pick an example.";
       wrap.appendChild(d);
       $("verdict").innerHTML = "";
-      $("stepcap").hidden = true; $("practicecap").hidden = true; $("stochbar").hidden = true; $("verdictbar").hidden = true; $("checkrow").hidden = true;
+      $("stepcap").hidden = true; $("practicecap").hidden = true; $("stochbar").hidden = true; $("verdictbar").hidden = true; $("checkrow").hidden = true; why = null; $("whypop").hidden = true;
       $("foot").textContent = "";
       syncControls();
       return;
@@ -1577,7 +1596,76 @@ window.initTable = () => {
     }
     drawVerdict(allShown, cur);
     drawStochastic();
+    placeWhy();
   }
+
+  // Practice, after Check: why a red cell is wrong, in a box under the cell.
+  const RULE = {
+    and: "a conjunction is true only when both sides are true",
+    or: "a disjunction is true when at least one side is true",
+    imp: "a conditional is false only when the antecedent is true and the consequent is false",
+    iff: "a biconditional is true when both sides have the same value",
+    nand: "↑ (NAND) is false only when both sides are true",
+    nor: "↓ (NOR) is true only when both sides are false"
+  };
+  function whyParts(c, r) {
+    const row = model.rows[r], out = { head: [], body: [], also: [] };
+    const F = (t) => ({ f: t });
+    const valOf = (n) => (n.type === "var" ? row.env[n.name] : row.vals[c.f][n.id]);
+    const name = (n) => { const t = canon(n); return /\s/.test(t) && n.type === "bin" ? `(${t})` : t; };
+    if (c.type === "letter") {
+      const i = model.letters.indexOf(c.letter), k = 2 ** (model.letters.length - 1 - i), v = row.env[c.letter];
+      out.head = [F(c.letter), ` is ${T(v)} in row ${r + 1}.`];
+      out.body = k === 1
+        ? [`The last letter alternates T, F from one row to the next.`]
+        : [`In the standard order, `, F(c.letter), ` is T in the first ${k} rows, F in the next ${k}, and so on.`];
+      return out;
+    }
+    const n = c.node, v = valOf(n);
+    out.head = [F(canon(n)), ` is ${T(v)} in row ${r + 1}.`];
+    if (n.type === "var") out.body = [`Copy it from the `, F(n.name), ` column.`];
+    else if (n.type === "const") out.body = [F(canon(n)), n.val ? ` is true in every row.` : ` is false in every row.`];
+    else if (n.type === "not") out.body = [F(name(n.arg)), ` is ${T(valOf(n.arg))} there, and a negation has the opposite value.`];
+    else out.body = [F(name(n.left)), ` is ${T(valOf(n.left))} and `, F(name(n.right)), ` is ${T(valOf(n.right))} there, and ${RULE[n.op]}.`];
+    // the student's own entries this one was computed from, when those are wrong too
+    kids(n).forEach((k) => {
+      const kc = view.nodeCol.get(k);
+      if (!kc || kc.type !== "val" || kc.key === c.key) return;
+      const a = answers.get(`${kc.key}:${r}`);
+      if (a !== undefined && a !== valOf(k)) out.also.push([`Your value for `, F(canon(k)), ` in this row is wrong too.`]);
+    });
+    return out;
+  }
+  function placeWhy() {
+    const box = $("whypop");
+    const td = why && model && view && state.mode === "practice" && checked
+      ? $("tableWrap").querySelector(`td.edit.wrong[data-key="${CSS.escape(why.key)}"][data-r="${why.r}"]`) : null;
+    if (!td) { why = null; box.hidden = true; return; }
+    const c = view.cols.find((x) => x.key === why.key);
+    if (!c) { why = null; box.hidden = true; return; }
+    const parts = whyParts(c, why.r);
+    const put = (el, bits) => bits.forEach((b) => {
+      if (typeof b === "string") el.append(b);
+      else { const sp = document.createElement("span"); sp.className = "f"; sp.textContent = b.f; el.append(sp); }
+    });
+    box.innerHTML = "";
+    const h = document.createElement("div"); h.className = "whyhead"; put(h, parts.head); box.append(h);
+    const b = document.createElement("div"); put(b, parts.body); box.append(b);
+    parts.also.forEach((a) => { const d = document.createElement("div"); d.className = "also"; put(d, a); box.append(d); });
+    const x = document.createElement("button"); x.type = "button"; x.className = "x"; x.setAttribute("aria-label", "Close"); x.textContent = "×";
+    // back to the cell, without its focus opening the box again
+    x.addEventListener("click", () => { why = null; box.hidden = true; byPointer = true; td.focus(); byPointer = false; });
+    box.append(x);
+    box.hidden = false;
+    const card = box.parentElement.getBoundingClientRect(), cell = td.getBoundingClientRect();
+    const w = box.offsetWidth;
+    box.style.top = `${cell.bottom - card.top + 6}px`;
+    box.style.left = `${Math.max(8, Math.min(cell.left - card.left + cell.width / 2 - w / 2, card.width - w - 8))}px`;
+  }
+  const showWhy = (td) => { why = { key: td.dataset.key, r: +td.dataset.r }; placeWhy(); };
+  $("tableWrap").addEventListener("scroll", () => { if (why) placeWhy(); });
+  window.addEventListener("resize", () => { if (why) placeWhy(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && why) { why = null; $("whypop").hidden = true; } });
 
   // ================= Stochastic truth tables (ch. 4–5) =================
   // Exact fractions, so 1/1250 + 1/125 + … adds up to exactly 1.
@@ -1734,7 +1822,14 @@ window.initTable = () => {
     sel(c.key).forEach((e) => { if (e.tagName === "TH") e.classList.add("fcur"); });
     feeds(c).forEach((k) => sel(k).forEach((e) => e.classList.add(e.tagName === "TD" && e.parentElement === td.parentElement ? "fsrc" : "fkid")));
   }
-  $("tableWrap").addEventListener("focusin", (e) => hiFeeds(e.target.closest("td.edit")));
+  let byPointer = false;     // a click focuses the cell before its click handler runs; that handler decides
+  $("tableWrap").addEventListener("pointerdown", () => { byPointer = true; });
+  $("tableWrap").addEventListener("focusin", (e) => {
+    const td = e.target.closest("td.edit"); hiFeeds(td);
+    const pointer = byPointer; byPointer = false;
+    if (td && td.classList.contains("wrong")) { if (!pointer) showWhy(td); }
+    else if (why) { why = null; $("whypop").hidden = true; }
+  });
   $("tableWrap").addEventListener("focusout", (e) => { if (!e.relatedTarget || !$("tableWrap").contains(e.relatedTarget)) hiFeeds(null); });
 
   // Practice score (null until the student has pressed Check).
@@ -1826,6 +1921,11 @@ window.initTable = () => {
         sp.className = "score" + (score.done ? " ok" : "");
         sp.textContent = score.done ? "Correct: every cell, and the verdict." : score.cellsDone ? `All ${score.total} cells right. ${pickVerdict ? "The verdict is not quite right." : "Now choose the verdict below."}` : score.filled === 0 ? "No cells filled in yet." : `Not quite: ${score.right} of ${score.filled} filled cells right${score.filled < score.total ? `, ${score.total - score.filled} still blank` : ""}.`;
         pc.append(sp);
+        if (score.filled > score.right) {
+          const h = document.createElement("span"); h.className = "whyhint";
+          h.textContent = window.matchMedia && matchMedia("(pointer: coarse)").matches ? "Tap a red cell to see why." : "Click a red cell to see why.";
+          pc.append(h);
+        }
       }
     } else pc.hidden = true;
     drawVerdictBar(score);
@@ -2006,6 +2106,7 @@ window.initTable = () => {
     if (val === undefined) answers.delete(k); else answers.set(k, val);
     td.textContent = val === undefined ? "" : T(val);
     td.classList.remove("right", "wrong");
+    if (why && why.key === td.dataset.key && why.r === +td.dataset.r) { why = null; $("whypop").hidden = true; }
   }
   function moveFocus(td, dr, dc) {
     const cells = [...$("tableWrap").querySelectorAll("td.edit")];
@@ -2022,6 +2123,10 @@ window.initTable = () => {
     const num = e.target.closest("td.num.pickable");
     if (num) { const r = +num.dataset.row; pickCx.has(r) ? pickCx.delete(r) : pickCx.add(r); vChecked = false; drawTable(); return; }
     const td = e.target.closest("td.edit"); if (!td) return;
+    if (td.classList.contains("wrong") && !(why && why.key === td.dataset.key && why.r === +td.dataset.r)) {
+      $("tableWrap").querySelectorAll("td.edit[tabindex='0']").forEach((c) => (c.tabIndex = -1));
+      td.tabIndex = 0; td.focus(); showWhy(td); return;
+    }
     const k = `${td.dataset.key}:${td.dataset.r}`;
     const cur = answers.get(k);
     setCell(td, cur === undefined ? true : cur === true ? false : undefined);
