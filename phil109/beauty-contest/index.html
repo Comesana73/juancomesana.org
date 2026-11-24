@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Beauty Contest — PHIL 109</title>
+<meta name="theme-color" content="#faf8f4">
+<link rel="stylesheet" href="../../apps/fonts/plex.css">
+<link rel="stylesheet" href="../../apps/fonts/serif.css">
+<style>
+  :root {
+    --bg: #faf8f4; --surface: #ffffff; --surface-2: #f5f1ea;
+    --ink: #26221f; --muted: #645d56; --faint: #8a8178;
+    --line: #ded6cd; --accent: #6f3f2a; --accent-soft: #f1e6de; --accent-softer: #f8f2ed;
+    --good: #1d7f53; --good-soft: #e3f1e8; --bad: #a3302a; --bad-soft: #fbe6e2;
+    --focus: #1b5f8c; --radius: 4px;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1714; --surface: #231f1b; --surface-2: #2b2621;
+      --ink: #ede6de; --muted: #b3a89c; --faint: #7f756b; --line: #3b342e;
+      --accent: #e0a985; --accent-soft: #43312a; --accent-softer: #2f2621;
+      --good: #6fcf9c; --good-soft: #1c3327; --bad: #f08a80; --bad-soft: #3f211e; --focus: #7fb6de;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.45; }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 28px 40px; }
+
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+  .course { font-family: var(--serif); font-variant-caps: all-small-caps; letter-spacing: 0.08em; font-size: 1.05rem; color: var(--accent); }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: 2.4rem; letter-spacing: -0.015em; line-height: 1.1; margin: 2px 0 0; }
+  .sub { font-family: var(--serif); font-size: 1.15rem; color: var(--muted); margin-top: 4px; }
+  .sub b { color: var(--ink); font-weight: 600; }
+  .settings { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; font-size: 0.95rem; color: var(--muted); }
+  .settings label { display: flex; gap: 6px; align-items: center; }
+  .settings input { width: 4.2em; padding: 4px 6px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-align: center; font-family: var(--mono); }
+
+  .tabs { display: flex; gap: 26px; margin: 16px 0 18px; align-items: center; flex-wrap: wrap; }
+  .tabs button.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 4px 0; cursor: pointer; font-family: var(--serif); font-variant-caps: all-small-caps; letter-spacing: 0.08em; font-size: 1.25rem; }
+  .tabs button.tab:hover { color: var(--accent); }
+  .tabs button.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .tabs .count { font-family: var(--mono); font-size: 0.8rem; color: var(--faint); margin-left: 4px; font-variant-caps: normal; }
+
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .card h2 { font-family: var(--serif); font-variant-caps: all-small-caps; letter-spacing: 0.08em; font-size: 1.05rem; font-weight: 600; color: var(--muted); margin: 0 0 10px; }
+  .hint { font-size: 0.85rem; color: var(--muted); margin: 6px 0 0; }
+
+  .entry { display: flex; gap: 8px; }
+  .entry input { flex: 1; min-width: 0; padding: 10px 12px; font-size: 1.35rem; font-family: var(--mono); border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+  .btn { padding: 8px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+  .btn.primary:hover { color: var(--bg); filter: brightness(1.08); }
+  .btn.small { padding: 4px 10px; font-size: 0.85rem; }
+  textarea { width: 100%; min-height: 70px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); font-family: var(--mono); font-size: 0.95rem; resize: vertical; }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+  .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+  .list { margin-top: 14px; max-height: 330px; overflow: auto; border-top: 1px solid var(--line); }
+  .item { display: flex; justify-content: space-between; align-items: center; padding: 5px 2px; border-bottom: 1px solid var(--line); font-family: var(--mono); }
+  .item .nm { font-family: var(--sans); color: var(--muted); font-size: 0.9rem; margin-left: 8px; }
+  .item.bad { color: var(--bad); }
+  .item.win { background: var(--good-soft); }
+  .item button { border: 0; background: none; cursor: pointer; color: var(--faint); font-size: 1rem; padding: 0 4px; }
+  .item button:hover { color: var(--bad); }
+  .masked .val { filter: blur(6px); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; }
+  .stat .lbl { font-family: var(--serif); font-variant-caps: all-small-caps; letter-spacing: 0.08em; color: var(--muted); font-size: 1rem; }
+  .stat .big { font-family: var(--serif); font-size: 2.3rem; line-height: 1.15; }
+  .stat .small { font-size: 0.85rem; color: var(--muted); font-family: var(--mono); min-height: 1.2em; }
+  .stat.target { border-color: var(--accent); background: var(--accent-softer); }
+  .stat.target .big { color: var(--accent); }
+  .stat.winner { border-color: var(--good); background: var(--good-soft); }
+  .stat.winner .big { color: var(--good); }
+  @media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  .curtain { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 380px; text-align: center; }
+  .curtain .n { font-family: var(--serif); font-size: 4rem; line-height: 1; }
+  .curtain .t { font-family: var(--serif); font-size: 1.3rem; color: var(--muted); }
+  .curtain .btn.primary { font-size: 1.25rem; padding: 12px 28px; }
+
+  svg text { font-family: var(--sans); fill: var(--muted); }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+  .legend span::before { content: ""; display: inline-block; width: 18px; height: 0; border-top: 3px solid currentColor; margin-right: 6px; vertical-align: middle; }
+  .legend .lavg { color: var(--ink); } .legend .ltgt { color: var(--accent); } .legend .llev::before { border-top-style: dashed; border-top-width: 2px; } .legend .llev { color: var(--faint); }
+
+  table.cmp { width: 100%; border-collapse: collapse; font-size: 1rem; margin-top: 4px; }
+  table.cmp th, table.cmp td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; font-family: var(--mono); }
+  table.cmp th { font-family: var(--serif); font-variant-caps: all-small-caps; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+  table.cmp th:first-child, table.cmp td:first-child { text-align: left; font-family: var(--serif); }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="course">PHIL 109 · Games</div>
+      <h1>Beauty Contest</h1>
+      <div class="sub">Pick a number from <b id="sLo">0</b> to <b id="sHi">100</b>. Closest to <b id="sM">2/3</b> of the average wins.</div>
+    </div>
+    <div class="settings">
+      <label>Multiplier <input id="mult" value="2/3" aria-label="Multiplier, e.g. 2/3"></label>
+      <label>From <input id="lo" value="0" inputmode="decimal"></label>
+      <label>to <input id="hi" value="100" inputmode="decimal"></label>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist"></div>
+
+  <div class="grid">
+    <section class="card" aria-label="Enter guesses">
+      <h2>Guesses</h2>
+      <div class="entry">
+        <input id="one" placeholder="23  or  Ana 23" autocomplete="off" aria-label="Add a guess, optionally with a name">
+        <button class="btn primary" id="add">Add</button>
+      </div>
+      <p class="hint">Press Enter after each one. A name before the number is optional.</p>
+      <details>
+        <summary>Paste many at once</summary>
+        <textarea id="bulk" placeholder="23, 41, 0, 33&#10;or one per line: Ana 23"></textarea>
+        <div class="row"><button class="btn small" id="addBulk">Add all</button></div>
+      </details>
+      <div class="list" id="list"></div>
+      <div class="row">
+        <button class="btn small" id="mask" aria-pressed="false">Hide numbers</button>
+        <button class="btn small" id="undo">Undo last</button>
+        <button class="btn small" id="clear">Clear round</button>
+      </div>
+    </section>
+
+    <section id="results" aria-live="polite"></section>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const KEY = "phil109-beauty-contest";
+  const $ = id => document.getElementById(id);
+  const fresh = () => ({ mult: "2/3", lo: 0, hi: 100, cur: 0, rounds: [{ guesses: [], revealed: false }, { guesses: [], revealed: false }], mask: false });
+  let S;
+  try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch (e) { S = fresh(); }
+  if (!Array.isArray(S.rounds) || !S.rounds.length) S = fresh();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  // ---- numbers -------------------------------------------------------------
+  function parseMult(s) {
+    s = String(s).trim();
+    let m = s.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/);
+    if (m && +m[2] > 0) return { v: +m[1] / +m[2], label: m[1] + "/" + m[2] };
+    if (/^\d+(\.\d+)?$/.test(s)) return { v: +s, label: s };
+    return { v: 2 / 3, label: "2/3" };
+  }
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; };
+  function fracLabel(num, den) {  // integers only
+    const g = gcd(num, den); num /= g; den /= g;
+    if (den === 1) return String(num);
+    const w = Math.trunc(num / den), r = Math.abs(num % den);
+    return w ? `${w} ${r}/${den}` : `${num}/${den}`;
+  }
+  const fmt = x => {
+    const r = Math.round(x * 100) / 100;
+    return (Number.isInteger(r) ? String(r) : r.toFixed(2).replace(/0$/, "")).replace("-", "−");
+  };
+
+  function parseLine(t) {
+    t = t.trim(); if (!t) return null;
+    const m = t.match(/^(.*?)[\s:=,]*(-?\d+(?:[.,]\d+)?)\s*$/);
+    if (!m) return { name: t, v: NaN };
+    return { name: m[1].replace(/[:=,]\s*$/, "").trim(), v: parseFloat(m[2].replace(",", ".")) };
+  }
+  function parseBulk(text) {
+    const out = [];
+    for (const line of text.split(/\n/)) {
+      if (/[A-Za-zÀ-ÿ]/.test(line)) { const p = parseLine(line); if (p) out.push(p); }
+      else for (const tok of line.split(/[\s,;]+/)) if (tok) out.push({ name: "", v: parseFloat(tok) });
+    }
+    return out;
+  }
+
+  const round = () => S.rounds[S.cur];
+  const valid = g => Number.isFinite(g.v) && g.v >= S.lo && g.v <= S.hi;
+
+  function analyze(r) {
+    const ok = r.guesses.filter(valid);
+    if (!ok.length) return null;
+    const M = parseMult(S.mult);
+    const sum = ok.reduce((a, g) => a + g.v, 0), n = ok.length, avg = sum / n, tgt = M.v * avg;
+    let best = Infinity;
+    for (const g of ok) best = Math.min(best, Math.abs(g.v - tgt));
+    const winners = ok.filter(g => Math.abs(Math.abs(g.v - tgt) - best) < 1e-9);
+    // exact fractions when everything is an integer
+    let avgEx = "", tgtEx = "";
+    const mm = M.label.match(/^(\d+)\/(\d+)$/);
+    if (ok.every(g => Number.isInteger(g.v))) {
+      if (!Number.isInteger(avg)) avgEx = "= " + fracLabel(sum, n);
+      if (mm) { const p = +mm[1], q = +mm[2]; if (!Number.isInteger(tgt)) tgtEx = "= " + fracLabel(p * sum, q * n); }
+    }
+    return { ok, n, avg, tgt, winners, avgEx, tgtEx, M, invalid: r.guesses.length - n };
+  }
+
+  // ---- rendering -----------------------------------------------------------
+  function renderHeader() {
+    $("sLo").textContent = fmt(S.lo); $("sHi").textContent = fmt(S.hi);
+    $("sM").textContent = parseMult(S.mult).label;
+    $("mult").value = S.mult; $("lo").value = S.lo; $("hi").value = S.hi;
+  }
+  function renderTabs() {
+    const T = $("tabs"); T.innerHTML = "";
+    S.rounds.forEach((r, i) => {
+      const b = document.createElement("button");
+      b.className = "tab"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", i === S.cur);
+      b.innerHTML = `Round ${i + 1}<span class="count">${r.guesses.length}</span>`;
+      b.onclick = () => { S.cur = i; save(); render(); $("one").focus(); };
+      T.appendChild(b);
+    });
+    const cmp = document.createElement("button");
+    cmp.className = "tab"; cmp.setAttribute("role", "tab"); cmp.setAttribute("aria-selected", S.cur === -1);
+    cmp.textContent = "Compare rounds";
+    cmp.onclick = () => { S.cur = -1; save(); render(); };
+    T.appendChild(cmp);
+    const add = document.createElement("button");
+    add.className = "btn small"; add.textContent = "+ Round";
+    add.onclick = () => { S.rounds.push({ guesses: [], revealed: false }); S.cur = S.rounds.length - 1; save(); render(); };
+    T.appendChild(add);
+  }
+  function renderList() {
+    const L = $("list"); L.innerHTML = "";
+    const r = S.cur >= 0 ? round() : null;
+    document.querySelector(".grid > .card").style.display = r ? "" : "none";
+    document.querySelector(".grid").style.gridTemplateColumns = r ? "" : "1fr";
+    if (!r) return;
+    const A = r.revealed ? analyze(r) : null;
+    const win = new Set(A ? A.winners : []);
+    L.classList.toggle("masked", S.mask);
+    $("mask").textContent = S.mask ? "Show numbers" : "Hide numbers";
+    $("mask").setAttribute("aria-pressed", S.mask);
+    for (let i = r.guesses.length - 1; i >= 0; i--) {
+      const g = r.guesses[i];
+      const d = document.createElement("div");
+      d.className = "item" + (valid(g) ? "" : " bad") + (win.has(g) ? " win" : "");
+      d.innerHTML = `<span><span class="val">${Number.isFinite(g.v) ? fmt(g.v) : "?"}</span>${g.name ? `<span class="nm">${esc(g.name)}</span>` : ""}${valid(g) ? "" : `<span class="nm">(ignored)</span>`}</span>`;
+      const x = document.createElement("button"); x.textContent = "×"; x.title = "Remove"; x.setAttribute("aria-label", "Remove");
+      x.onclick = () => { r.guesses.splice(i, 1); save(); render(); };
+      d.appendChild(x); L.appendChild(d);
+    }
+  }
+  const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function histogram(ok, avg, tgt, M) {
+    const W = 860, H = 330, padL = 40, padR = 14, padT = 26, padB = 40;
+    const lo = S.lo, hi = S.hi, span = hi - lo || 1;
+    const nb = 20, bw = span / nb, counts = new Array(nb).fill(0);
+    for (const g of ok) counts[Math.min(nb - 1, Math.floor((g.v - lo) / bw))]++;
+    const mx = Math.max(1, ...counts);
+    const X = v => padL + (v - lo) / span * (W - padL - padR);
+    const Y = c => H - padB - c / mx * (H - padT - padB);
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Histogram of guesses">`;
+    const step = mx <= 10 ? 1 : Math.ceil(mx / 8);
+    for (let c = 0; c <= mx; c += step) s += `<line x1="${padL}" x2="${W - padR}" y1="${Y(c)}" y2="${Y(c)}" stroke="var(--line)"/><text x="${padL - 8}" y="${Y(c) + 4}" text-anchor="end" font-size="12">${c}</text>`;
+    // levels of reasoning: lo + (mid) * M^k
+    const mid = (lo + hi) / 2;
+    for (let k = 1, v = mid * M.v; k <= 3 && M.v < 1; k++, v *= M.v)
+      if (v > lo) s += `<line x1="${X(v)}" x2="${X(v)}" y1="${padT - 6}" y2="${H - padB}" stroke="var(--faint)" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${X(v) + 4}" y="${padT - 10}" text-anchor="start" font-size="12">level ${k}</text>`;
+    counts.forEach((c, i) => {
+      if (!c) return;
+      const x0 = X(lo + i * bw) + 2, x1 = X(lo + (i + 1) * bw) - 2;
+      s += `<rect x="${x0}" y="${Y(c)}" width="${x1 - x0}" height="${H - padB - Y(c)}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1"/>`;
+      s += `<text x="${(x0 + x1) / 2}" y="${Y(c) - 5}" text-anchor="middle" font-size="12" style="fill:var(--ink)">${c}</text>`;
+    });
+    for (let v = lo; v <= hi + 1e-9; v += span / 10) s += `<text x="${X(v)}" y="${H - padB + 18}" text-anchor="middle" font-size="12">${fmt(v)}</text>`;
+    s += `<line x1="${padL}" x2="${W - padR}" y1="${H - padB}" y2="${H - padB}" stroke="var(--muted)"/>`;
+    s += `<line x1="${X(avg)}" x2="${X(avg)}" y1="${padT}" y2="${H - padB}" stroke="var(--ink)" stroke-width="3"/>`;
+    s += `<line x1="${X(tgt)}" x2="${X(tgt)}" y1="${padT}" y2="${H - padB}" stroke="var(--accent)" stroke-width="3"/>`;
+    s += `<text x="${X(tgt)}" y="${H - 6}" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--accent)">target ${fmt(tgt)}</text>`;
+    return s + "</svg>";
+  }
+
+  function renderResults() {
+    const R = $("results");
+    if (S.cur === -1) return renderCompare(R);
+    const r = round();
+    const n = r.guesses.filter(valid).length;
+    if (!r.revealed) {
+      R.innerHTML = `<div class="card curtain"><div class="n">${n}</div><div class="t">${n === 1 ? "guess" : "guesses"} in Round ${S.cur + 1}</div>
+        <button class="btn primary" id="reveal" ${n ? "" : "disabled"}>Reveal results</button></div>`;
+      const b = $("reveal"); if (b) b.onclick = () => { r.revealed = true; save(); render(); };
+      return;
+    }
+    const A = analyze(r);
+    if (!A) { r.revealed = false; save(); return renderResults(); }
+    const wv = [...new Set(A.winners.map(g => fmt(g.v)))].join(", ");
+    const wn = A.winners.map(g => g.name).filter(Boolean);
+    R.innerHTML = `
+      <div class="toolbar"><span class="muted">Round ${S.cur + 1}${A.invalid ? ` · ${A.invalid} ignored (out of range)` : ""}</span>
+        <button class="btn small" id="hide">Hide results</button></div>
+      <div class="stats">
+        <div class="stat"><div class="lbl">Guesses</div><div class="big">${A.n}</div><div class="small">range ${fmt(Math.min(...A.ok.map(g => g.v)))}–${fmt(Math.max(...A.ok.map(g => g.v)))}</div></div>
+        <div class="stat"><div class="lbl">Average</div><div class="big">${fmt(A.avg)}</div><div class="small">${A.avgEx}</div></div>
+        <div class="stat target"><div class="lbl">${A.M.label} of the average</div><div class="big">${fmt(A.tgt)}</div><div class="small">${A.tgtEx}</div></div>
+        <div class="stat winner"><div class="lbl">Winning guess</div><div class="big">${wv}</div><div class="small">${wn.length ? esc(wn.join(", ")) : (A.winners.length > 1 ? A.winners.length + " tied" : "")}</div></div>
+      </div>
+      <div class="card">${histogram(A.ok, A.avg, A.tgt, A.M)}
+        <div class="legend"><span class="lavg">average</span><span class="ltgt">target</span>${A.M.v < 1 ? `<span class="llev">levels of reasoning: ${fmt((S.lo + S.hi) / 2)} × ${A.M.label}, × ${A.M.label} again, …</span>` : ""}</div></div>`;
+    $("hide").onclick = () => { r.revealed = false; save(); render(); };
+  }
+
+  function renderCompare(R) {
+    const rows = S.rounds.map((r, i) => [i, analyze(r)]).filter(([, a]) => a);
+    if (!rows.length) { R.innerHTML = `<div class="card curtain"><div class="t">No guesses yet.</div></div>`; return; }
+    const maxAvg = Math.max(...rows.map(([, a]) => a.avg), 1);
+    let bars = "";
+    const W = 860, rowH = 46, H = rows.length * rowH + 10;
+    rows.forEach(([i, a], k) => {
+      const y = 6 + k * rowH, scale = (W - 140) / (S.hi - S.lo || 1);
+      bars += `<text x="0" y="${y + 26}" font-size="15" style="fill:var(--ink)">Round ${i + 1}</text>
+        <rect x="100" y="${y + 8}" width="${(a.avg - S.lo) * scale}" height="26" fill="var(--accent-soft)" stroke="var(--accent)"/>
+        <line x1="${100 + (a.tgt - S.lo) * scale}" x2="${100 + (a.tgt - S.lo) * scale}" y1="${y + 2}" y2="${y + 40}" stroke="var(--accent)" stroke-width="3"/>
+        <text x="${100 + (a.avg - S.lo) * scale + 8}" y="${y + 26}" font-size="14" style="fill:var(--ink)">average ${fmt(a.avg)} · target ${fmt(a.tgt)}</text>`;
+    });
+    R.innerHTML = `<div class="card"><h2>Rounds compared</h2>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Average per round">${bars}</svg>
+      <table class="cmp"><thead><tr><th>Round</th><th>Guesses</th><th>Average</th><th>Target</th><th>Winning guess</th><th>Guesses of ${fmt(S.lo)}</th></tr></thead><tbody>
+      ${rows.map(([i, a]) => `<tr><td>Round ${i + 1}</td><td>${a.n}</td><td>${fmt(a.avg)}</td><td>${fmt(a.tgt)}</td><td>${[...new Set(a.winners.map(g => fmt(g.v)))].join(", ")}</td><td>${a.ok.filter(g => g.v === S.lo).length}</td></tr>`).join("")}
+      </tbody></table>
+      <p class="hint">Equilibrium: everyone guesses ${fmt(S.lo)}.</p></div>`;
+  }
+
+  function render() { renderHeader(); renderTabs(); renderList(); renderResults(); }
+
+  // ---- input ---------------------------------------------------------------
+  function addGuesses(arr) {
+    if (S.cur < 0) S.cur = 0;
+    for (const g of arr) round().guesses.push(g);
+    save(); render();
+  }
+  $("add").onclick = () => { const p = parseLine($("one").value); if (p) addGuesses([p]); $("one").value = ""; $("one").focus(); };
+  $("one").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("add").click(); } });
+  $("addBulk").onclick = () => { addGuesses(parseBulk($("bulk").value)); $("bulk").value = ""; };
+  $("undo").onclick = () => { if (S.cur >= 0 && round().guesses.length) { round().guesses.pop(); save(); render(); } };
+  $("clear").onclick = () => { if (S.cur >= 0 && round().guesses.length && confirmClear()) { round().guesses = []; round().revealed = false; save(); render(); } };
+  let armed = 0;
+  function confirmClear() {  // two clicks within 3 seconds, no browser dialog
+    const b = $("clear");
+    if (Date.now() - armed < 3000) { b.textContent = "Clear round"; armed = 0; return true; }
+    armed = Date.now(); b.textContent = "Click again to clear";
+    setTimeout(() => { if (armed && Date.now() - armed >= 3000) { b.textContent = "Clear round"; armed = 0; } }, 3100);
+    return false;
+  }
+  $("mask").onclick = () => { S.mask = !S.mask; save(); render(); };
+  $("mult").addEventListener("change", e => { S.mult = parseMult(e.target.value).label; save(); render(); });
+  $("lo").addEventListener("change", e => { const v = parseFloat(e.target.value); if (Number.isFinite(v) && v < S.hi) S.lo = v; save(); render(); });
+  $("hi").addEventListener("change", e => { const v = parseFloat(e.target.value); if (Number.isFinite(v) && v > S.lo) S.hi = v; save(); render(); });
+
+  render();
+  $("one").focus();
+})();
+</script>
+</body>
+</html>
