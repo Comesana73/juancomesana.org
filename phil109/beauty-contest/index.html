@@ -16,7 +16,7 @@
     --ink: #26221f; --muted: #645d56; --faint: #8a8178;
     --line: #ded6cd; --accent: #6f3f2a; --accent-soft: #f1e6de; --accent-softer: #f8f2ed;
     --good: #1d7f53; --good-soft: #e3f1e8; --bad: #a3302a; --bad-soft: #fbe6e2;
-    --focus: #1b5f8c; --radius: 4px;
+    --focus: #1b5f8c; --avg: #2f6fa8; --radius: 4px;
     --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
     --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -26,7 +26,7 @@
       --bg: #1a1714; --surface: #231f1b; --surface-2: #2b2621;
       --ink: #ede6de; --muted: #b3a89c; --faint: #7f756b; --line: #3b342e;
       --accent: #e0a985; --accent-soft: #43312a; --accent-softer: #2f2621;
-      --good: #6fcf9c; --good-soft: #1c3327; --bad: #f08a80; --bad-soft: #3f211e; --focus: #7fb6de;
+      --good: #6fcf9c; --good-soft: #1c3327; --bad: #f08a80; --bad-soft: #3f211e; --focus: #7fb6de; --avg: #7fb6de;
     }
   }
   * { box-sizing: border-box; }
@@ -95,8 +95,8 @@
 
   svg text { font-family: var(--sans); fill: var(--muted); }
   .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
-  .legend span::before { content: ""; display: inline-block; width: 18px; height: 0; border-top: 3px solid currentColor; margin-right: 6px; vertical-align: middle; }
-  .legend .lavg { color: var(--ink); } .legend .ltgt { color: var(--accent); } .legend .llev::before { border-top-style: dashed; border-top-width: 2px; } .legend .llev { color: var(--faint); }
+  .legend span::before { content: ""; display: inline-block; width: 18px; height: 0; border-top: 4px solid currentColor; margin-right: 6px; vertical-align: middle; }
+  .legend .lavg { color: var(--avg); } .legend .lavg::before { border-top-style: dashed; } .legend .ltgt { color: var(--accent); } .legend .llev::before { border-top-style: dashed; border-top-width: 2px; } .legend .llev { color: var(--faint); }
 
   table.cmp { width: 100%; border-collapse: collapse; font-size: 1rem; margin-top: 4px; }
   table.cmp th, table.cmp td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: right; font-family: var(--mono); }
@@ -264,7 +264,7 @@
   const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   function histogram(ok, avg, tgt, M) {
-    const W = 860, H = 330, padL = 40, padR = 14, padT = 26, padB = 40;
+    const W = 860, H = 340, padL = 40, padR = 14, padT = 30, padB = 40;
     const lo = S.lo, hi = S.hi, span = hi - lo || 1;
     const nb = 20, bw = span / nb, counts = new Array(nb).fill(0);
     for (const g of ok) counts[Math.min(nb - 1, Math.floor((g.v - lo) / bw))]++;
@@ -277,7 +277,7 @@
     // levels of reasoning: lo + (mid) * M^k
     const mid = (lo + hi) / 2;
     for (let k = 1, v = mid * M.v; S.levels && k <= 3 && M.v < 1; k++, v *= M.v)
-      if (v > lo) s += `<line x1="${X(v)}" x2="${X(v)}" y1="${padT - 6}" y2="${H - padB}" stroke="var(--faint)" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${X(v) + 4}" y="${padT - 10}" text-anchor="start" font-size="12">level ${k}</text>`;
+      if (v > lo) s += `<line x1="${X(v)}" x2="${X(v)}" y1="${padT - 6}" y2="${H - padB}" stroke="var(--faint)" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${X(v) + 4}" y="${padT + 12}" text-anchor="start" font-size="12">level ${k}</text>`;
     counts.forEach((c, i) => {
       if (!c) return;
       const x0 = X(lo + i * bw) + 2, x1 = X(lo + (i + 1) * bw) - 2;
@@ -286,8 +286,10 @@
     });
     for (let v = lo; v <= hi + 1e-9; v += span / 10) s += `<text x="${X(v)}" y="${H - padB + 18}" text-anchor="middle" font-size="12">${fmt(v)}</text>`;
     s += `<line x1="${padL}" x2="${W - padR}" y1="${H - padB}" y2="${H - padB}" stroke="var(--muted)"/>`;
-    s += `<line x1="${X(avg)}" x2="${X(avg)}" y1="${padT}" y2="${H - padB}" stroke="var(--ink)" stroke-width="3"/>`;
-    s += `<line x1="${X(tgt)}" x2="${X(tgt)}" y1="${padT}" y2="${H - padB}" stroke="var(--accent)" stroke-width="3"/>`;
+    s += `<line x1="${X(avg)}" x2="${X(avg)}" y1="${padT}" y2="${H - padB}" stroke="var(--avg)" stroke-width="3" stroke-dasharray="9 5"/>`;
+    s += `<text x="${X(avg)}" y="${padT - 10}" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--avg)">average ${fmt(avg)}</text>`;
+    s += `<line x1="${X(tgt)}" x2="${X(tgt)}" y1="${padT}" y2="${H - padB}" stroke="var(--accent)" stroke-width="4"/>`;
+    s += `<path d="M ${X(tgt) - 7} ${padT - 2} L ${X(tgt) + 7} ${padT - 2} L ${X(tgt)} ${padT + 9} Z" fill="var(--accent)"/>`;
     s += `<text x="${X(tgt)}" y="${H - 6}" text-anchor="middle" font-size="13" font-weight="600" style="fill:var(--accent)">target ${fmt(tgt)}</text>`;
     return s + "</svg>";
   }
