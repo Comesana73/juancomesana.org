@@ -276,7 +276,7 @@
     for (let c = 0; c <= mx; c += step) s += `<line x1="${padL}" x2="${W - padR}" y1="${Y(c)}" y2="${Y(c)}" stroke="var(--line)"/><text x="${padL - 8}" y="${Y(c) + 4}" text-anchor="end" font-size="12">${c}</text>`;
     // levels of reasoning: lo + (mid) * M^k
     const mid = (lo + hi) / 2;
-    for (let k = 1, v = mid * M.v; k <= 3 && M.v < 1; k++, v *= M.v)
+    for (let k = 1, v = mid * M.v; S.levels && k <= 3 && M.v < 1; k++, v *= M.v)
       if (v > lo) s += `<line x1="${X(v)}" x2="${X(v)}" y1="${padT - 6}" y2="${H - padB}" stroke="var(--faint)" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${X(v) + 4}" y="${padT - 10}" text-anchor="start" font-size="12">level ${k}</text>`;
     counts.forEach((c, i) => {
       if (!c) return;
@@ -309,7 +309,7 @@
     const wn = A.winners.map(g => g.name).filter(Boolean);
     R.innerHTML = `
       <div class="toolbar"><span class="muted">Round ${S.cur + 1}${A.invalid ? ` · ${A.invalid} ignored (out of range)` : ""}</span>
-        <button class="btn small" id="hide">Hide results</button></div>
+        <span class="row" style="margin:0"><button class="btn small" id="lev" aria-pressed="${!!S.levels}">${S.levels ? "Hide" : "Show"} levels of reasoning</button><button class="btn small" id="hide">Hide results</button></span></div>
       <div class="stats">
         <div class="stat"><div class="lbl">Guesses</div><div class="big">${A.n}</div><div class="small">range ${fmt(Math.min(...A.ok.map(g => g.v)))}–${fmt(Math.max(...A.ok.map(g => g.v)))}</div></div>
         <div class="stat"><div class="lbl">Average</div><div class="big">${fmt(A.avg)}</div><div class="small">${A.avgEx}</div></div>
@@ -317,8 +317,9 @@
         <div class="stat winner"><div class="lbl">Winning guess</div><div class="big">${wv}</div><div class="small">${wn.length ? esc(wn.join(", ")) : (A.winners.length > 1 ? A.winners.length + " tied" : "")}</div></div>
       </div>
       <div class="card">${histogram(A.ok, A.avg, A.tgt, A.M)}
-        <div class="legend"><span class="lavg">average</span><span class="ltgt">target</span>${A.M.v < 1 ? `<span class="llev">levels of reasoning: ${fmt((S.lo + S.hi) / 2)} × ${A.M.label}, × ${A.M.label} again, …</span>` : ""}</div></div>`;
+        <div class="legend"><span class="lavg">average</span><span class="ltgt">target</span>${A.M.v < 1 && S.levels ? `<span class="llev">levels of reasoning: ${fmt((S.lo + S.hi) / 2)} × ${A.M.label}, × ${A.M.label} again, …</span>` : ""}</div></div>`;
     $("hide").onclick = () => { r.revealed = false; save(); render(); };
+    $("lev").onclick = () => { S.levels = !S.levels; save(); render(); };
   }
 
   function renderCompare(R) {
